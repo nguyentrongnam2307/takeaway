@@ -527,6 +527,9 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
   .product-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
 }
 </style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -540,6 +543,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
       <div class="topbar-pill" onclick="switchView('orders')">📋 Đơn hàng</div>
       <div class="topbar-pill" onclick="switchView('stats')">📊 Doanh thu</div>
       <div class="topbar-time" id="clock"></div>
+      <div id="fbStatus" style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.7);white-space:nowrap;padding:.2rem .6rem;background:rgba(255,255,255,.07);border-radius:10px;border:1px solid rgba(255,255,255,.15)">⏳ Firebase</div>
     </div>
   </header>
 
@@ -1077,6 +1081,225 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 <div class="toast" id="toast"></div>
 
+<script>
+// ════════════════════════════════════════════════════════
+// 🔥 FIREBASE CONFIG — Paste your config từ Firebase Console
+// Project Settings → General → Your apps → Web app
+// ════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC9U2Z6BcrZ5Nv7UUr_GBeaA-Z3ezYxzIM",
+  authDomain: "takeaway-cupful.firebaseapp.com",
+  projectId: "takeaway-cupful",
+  storageBucket: "takeaway-cupful.firebasestorage.app",
+  messagingSenderId: "760595183857",
+  appId: "1:760595183857:web:9d4855b72e5f90c74c5150",
+  measurementId: "G-KV1904WPHC"
+};
+
+// ── Init Firebase ─────────────────────────────────────
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// ── Firebase status indicator ─────────────────────────
+function setFbStatus(status) {
+  // status: 'connecting' | 'online' | 'offline' | 'saving'
+  let el = document.getElementById('fbStatus');
+  if(!el) return;
+  const map = {
+    connecting: { icon:'⏳', text:'Đang kết nối...', color:'rgba(255,203,61,0.9)' },
+    online:     { icon:'🟢', text:'Firebase', color:'rgba(255,255,255,0.7)' },
+    offline:    { icon:'🔴', text:'Ngoại tuyến', color:'#EF4350' },
+    saving:     { icon:'💾', text:'Đang lưu...', color:'rgba(255,203,61,0.9)' },
+  };
+  const s = map[status] || map.online;
+  el.innerHTML = `${s.icon} ${s.text}`;
+  el.style.color = s.color;
+}
+
+// ════════════════════════════════════════════════════════
+// 🔥 FIREBASE SAVE / LOAD FUNCTIONS
+// ════════════════════════════════════════════════════════
+
+// ── Lưu/Load PRODUCTS ────────────────────────────────
+async function fbSaveProducts() {
+  setFbStatus('saving');
+  try {
+    await db.collection('config').doc('products').set({ data: products, updatedAt: new Date().toISOString() });
+    setFbStatus('online');
+  } catch(e) { console.error('fbSaveProducts:', e); setFbStatus('offline'); }
+}
+async function fbLoadProducts() {
+  const snap = await db.collection('config').doc('products').get();
+  if(snap.exists && snap.data().data) products = snap.data().data;
+}
+
+// ── Lưu/Load INGREDIENTS ─────────────────────────────
+async function fbSaveIngredients() {
+  setFbStatus('saving');
+  try {
+    await db.collection('config').doc('ingredients').set({ data: ingredients, updatedAt: new Date().toISOString() });
+    setFbStatus('online');
+  } catch(e) { console.error('fbSaveIngredients:', e); setFbStatus('offline'); }
+}
+async function fbLoadIngredients() {
+  const snap = await db.collection('config').doc('ingredients').get();
+  if(snap.exists && snap.data().data) ingredients = snap.data().data;
+}
+
+// ── Lưu/Load RECIPES ─────────────────────────────────
+async function fbSaveRecipes() {
+  setFbStatus('saving');
+  try {
+    await db.collection('config').doc('recipes').set({ data: recipes, updatedAt: new Date().toISOString() });
+    setFbStatus('online');
+  } catch(e) { console.error('fbSaveRecipes:', e); setFbStatus('offline'); }
+}
+async function fbLoadRecipes() {
+  const snap = await db.collection('config').doc('recipes').get();
+  if(snap.exists && snap.data().data) recipes = snap.data().data;
+}
+
+// ── Lưu/Load PROMOS ──────────────────────────────────
+async function fbSavePromos() {
+  setFbStatus('saving');
+  try {
+    await db.collection('config').doc('promos').set({ data: promos, updatedAt: new Date().toISOString() });
+    setFbStatus('online');
+  } catch(e) { console.error('fbSavePromos:', e); setFbStatus('offline'); }
+}
+async function fbLoadPromos() {
+  const snap = await db.collection('config').doc('promos').get();
+  if(snap.exists && snap.data().data) promos = snap.data().data;
+}
+
+// ── Lưu ORDER lên Firestore (mỗi đơn = 1 document) ──
+async function fbSaveOrder(order) {
+  setFbStatus('saving');
+  try {
+    await db.collection('orders').doc(String(order.id)).set({
+      ...order,
+      savedAt: new Date().toISOString()
+    });
+    setFbStatus('online');
+  } catch(e) { console.error('fbSaveOrder:', e); setFbStatus('offline'); }
+}
+
+// ── Lưu/Load SALES DATA ──────────────────────────────
+async function fbSaveSalesData() {
+  try {
+    await db.collection('config').doc('salesData').set({ data: salesData, updatedAt: new Date().toISOString() });
+  } catch(e) { console.error('fbSaveSalesData:', e); }
+}
+async function fbLoadSalesData() {
+  const snap = await db.collection('config').doc('salesData').get();
+  if(snap.exists && snap.data().data) salesData = snap.data().data;
+}
+
+// ── Load ORDERS từ Firestore ──────────────────────────
+async function fbLoadOrders() {
+  const today = new Date().toISOString().slice(0,10);
+  // Load đơn hôm nay
+  const snap = await db.collection('orders').where('date','==',today).orderBy('id','desc').get();
+  if(!snap.empty) {
+    orders = snap.docs.map(d => d.data());
+    orderCounter = Math.max(...orders.map(o=>o.id), 0) + 1;
+  }
+}
+
+// ── Lưu BANK SETTINGS (ghi đè localStorage hiện tại) ─
+async function fbSaveBankSettings() {
+  try {
+    await db.collection('config').doc('bankSettings').set({ data: bankSettings });
+  } catch(e) {}
+}
+async function fbLoadBankSettings() {
+  const snap = await db.collection('config').doc('bankSettings').get();
+  if(snap.exists && snap.data().data) {
+    const bs = snap.data().data;
+    bankSettings = bs;
+    localStorage.setItem('cafeBank', bs.bank || '');
+    localStorage.setItem('cafeAcct', bs.acct || '');
+    localStorage.setItem('cafeName', bs.name || '');
+  }
+}
+
+// ── INIT: Load tất cả data từ Firebase rồi render ────
+async function initFromFirebase() {
+  setFbStatus('connecting');
+  try {
+    // Load song song cho nhanh
+    await Promise.all([
+      fbLoadProducts(),
+      fbLoadIngredients(),
+      fbLoadRecipes(),
+      fbLoadPromos(),
+      fbLoadSalesData(),
+      fbLoadBankSettings(),
+    ]);
+    // Orders hôm nay
+    await fbLoadOrders();
+
+    setFbStatus('online');
+    showToast('🔥 Đã kết nối Firebase', 'success');
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    setFbStatus('offline');
+    showToast('⚠️ Firebase ngoại tuyến — dùng dữ liệu mặc định');
+  }
+
+  // Re-render sau khi load
+  renderCatTabs();
+  renderProducts();
+  renderIngredients();
+  updateLowBadge();
+  renderOrderTabs();
+  togglePromoType();
+  renderPromoList();
+  populatePromoItemSelect();
+}
+
+// ── Realtime listener: đồng bộ config từ thiết bị khác ──
+function startRealtimeSync() {
+  // Sync products
+  db.collection('config').doc('products').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      products = snap.data().data;
+      renderCatTabs(); renderProducts();
+    }
+  });
+  // Sync ingredients
+  db.collection('config').doc('ingredients').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      ingredients = snap.data().data;
+      renderIngredients(); updateLowBadge();
+    }
+  });
+  // Sync recipes
+  db.collection('config').doc('recipes').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      recipes = snap.data().data;
+      renderProducts();
+    }
+  });
+  // Sync promos
+  db.collection('config').doc('promos').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      promos = snap.data().data;
+      renderPromoList();
+    }
+  });
+  // Sync orders hôm nay theo realtime
+  const today = new Date().toISOString().slice(0,10);
+  db.collection('orders').where('date','==',today).orderBy('id','desc').onSnapshot(snap => {
+    if(!snap.empty) {
+      orders = snap.docs.map(d => d.data());
+      orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
+      // Nếu đang ở tab orders thì re-render
+      if(document.getElementById('view-orders')?.classList.contains('active')) renderOrders();
+    }
+  });
+}
+</script>
 <script>
 // ─── DATA ───────────────────────────────────────────────────────────
 let products = [
@@ -2098,12 +2321,13 @@ function renderRecipeList() {
 function renderOrderTabs() {
   const el = document.getElementById('orderTabs');
   const ids = Object.keys(orderSlots);
-  el.innerHTML = ids.map(id=>`
+  el.innerHTML = ids.map((id, i)=>`
     <div class="order-tab ${id==activeSlot?'active':''}" onclick="switchSlot(${id})">
-      Đơn ${id}
+      Đơn ${i + 1}
       ${ids.length>1?`<span class="tab-close" onclick="event.stopPropagation();removeSlot(${id})">✕</span>`:''}
     </div>`).join('');
-  document.getElementById('cartTabLabel').textContent = 'Đơn ' + activeSlot;
+  const activeIdx = ids.indexOf(String(activeSlot));
+  document.getElementById('cartTabLabel').textContent = 'Đơn ' + (activeIdx + 1);
 }
 
 function addNewOrder() {
@@ -2125,9 +2349,43 @@ function switchSlot(id) {
 
 function removeSlot(id) {
   if(Object.keys(orderSlots).length <= 1) return;
+
+  // Đếm số món trong đơn cần xóa
+  const slotCart = orderSlots[id] || {};
+  const itemCount = Object.keys(slotCart).length;
+  const displayId = Object.keys(orderSlots).indexOf(String(id)) + 1;
+  const msg = itemCount > 0
+    ? `Đơn ${displayId} đang có ${itemCount} món chưa thanh toán.\nBạn có chắc muốn đóng đơn này không?`
+    : `Bạn có chắc muốn đóng Đơn ${displayId} không?`;
+
+  if(!confirm(msg)) return;
+
+  // Xóa slot và đánh số lại
+  const ids = Object.keys(orderSlots).map(Number);
+  const idx = ids.indexOf(Number(id));
   delete orderSlots[id];
-  const remaining = Object.keys(orderSlots);
-  switchSlot(parseInt(remaining[remaining.length-1]));
+
+  // Đánh số lại: rebuild orderSlots với key 1,2,3,...
+  const remaining = Object.keys(orderSlots).map(Number);
+  const renumbered = {};
+  remaining.forEach((oldId, i) => {
+    renumbered[i + 1] = orderSlots[oldId];
+  });
+  orderSlots = renumbered;
+  slotCounter = remaining.length;
+
+  // Chọn tab hợp lý sau khi xóa
+  const newIds = Object.keys(orderSlots).map(Number);
+  const newActive = newIds[Math.min(idx, newIds.length - 1)];
+  activeSlot = newActive;
+  cart = orderSlots[newActive];
+
+  renderOrderTabs();
+  renderCart();
+  document.getElementById('orderNote').value = '';
+  const cashEl = document.getElementById('cashReceived');
+  if(cashEl) cashEl.value = '';
+  calcChange();
 }
 
 // ─── CASH CHANGE ──────────────────────────────────────────────────────
@@ -2262,6 +2520,8 @@ function calcPromoDiscount(subtotal) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────
+// (Handled by Firebase initFromFirebase() below — see Firebase Patches section)
+// Fallback render ngay lập tức để tránh màn hình trắng trước khi Firebase load
 renderCatTabs();
 renderProducts();
 renderIngredients();
@@ -2291,6 +2551,96 @@ document.getElementById('payMethods').addEventListener('click', ()=>{
     calcChange();
   }, 50);
 });
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════
+// 🔥 FIREBASE PATCHES — Override các hàm gốc để auto-save
+// ════════════════════════════════════════════════════════
+
+// Override addProduct để save lên Firebase
+const _addProduct_orig = addProduct;
+window.addProduct = function() {
+  _addProduct_orig();
+  fbSaveProducts();
+};
+
+// Override addIngredient
+const _addIngredient_orig = addIngredient;
+window.addIngredient = function() {
+  _addIngredient_orig();
+  fbSaveIngredients();
+};
+
+// Override addRecipeLine
+const _addRecipeLine_orig = addRecipeLine;
+window.addRecipeLine = function() {
+  _addRecipeLine_orig();
+  fbSaveRecipes();
+};
+
+// Override removeRecipeLine
+const _removeRecipeLine_orig = removeRecipeLine;
+window.removeRecipeLine = function(pid, idx) {
+  _removeRecipeLine_orig(pid, idx);
+  fbSaveRecipes();
+};
+
+// Override addPromo
+const _addPromo_orig = addPromo;
+window.addPromo = function() {
+  _addPromo_orig();
+  fbSavePromos();
+};
+
+// Override togglePromoActive
+const _togglePromoActive_orig = togglePromoActive;
+window.togglePromoActive = function(id) {
+  _togglePromoActive_orig(id);
+  fbSavePromos();
+};
+
+// Override deletePromo
+const _deletePromo_orig = deletePromo;
+window.deletePromo = function(id) {
+  _deletePromo_orig(id);
+  fbSavePromos();
+};
+
+// Override doCheckout để save order + salesData + ingredients lên Firebase
+const _doCheckout_orig = doCheckout;
+window.doCheckout = async function() {
+  _doCheckout_orig();
+  // orders[0] là đơn vừa thêm (unshift)
+  if(orders.length > 0) {
+    await fbSaveOrder(orders[0]);
+    await fbSaveSalesData();
+    await fbSaveIngredients(); // ingredients đã bị trừ nguyên liệu
+  }
+};
+
+// Override updateQR để save bank settings lên Firebase
+const _updateQR_orig = updateQR;
+window.updateQR = function() {
+  _updateQR_orig();
+  fbSaveBankSettings();
+};
+
+// ── REPLACE INIT BLOCK với Firebase init ─────────────
+// (Xóa các lệnh render ban đầu, thay bằng initFromFirebase)
+
+// Gọi Firebase init sau khi DOM sẵn sàng
+document.addEventListener('DOMContentLoaded', () => {
+  // Nếu config chưa điền thì dùng local data
+  const isConfigured = FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('PASTE_');
+  if(isConfigured) {
+    initFromFirebase().then(() => startRealtimeSync());
+  } else {
+    setFbStatus('offline');
+    showToast('⚠️ Chưa cấu hình Firebase — chạy với dữ liệu local');
+  }
+});
+
 </script>
 </body>
 </html>
