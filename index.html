@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Quản Lý Bán Hàng Takeaway</title>
+<title>Café POS — Quản Lý Bán Hàng</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -345,6 +345,30 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 ::-webkit-scrollbar-thumb { background:var(--rule); border-radius:4px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--muted); }
 
+
+/* ══════════ TOPPING MODAL ══════════ */
+.topping-modal { max-width:380px; border-color:var(--yellow); box-shadow:0 8px 0 var(--yellow); }
+.topping-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:.8rem 0; }
+.topping-card {
+  padding:.6rem .8rem; border-radius:var(--radius-sm); border:2px solid var(--rule);
+  background:var(--bg); cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:.5rem;
+  font-size:13px; font-weight:700; color:var(--soft);
+}
+.topping-card:hover { border-color:var(--yellow); background:var(--yellow-light); color:var(--ink); }
+.topping-card.selected { border-color:var(--yellow); background:var(--yellow-light); color:var(--ink); }
+.topping-card.selected::after { content:'✓'; margin-left:auto; color:var(--yellow); font-weight:900; }
+.topping-price { font-size:11px; font-weight:800; color:var(--muted); margin-left:auto; }
+.topping-card.selected .topping-price { color:var(--yellow); }
+.size-grid { display:flex; gap:8px; margin:.5rem 0 .8rem; }
+.size-btn {
+  flex:1; padding:.45rem; border-radius:var(--radius-sm); border:2px solid var(--rule);
+  background:#fff; font-size:12px; font-weight:800; color:var(--soft);
+  cursor:pointer; transition:all .15s; text-align:center;
+}
+.size-btn:hover { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+.size-btn.selected { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+
 /* ══════════ TOAST ══════════ */
 .toast {
   position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(80px);
@@ -377,7 +401,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <div class="brand">🥡 <span>Takeaway</span> Manager</div>
+    <div class="brand">☕ <span>Café</span> Manager</div>
     <div class="topbar-info">
       <div class="topbar-pill active" onclick="switchView('pos')">🛒 Bán hàng</div>
       <div class="topbar-pill" onclick="switchView('inventory')">📦 Kho</div>
@@ -571,6 +595,31 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 </div>
 
+
+<!-- TOPPING MODAL -->
+<div class="modal-overlay" id="toppingModal">
+  <div class="modal topping-modal">
+    <div class="modal-title" id="toppingModalTitle">☕ Thêm tuỳ chọn</div>
+    
+    <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.4rem;">Kích cỡ</div>
+    <div class="size-grid" id="sizeGrid">
+      <button class="size-btn selected" onclick="selectSize(this,'S')">S · Nhỏ</button>
+      <button class="size-btn" onclick="selectSize(this,'M')">M · Vừa <span style="font-size:10px;color:var(--muted)">+5k</span></button>
+      <button class="size-btn" onclick="selectSize(this,'L')">L · Lớn <span style="font-size:10px;color:var(--muted)">+10k</span></button>
+    </div>
+
+    <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.4rem;">Topping</div>
+    <div class="topping-grid" id="toppingGrid"></div>
+
+    <textarea class="note-input" id="itemNote" rows="2" placeholder="📝 Ghi chú cho món này (ít đá, ít ngọt...)" style="width:100%;margin:.5rem 0"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeToppingModal()">Huỷ</button>
+      <button class="btn btn-green" onclick="confirmAddToCart()">Thêm vào giỏ →</button>
+    </div>
+  </div>
+</div>
+
 <!-- RECEIPT MODAL -->
 <div class="modal-overlay" id="receiptModal">
   <div class="modal">
@@ -588,27 +637,48 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 <script>
 // ─── DATA ───────────────────────────────────────────────────────────
 let products = [
-  { id:1, name:'Cơm sườn nướng', price:35000, cat:'Cơm', emoji:'🍚', stock:50 },
-  { id:2, name:'Cơm gà xé',      price:32000, cat:'Cơm', emoji:'🍗', stock:45 },
-  { id:3, name:'Cơm tấm bì',     price:33000, cat:'Cơm', emoji:'🥩', stock:30 },
-  { id:4, name:'Bún bò Huế',     price:38000, cat:'Bún', emoji:'🍜', stock:20 },
-  { id:5, name:'Bún thịt nướng', price:34000, cat:'Bún', emoji:'🥗', stock:25 },
-  { id:6, name:'Phở bò',         price:40000, cat:'Phở', emoji:'🍲', stock:15 },
-  { id:7, name:'Hủ tiếu',        price:35000, cat:'Phở', emoji:'🫕', stock:18 },
-  { id:8, name:'Trà sữa',        price:25000, cat:'Nước', emoji:'🧋', stock:60 },
-  { id:9, name:'Nước mía',       price:15000, cat:'Nước', emoji:'🥤', stock:40 },
-  { id:10,name:'Cà phê sữa đá',  price:20000, cat:'Nước', emoji:'☕', stock:0 },
-  { id:11,name:'Chả giò',        price:20000, cat:'Thêm', emoji:'🥟', stock:35 },
-  { id:12,name:'Trứng ốp la',    price:10000, cat:'Thêm', emoji:'🍳', stock:50 },
+  // Cà Phê
+  { id:1,  name:'Cà Phê Đen',            price:25000, cat:'Cà Phê', emoji:'☕', stock:999 },
+  { id:2,  name:'Cà Phê Sữa',            price:30000, cat:'Cà Phê', emoji:'🥛', stock:999 },
+  { id:3,  name:'Bạc Xỉu',               price:30000, cat:'Cà Phê', emoji:'🍶', stock:999 },
+  { id:4,  name:'Cà Phê Muối',           price:35000, cat:'Cà Phê', emoji:'🧂', stock:999 },
+  { id:5,  name:'Phindi Hạnh Nhân',      price:45000, cat:'Cà Phê', emoji:'🌰', stock:999 },
+  { id:6,  name:'Buôn Mê (Kem Dẻo)',    price:40000, cat:'Cà Phê', emoji:'🍦', stock:999 },
+  // Coldbrew
+  { id:7,  name:'Coldbrew Chanh Vàng',   price:40000, cat:'Coldbrew', emoji:'🍋', stock:999 },
+  { id:8,  name:'Coldbrew Mơ Xí Muội',  price:40000, cat:'Coldbrew', emoji:'🍑', stock:999 },
+  // Trà
+  { id:9,  name:'Trà Đào Cam Sả',        price:35000, cat:'Trà', emoji:'🍑', stock:999 },
+  { id:10, name:'Trà Ổi Hồng',           price:35000, cat:'Trà', emoji:'🍈', stock:999 },
+  { id:11, name:'Trà Lựu Hạt Lạnh',     price:38000, cat:'Trà', emoji:'🍷', stock:999 },
+  // Matcha
+  { id:12, name:'Matcha Latte',          price:40000, cat:'Matcha', emoji:'🍵', stock:999 },
+  { id:13, name:'Coco Matcha',           price:42000, cat:'Matcha', emoji:'🥥', stock:999 },
+  { id:14, name:'Coldwhisk',             price:40000, cat:'Matcha', emoji:'❄️', stock:999 },
+  { id:15, name:'Matcha Khoai Môn',      price:42000, cat:'Matcha', emoji:'💜', stock:999 },
+];
+
+const TOPPINGS = [
+  { id:'t1', name:'Thạch Cà Phê',   price:5000,  emoji:'🟤' },
+  { id:'t2', name:'Thạch Trắng Mini',price:5000, emoji:'⬜' },
+  { id:'t3', name:'Kem Dẻo',        price:8000,  emoji:'🍦' },
+  { id:'t4', name:'Kem Muối',       price:8000,  emoji:'🧂' },
+  { id:'t5', name:'Vụn Dừa',        price:5000,  emoji:'🥥' },
 ];
 
 let ingredients = [
-  { id:1, name:'Gạo tẻ',   qty:15, unit:'kg', min:5,  cost:18000, supplier:'Vựa gạo Năm Sáng' },
-  { id:2, name:'Thịt heo', qty:3,  unit:'kg', min:3,  cost:120000,supplier:'Lò mổ Phú Cường' },
-  { id:3, name:'Thịt gà',  qty:2,  unit:'kg', min:3,  cost:95000, supplier:'Gà sạch Gia Lai' },
-  { id:4, name:'Rau các loại', qty:1.5,unit:'kg',min:2,cost:25000,supplier:'Chợ Bình Điền' },
-  { id:5, name:'Nước mắm', qty:8,  unit:'lít',min:3,  cost:45000, supplier:'Mắm Phú Quốc' },
-  { id:6, name:'Bún tươi', qty:0,  unit:'kg', min:2,  cost:18000, supplier:'Cơ sở bún Hai Lúa' },
+  { id:1, name:'Cà phê rang xay', qty:2,   unit:'kg',  min:0.5, cost:180000, supplier:'Rang xay Tốc Độ' },
+  { id:2, name:'Sữa tươi',        qty:5,   unit:'lít', min:2,   cost:28000,  supplier:'TH True Milk' },
+  { id:3, name:'Sữa đặc',         qty:10,  unit:'hộp', min:3,   cost:22000,  supplier:'Ông Thọ' },
+  { id:4, name:'Kem tươi (whipping)',qty:1, unit:'lít', min:0.5, cost:85000,  supplier:'Elle & Vire' },
+  { id:5, name:'Matcha bột',      qty:0.5, unit:'kg',  min:0.2, cost:450000, supplier:'Ippodo Kyoto' },
+  { id:6, name:'Thạch cà phê',    qty:3,   unit:'kg',  min:1,   cost:35000,  supplier:'NCC thạch' },
+  { id:7, name:'Thạch trắng mini',qty:2,   unit:'kg',  min:1,   cost:30000,  supplier:'NCC thạch' },
+  { id:8, name:'Vụn dừa',         qty:1,   unit:'kg',  min:0.3, cost:45000,  supplier:'Dừa Bến Tre' },
+  { id:9, name:'Đào ngâm',        qty:3,   unit:'hũ',  min:1,   cost:55000,  supplier:'NCC hoa quả' },
+  { id:10,name:'Chanh vàng',      qty:15,  unit:'quả', min:5,   cost:5000,   supplier:'Chợ đầu mối' },
+  { id:11,name:'Đá viên',         qty:20,  unit:'kg',  min:5,   cost:5000,   supplier:'Xưởng đá Minh' },
+  { id:12,name:'Hạnh nhân sữa',   qty:2,   unit:'lít', min:1,   cost:75000,  supplier:'Nutifood' },
 ];
 
 let cart = {};
@@ -618,7 +688,7 @@ let selectedPay = 'Tiền mặt';
 let currentCat = 'Tất cả';
 let salesData = {};
 
-const PACK_FEE = 2000;
+const PACK_FEE = 0;
 
 // ─── CLOCK ──────────────────────────────────────────────────────────
 function updateClock() {
@@ -691,25 +761,105 @@ function renderProducts() {
       <div class="prod-emoji">${p.emoji}</div>
       <div class="prod-name">${p.name}</div>
       <div class="prod-price">${fmt(p.price)}</div>
-      <div class="prod-stock">${p.stock===0?'Hết hàng':'Còn: '+p.stock}</div>
+      <div class="prod-stock">${p.stock===0?'Hết hàng':p.stock>=999?'Còn hàng':'Còn: '+p.stock}</div>
     </div>
   `).join('');
 }
 
 // ─── CART ────────────────────────────────────────────────────────────
+// Topping modal state
+let pendingProduct = null;
+let selectedToppings = new Set();
+let selectedSize = 'S';
+const SIZE_PRICE = { S:0, M:5000, L:10000 };
+
 function addToCart(id) {
   const prod = products.find(p=>p.id===id);
   if(!prod || prod.stock===0) return;
-  if(cart[id]) cart[id].qty++;
-  else cart[id] = { ...prod, qty:1, note:'' };
-  renderCart();
-  showToast(`✓ ${prod.emoji} ${prod.name}`, 'success');
+  pendingProduct = prod;
+  selectedToppings = new Set();
+  selectedSize = 'S';
+  openToppingModal(prod);
 }
 
-function updateQty(id, delta) {
-  if(!cart[id]) return;
-  cart[id].qty += delta;
-  if(cart[id].qty <= 0) delete cart[id];
+function openToppingModal(prod) {
+  document.getElementById('toppingModalTitle').textContent = prod.emoji + ' ' + prod.name;
+  // Reset size
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelector('.size-btn').classList.add('selected');
+  selectedSize = 'S';
+  // Render toppings
+  const grid = document.getElementById('toppingGrid');
+  grid.innerHTML = TOPPINGS.map(t=>`
+    <div class="topping-card" id="tc-${t.id}" onclick="toggleTopping('${t.id}')">
+      <span>${t.emoji}</span>
+      <span>${t.name}</span>
+      <span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>
+    </div>
+  `).join('');
+  document.getElementById('itemNote').value = '';
+  document.getElementById('toppingModal').classList.add('open');
+}
+
+function toggleTopping(tid) {
+  const el = document.getElementById('tc-'+tid);
+  if(selectedToppings.has(tid)) { selectedToppings.delete(tid); el.classList.remove('selected'); }
+  else { selectedToppings.add(tid); el.classList.add('selected'); }
+}
+
+function selectSize(btn, size) {
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSize = size;
+}
+
+function closeToppingModal() {
+  document.getElementById('toppingModal').classList.remove('open');
+  pendingProduct = null;
+}
+
+function confirmAddToCart() {
+  if(!pendingProduct) return;
+  const prod = pendingProduct;
+  const toppings = TOPPINGS.filter(t=>selectedToppings.has(t.id));
+  const toppingPrice = toppings.reduce((a,t)=>a+t.price,0);
+  const sizePrice = SIZE_PRICE[selectedSize];
+  const note = document.getElementById('itemNote').value.trim();
+
+  // Unique key: id + size + sorted toppings
+  const key = prod.id + '-' + selectedSize + '-' + [...selectedToppings].sort().join(',');
+
+  const toppingLabel = toppings.map(t=>t.emoji+t.name).join(', ');
+  const displayNote = [
+    selectedSize !== 'S' ? 'Size '+selectedSize : '',
+    toppingLabel,
+    note
+  ].filter(Boolean).join(' · ');
+
+  if(cart[key]) {
+    cart[key].qty++;
+  } else {
+    cart[key] = {
+      ...prod,
+      cartKey: key,
+      qty: 1,
+      toppings,
+      toppingPrice,
+      sizePrice,
+      unitPrice: prod.price + toppingPrice + sizePrice,
+      price: prod.price + toppingPrice + sizePrice,
+      note: displayNote,
+    };
+  }
+  renderCart();
+  closeToppingModal();
+  showToast(`✓ ${prod.emoji} ${prod.name}${selectedSize!=='S'?' ('+selectedSize+')':''}`, 'success');
+}
+
+function updateQty(key, delta) {
+  if(!cart[key]) return;
+  cart[key].qty += delta;
+  if(cart[key].qty <= 0) delete cart[key];
   renderCart();
 }
 
@@ -748,12 +898,13 @@ function renderCart() {
       <span class="cart-item-emoji">${item.emoji}</span>
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
+        ${item.note ? `<div class="cart-item-note">${item.note}</div>` : ''}
         <div class="cart-item-price">${fmt(item.price * item.qty)}</div>
       </div>
       <div class="cart-qty">
-        <button class="qty-btn minus" onclick="updateQty(${k},-1)">−</button>
+        <button class="qty-btn minus" onclick="updateQty('${k}',-1)">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn" onclick="updateQty(${k},1)">+</button>
+        <button class="qty-btn" onclick="updateQty('${k}',1)">+</button>
       </div>
     </div>`;
   }).join('');
@@ -808,7 +959,13 @@ function checkout() {
 
 function showReceipt(order) {
   const itemRows = order.items.map(i=>`
-    <div class="receipt-row"><span>${i.emoji} ${i.name} × ${i.qty}</span><span>${fmt(i.price*i.qty)}</span></div>
+    <div class="receipt-row">
+      <span style="display:flex;flex-direction:column;gap:1px">
+        <span>${i.emoji} ${i.name} × ${i.qty}</span>
+        ${i.note ? `<span style="font-size:11px;color:var(--muted)">${i.note}</span>` : ''}
+      </span>
+      <span>${fmt(i.price*i.qty)}</span>
+    </div>
   `).join('');
 
   document.getElementById('receiptContent').innerHTML = `
@@ -968,6 +1125,9 @@ updateLowBadge();
 // Close modal on overlay click
 document.getElementById('receiptModal').addEventListener('click', function(e){
   if(e.target===this) closeModal();
+});
+document.getElementById('toppingModal').addEventListener('click', function(e){
+  if(e.target===this) closeToppingModal();
 });
 </script>
 </body>
