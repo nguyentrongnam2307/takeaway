@@ -1092,8 +1092,7 @@ const FIREBASE_CONFIG = {
   projectId: "takeaway-cupful",
   storageBucket: "takeaway-cupful.firebasestorage.app",
   messagingSenderId: "760595183857",
-  appId: "1:760595183857:web:9d4855b72e5f90c74c5150",
-  measurementId: "G-KV1904WPHC"
+  appId: "1:760595183857:web:9d4855b72e5f90c74c5150"
 };
 
 // ── Init Firebase ─────────────────────────────────────
@@ -1199,10 +1198,10 @@ async function fbLoadSalesData() {
 async function fbLoadOrders() {
   const today = new Date().toISOString().slice(0,10);
   // Load đơn hôm nay
-  const snap = await db.collection('orders').where('date','==',today).orderBy('id','desc').get();
+  const snap = await db.collection('orders').where('date','==',today).get();
   if(!snap.empty) {
-    orders = snap.docs.map(d => d.data());
-    orderCounter = Math.max(...orders.map(o=>o.id), 0) + 1;
+    orders = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
+    orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
   }
 }
 
@@ -1244,7 +1243,13 @@ async function initFromFirebase() {
   } catch(e) {
     console.error('Firebase init error:', e);
     setFbStatus('offline');
-    showToast('⚠️ Firebase ngoại tuyến — dùng dữ liệu mặc định');
+    const msg = e.code === 'permission-denied'
+      ? '🔒 Firebase: Kiểm tra Firestore Rules (test mode)'
+      : e.code === 'unavailable'
+      ? '📡 Firebase không kết nối được — kiểm tra mạng'
+      : `⚠️ Firebase lỗi: ${e.code || e.message}`;
+    showToast(msg);
+    console.warn('Chi tiết lỗi Firebase:', e.code, e.message);
   }
 
   // Re-render sau khi load
@@ -1290,9 +1295,9 @@ function startRealtimeSync() {
   });
   // Sync orders hôm nay theo realtime
   const today = new Date().toISOString().slice(0,10);
-  db.collection('orders').where('date','==',today).orderBy('id','desc').onSnapshot(snap => {
+  db.collection('orders').where('date','==',today).onSnapshot(snap => {
     if(!snap.empty) {
-      orders = snap.docs.map(d => d.data());
+      orders = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
       orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
       // Nếu đang ở tab orders thì re-render
       if(document.getElementById('view-orders')?.classList.contains('active')) renderOrders();
