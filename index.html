@@ -750,7 +750,21 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
         <div class="qr-waiting"><div class="qr-dot"></div> Chờ khách chuyển khoản...</div>
       </div>
 
-      <div class="modal-actions">
+      <!-- Order detail summary below QR -->
+      <div id="qrOrderDetail" style="display:none;margin-top:.6rem;background:var(--bg);border:2px solid var(--rule);border-radius:10px;overflow:hidden">
+        <div style="background:#0C2D68;padding:.45rem .8rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11.5px;font-weight:800;color:#FFCB3D">🧾 Chi tiết đơn hàng</span>
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7)" id="qrOrderNum">—</span>
+        </div>
+        <div id="qrOrderItems" style="padding:.5rem .8rem;display:flex;flex-direction:column;gap:4px"></div>
+        <div style="border-top:2px dashed var(--rule);margin:.2rem .8rem"></div>
+        <div style="padding:.4rem .8rem .6rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;font-weight:800;color:var(--soft)">Tổng cộng</span>
+          <span style="font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;color:#0E5BC7" id="qrOrderTotal">—</span>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:.7rem">
         <button class="btn btn-outline" onclick="closeModal()">✕ Huỷ</button>
         <button class="btn btn-green" onclick="confirmPaid()">✓ Đã nhận tiền</button>
       </div>
@@ -1089,8 +1103,8 @@ function checkout() {
 // ── Bank settings (persist in memory)
 let bankSettings = {
   bank: localStorage.getItem('cafeBank') || 'TCB',
-  acct: localStorage.getItem('cafeAcct') || '19033779329018',
-  name: localStorage.getItem('cafeName') || 'NGUYEN TRONG NAM',
+  acct: localStorage.getItem('cafeAcct') || '19033826270019',
+  name: localStorage.getItem('cafeName') || 'NGUYEN THU OANH',
 };
 
 let currentReceiptOrder = null;
@@ -1191,6 +1205,32 @@ function updateQR() {
   document.getElementById('qrAcctLabel').textContent  = acct || '—';
   document.getElementById('qrAmountLabel').textContent = fmtFull(amount);
   document.getElementById('qrDescLabel').textContent  = desc;
+
+  // Render order detail block
+  const detailBox  = document.getElementById('qrOrderDetail');
+  const itemsEl    = document.getElementById('qrOrderItems');
+  const numEl      = document.getElementById('qrOrderNum');
+  const totalEl    = document.getElementById('qrOrderTotal');
+  if(order && order.items && order.items.length) {
+    detailBox.style.display = 'block';
+    numEl.textContent = 'Đơn #' + String(order.id).padStart(3,'0') + ' · ' + order.time;
+    itemsEl.innerHTML = order.items.map(i => `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;font-size:12.5px">
+        <div style="flex:1;min-width:0">
+          <span style="font-weight:800;color:var(--ink)">${i.emoji} ${i.name}</span>
+          <span style="color:var(--muted);font-weight:700"> × ${i.qty}</span>
+          ${i.note ? `<div style="font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px">${i.note}</div>` : ''}
+        </div>
+        <span style="font-weight:800;color:#0E5BC7;white-space:nowrap">${fmtFull(i.price*i.qty)}</span>
+      </div>`).join('');
+    totalEl.textContent = fmtFull(order.total);
+    if(order.note) {
+      totalEl.closest('div').insertAdjacentHTML('beforebegin',
+        `<div style="padding:.2rem .8rem;font-size:11px;font-weight:700;color:var(--soft)">📝 ${order.note}</div>`);
+    }
+  } else {
+    detailBox.style.display = 'none';
+  }
 }
 
 function fmtFull(n) {
@@ -1211,40 +1251,81 @@ function printReceipt() {
   const order = currentReceiptOrder;
   if(!order) return;
 
-  const lines = order.items.map(i => {
-    const pad = (s,n) => String(s).padEnd(n,' ').slice(0,n);
-    const base = pad(i.emoji+' '+i.name+' x'+i.qty, 28);
-    const price = fmtFull(i.price*i.qty).padStart(10,' ');
-    const note = i.note ? '\n    > '+i.note : '';
-    return base + price + note;
-  }).join('\n');
+  const itemRows = order.items.map(i => `
+    <tr>
+      <td style="padding:3px 2px 3px 0;vertical-align:top">
+        ${i.emoji} <b>${i.name}</b>
+        ${i.note ? '<br><span style="font-size:10px;color:#555">' + i.note + '</span>' : ''}
+      </td>
+      <td style="text-align:center;padding:3px 4px;vertical-align:top;white-space:nowrap">×${i.qty}</td>
+      <td style="text-align:right;padding:3px 0 3px 4px;vertical-align:top;font-weight:bold;white-space:nowrap">${fmtFull(i.price*i.qty)}</td>
+    </tr>`).join('');
 
-  const dashes = '-'.repeat(38);
+  const bank    = bankSettings.bank || 'TCB';
+  const acct    = bankSettings.acct || '19033826270019';
+  const name    = bankSettings.name || 'NGUYEN THU OANH';
+  const desc    = 'Thanh toan don ' + String(order.id).padStart(3,'0');
+  const qrUrl   = `https://img.vietqr.io/image/${bank}-${acct}-compact2.png?amount=${order.total}&addInfo=${encodeURIComponent(desc)}&accountName=${encodeURIComponent(name)}`;
+  const bNames  = {VCB:'Vietcombank',TCB:'Techcombank',MB:'MBBank',VPB:'VPBank',ACB:'ACB',BIDV:'BIDV',VTB:'Vietinbank',TPB:'TPBank',MSB:'MSB',OCB:'OCB',SHB:'SHB',VIB:'VIB'};
+
   const bill = `
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <style>
-  body { font-family:'Courier New',monospace; font-size:12px; width:300px; margin:0 auto; padding:8px; }
-  .c { text-align:center; }
-  .r { text-align:right; }
-  .b { font-weight:bold; font-size:13px; }
-  .lg { font-size:15px; font-weight:bold; }
-  pre { white-space:pre-wrap; margin:0; font-family:inherit; font-size:12px; }
+  @page { margin:4mm; size:80mm auto; }
+  *  { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Courier New',monospace; font-size:12px; width:72mm; margin:0 auto; padding:4px 0; color:#111; }
+  .c  { text-align:center; }
+  .b  { font-weight:bold; }
+  .lg { font-size:15px; font-weight:bold; letter-spacing:.5px; }
+  .sm { font-size:10px; color:#444; }
+  table { width:100%; border-collapse:collapse; }
+  hr  { border:none; border-top:1px dashed #999; margin:5px 0; }
+  .qr-wrap { text-align:center; margin:6px 0 2px; }
+  .qr-wrap img { width:140px; height:140px; display:block; margin:4px auto; }
 </style>
 </head><body>
+
 <div class="c lg">☕ CAFÉ MANAGER</div>
-<div class="c" style="font-size:11px;margin:.2rem 0">-----------------------------------</div>
-<div class="c">Đơn #${String(order.id).padStart(3,'0')} · ${order.time}</div>
-<div class="c" style="font-size:10px">${new Date().toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</div>
-<pre>${dashes}</pre>
-<pre>${lines}</pre>
-<pre>${dashes}</pre>
-<div style="display:flex;justify-content:space-between" class="b"><span>TỔNG CỘNG</span><span>${fmtFull(order.total)}</span></div>
-<div style="display:flex;justify-content:space-between"><span>Thanh toán</span><span>${order.pay}</span></div>
-${order.note ? `<div style="font-size:11px;margin-top:.3rem">📝 ${order.note}</div>` : ''}
-<pre>${dashes}</pre>
-<div class="c" style="font-size:11px">Cảm ơn quý khách! 🙏</div>
-<div class="c" style="font-size:10px;margin-top:.2rem">Hẹn gặp lại lần sau ☕</div>
+<div class="c sm" style="margin:2px 0">${new Date().toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+<div class="c b">Đơn #${String(order.id).padStart(3,'0')} &nbsp;·&nbsp; ${order.time}</div>
+
+<hr>
+
+<table>
+  <thead>
+    <tr class="sm b">
+      <th style="text-align:left;padding-bottom:2px">Món</th>
+      <th style="text-align:center">SL</th>
+      <th style="text-align:right">Thành tiền</th>
+    </tr>
+  </thead>
+  <tbody>${itemRows}</tbody>
+</table>
+
+<hr>
+
+<table>
+  <tr><td class="b" style="font-size:13px">TỔNG CỘNG</td><td style="text-align:right;font-size:15px;font-weight:bold">${fmtFull(order.total)}</td></tr>
+  <tr class="sm"><td>Hình thức TT</td><td style="text-align:right">${order.pay}</td></tr>
+  ${order.note ? `<tr class="sm"><td colspan="2" style="padding-top:2px">📝 ${order.note}</td></tr>` : ''}
+</table>
+
+<hr>
+
+<div class="qr-wrap">
+  <div class="b" style="font-size:11px;margin-bottom:2px">— CHUYỂN KHOẢN —</div>
+  <img src="${qrUrl}" alt="QR">
+  <div class="b" style="font-size:12px;margin-top:3px">${bNames[bank]||bank}</div>
+  <div class="sm">STK: <b>${acct}</b></div>
+  <div class="sm">${name}</div>
+  <div class="b" style="font-size:14px;margin:3px 0">${fmtFull(order.total)}</div>
+  <div class="sm">${desc}</div>
+</div>
+
+<hr>
+<div class="c sm">Cảm ơn quý khách! 🙏 Hẹn gặp lại ☕</div>
+
 </body></html>`;
 
   const frame = document.getElementById('printFrame');
