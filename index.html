@@ -15,13 +15,13 @@
   --yellow:       #FFCB3D;
   --red:          #EF4350;
   --sky:          #76E4FF;
-  --cream:        #FFFBEE;
+  --cream:        #F0F4FA;
 
   /* ── Semantic tokens (mapped to palette) ── */
-  --bg:           #FFFBEE;          /* cream background */
-  --bg2:          #EBF3FF;          /* blue tint secondary */
+  --bg:           #F0F4FA;          /* cool grey — dễ nhìn, không gắt */
+  --bg2:          #E4EDFA;          /* blue tint secondary */
   --surface:      #FFFFFF;
-  --rule:         #C8D8F0;          /* navy@20% */
+  --rule:         #C4D2E8;          /* navy@20% */
 
   /* Primary action = Brand Blue */
   --green:        #0E5BC7;
@@ -62,8 +62,8 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
   display: grid; grid-template-rows: 54px 1fr;
   grid-template-columns: 220px 1fr 320px;
   height: 100vh; overflow: hidden;
-  background-color: var(--cream);
-  background-image: radial-gradient(circle, #0E5BC722 1.5px, transparent 1.5px);
+  background-color: #E8EEF8;
+  background-image: radial-gradient(circle, #0E5BC715 1.5px, transparent 1.5px);
   background-size: 22px 22px;
 }
 
@@ -91,7 +91,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 /* ══════════ SIDEBAR NAV ══════════ */
 .sidenav {
-  background: var(--surface);
+  background: #F5F8FF;
   border-right: 2px solid var(--rule);
   padding: .8rem .6rem;
   display: flex; flex-direction: column; gap: 4px;
@@ -116,7 +116,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 }
 
 /* ══════════ MAIN CONTENT ══════════ */
-.main-content { overflow-y:auto; padding:1rem 1.2rem; display:flex; flex-direction:column; gap:1rem; }
+.main-content { overflow-y:auto; padding:1rem 1.2rem; display:flex; flex-direction:column; gap:1rem; background:#E8EEF8; }
 
 /* ══════════ PANEL TITLES ══════════ */
 .panel-title {
@@ -169,7 +169,7 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 /* ══════════ CART PANEL ══════════ */
 .cart-panel {
-  background:var(--surface); border-left:2px solid var(--rule);
+  background:#F5F8FF; border-left:2px solid var(--rule);
   display:flex; flex-direction:column; overflow:hidden;
 }
 .cart-header {
@@ -274,8 +274,8 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 /* ══════════ INGREDIENT PANEL ══════════ */
 .section-block { background:#fff; border-radius:var(--radius); border:2px solid var(--rule); overflow:hidden; }
-.section-block-header { padding:.75rem 1rem; border-bottom:2px solid var(--rule); display:flex; align-items:center; gap:.6rem; }
-.section-block-body { padding:1rem; }
+.section-block-header { padding:.75rem 1rem; border-bottom:2px solid var(--rule); display:flex; align-items:center; gap:.6rem; background:#F5F8FF; }
+.section-block-body { padding:1rem; background:#fff; }
 
 .ingr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
 .ingr-card {
@@ -297,15 +297,6 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 /* ══════════ FORM ══════════ */
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:.7rem; }
 .form-group { display:flex; flex-direction:column; gap:.3rem; }
-.form-label { font-size:11.5px; font-weight:800; color:var(--soft); }
-.form-input {
-  padding:.5rem .8rem; border-radius:var(--radius-sm);
-  border:2px solid var(--rule); background:var(--bg);
-  font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; color:var(--ink);
-  outline:none; transition:border-color .15s;
-}
-.form-input:focus { border-color:#0E5BC7; background:#fff; }
-.form-input::placeholder { color:var(--muted); }
 .btn {
   padding:.5rem 1.1rem; border-radius:var(--radius-sm);
   border:2px solid; font-family:'Nunito',sans-serif; font-size:12.5px; font-weight:800;
@@ -427,15 +418,77 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 
 /* ══════════ SETTINGS TABS ══════════ */
-.settings-tabs { display:flex; gap:0; margin-bottom:1rem; border-radius:var(--radius); overflow:hidden; border:2px solid var(--rule); }
+.settings-tabs { display:flex; gap:0; margin-bottom:1rem; border-radius:var(--radius); overflow:hidden; border:2px solid var(--rule); background:#fff; }
 .settings-tab {
-  flex:1; padding:.6rem; text-align:center; font-size:13px; font-weight:800;
-  color:var(--soft); background:#fff; cursor:pointer; transition:all .15s;
-  border:none; font-family:'Nunito',sans-serif;
+  flex:1; padding:.55rem .3rem; text-align:center; font-size:12px; font-weight:800;
+  color:var(--muted); background:#fff; cursor:pointer; transition:all .15s;
+  border:none; font-family:'Nunito',sans-serif; line-height:1.3; white-space:nowrap;
 }
 .settings-tab:not(:last-child) { border-right:2px solid var(--rule); }
-.settings-tab:hover { background:var(--bg); color:#0E5BC7; }
-.settings-tab.active { background:#0E5BC7; color:#fff; }
+.settings-tab:hover { background:#EBF3FF; color:#0E5BC7; }
+.settings-tab.active { background:#0E5BC7; color:#fff; box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
+
+/* ══════════ FORM — tối ưu màu ══════════ */
+.form-label {
+  font-size:11px; font-weight:800; color:#3A5A9A;
+  text-transform:uppercase; letter-spacing:.04em;
+}
+.form-input {
+  padding:.5rem .8rem; border-radius:var(--radius-sm);
+  border:2px solid #6B90BE; background:#FFFFFF;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; color:var(--ink);
+  outline:none; transition:border-color .15s, box-shadow .15s;
+  box-shadow:0 1px 3px rgba(14,91,199,.08);
+}
+.form-input:focus {
+  border-color:#0E5BC7;
+  box-shadow:0 0 0 3px rgba(14,91,199,.18), 0 1px 3px rgba(14,91,199,.1);
+  background:#FAFCFF;
+}
+.form-input::placeholder { color:#A8BDD8; font-weight:600; }
+
+/* Focus-within: highlight wrapper khi đang nhập vào bên trong */
+.section-block:focus-within {
+  border-color:#0E5BC7;
+  box-shadow:0 3px 0 #0E5BC7;
+}
+.ingr-card:focus-within {
+  border-color:#0E5BC7;
+  background:#F5F9FF;
+}
+.form-group:focus-within > .form-label {
+  color:#0E5BC7;
+}
+
+/* ══════════ SEMI-FINISHED CARDS ══════════ */
+.semi-card {
+  background:#fff; border:2px solid var(--rule); border-radius:var(--radius);
+  overflow:hidden; margin-bottom:8px;
+  box-shadow:0 3px 0 var(--rule); transition:border-color .15s;
+}
+.semi-card.expanded { border-color:#0E5BC7; box-shadow:0 3px 0 #0E5BC7; }
+.semi-card-header {
+  padding:.65rem .9rem; display:flex; align-items:center; gap:.7rem; cursor:pointer;
+  background:var(--bg); transition:background .15s;
+}
+.semi-card-header:hover { background:#EBF3FF; }
+.semi-card.expanded .semi-card-header { background:#D6E6FF; }
+.semi-card-name { font-size:13.5px; font-weight:800; color:var(--ink); flex:1; }
+.semi-card-qty { font-family:'Baloo 2',cursive; font-size:1rem; font-weight:800; }
+.semi-card-body {
+  display:none; padding:.8rem .9rem; border-top:2px solid var(--rule);
+  background:#fff;
+}
+.semi-card.expanded .semi-card-body { display:block; }
+.semi-warning {
+  font-size:12px; font-weight:700; color:#EF4350;
+  padding:.4rem .7rem; background:#FFE0E2; border-radius:8px; margin-bottom:.7rem;
+  display:flex; align-items:flex-start; gap:.4rem;
+}
+.semi-ok-note {
+  font-size:12px; font-weight:700; color:#0E5BC7;
+  padding:.4rem .7rem; background:#D6E6FF; border-radius:8px; margin-bottom:.7rem;
+}
 
 /* Recipe list */
 .recipe-card {
@@ -650,56 +703,76 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
     <!-- SETTINGS VIEW -->
     <div class="view" id="view-settings">
       <!-- Settings tab bar -->
-      <div class="settings-tabs">
-        <button class="settings-tab active" id="stab-menu" onclick="switchSettingsTab('menu')">🍹 Món</button>
-        <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">📦 Nguyên liệu</button>
-        <button class="settings-tab" id="stab-recipe" onclick="switchSettingsTab('recipe')">📋 Công thức</button>
-        <button class="settings-tab" id="stab-promo" onclick="switchSettingsTab('promo')">🎁 Khuyến mãi</button>
+      <div class="settings-tabs" style="grid-template-columns:repeat(5,1fr);display:grid">
+        <button class="settings-tab active" id="stab-menu" onclick="switchSettingsTab('menu')">🍹<br>Món</button>
+        <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">🌾<br>NL Thô</button>
+        <button class="settings-tab" id="stab-semi" onclick="switchSettingsTab('semi')">🧪<br>Thành phẩm</button>
+        <button class="settings-tab" id="stab-recipe" onclick="switchSettingsTab('recipe')">📋<br>Công thức</button>
+        <button class="settings-tab" id="stab-promo" onclick="switchSettingsTab('promo')">🎁<br>Khuyến mãi</button>
       </div>
 
       <!-- Tab: Thêm món -->
       <div id="stab-content-menu">
-        <div class="section-block">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">Thêm món vào menu</div></div>
+        <div class="section-block" id="prodFormBlock">
+          <div class="section-block-header" style="justify-content:space-between">
+            <div class="panel-title" style="margin:0" id="prodFormTitle">Thêm món vào menu</div>
+            <button id="prodCancelEditBtn" onclick="cancelEditProduct()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:2px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:800;cursor:pointer">✕ Huỷ sửa</button>
+          </div>
           <div class="section-block-body">
+            <input type="hidden" id="prodEditId" value="">
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Tên món</label>
-                <input class="form-input" id="prodName" placeholder="vd: Cà Phê Đen">
+                <input class="form-input" id="prodName" placeholder="Cà Phê Đen">
               </div>
               <div class="form-group">
-                <label class="form-label">Giá bán (VNĐ)</label>
+                <label class="form-label">Giá bán (đ)</label>
                 <input class="form-input" type="number" id="prodPrice" placeholder="30000">
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Danh mục</label>
-                <input class="form-input" id="prodCat" placeholder="vd: Cà Phê, Trà, Matcha...">
+                <input class="form-input" id="prodCat" placeholder="Cà Phê / Trà / Matcha">
               </div>
               <div class="form-group">
-                <label class="form-label">Emoji icon</label>
+                <label class="form-label">Icon</label>
                 <input class="form-input" id="prodEmoji" placeholder="☕">
               </div>
             </div>
-            <button class="btn btn-green" onclick="addProduct()">➕ Thêm vào menu</button>
+            <button class="btn btn-green" id="prodSubmitBtn" onclick="addProduct()">➕ Thêm món</button>
+          </div>
+        </div>
+
+        <!-- Danh sách món hiện tại -->
+        <div class="section-block" style="margin-top:1rem">
+          <div class="section-block-header" style="justify-content:space-between">
+            <div class="panel-title" style="margin:0">Danh sách món hiện tại</div>
+            <span id="prodListCount" style="font-size:11px;font-weight:800;color:var(--muted)"></span>
+          </div>
+          <div class="section-block-body" style="padding:.5rem">
+            <div id="prodManageList"></div>
           </div>
         </div>
       </div>
 
       <!-- Tab: Nguyên liệu -->
       <div id="stab-content-ingr" style="display:none">
-        <div class="section-block" style="margin-bottom:1rem">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">Nhập nguyên liệu</div></div>
+        <div class="section-block" style="margin-bottom:1rem" id="ingrFormBlock">
+          <div class="section-block-header" style="justify-content:space-between">
+            <div class="panel-title" style="margin:0" id="ingrFormTitle">Nhập nguyên liệu</div>
+            <button id="ingrCancelEditBtn" onclick="cancelEditIngredient()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:2px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:800;cursor:pointer">✕ Huỷ sửa</button>
+          </div>
           <div class="section-block-body">
+            <input type="hidden" id="ingrEditId" value="">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Tên nguyên liệu</label>
-                <input class="form-input" id="ingrName" placeholder="vd: Cà phê rang xay">
+                <label class="form-label">Tên NL</label>
+                <input class="form-input" id="ingrName" placeholder="Cà phê rang xay">
               </div>
               <div class="form-group">
                 <label class="form-label">Nhà cung cấp</label>
-                <input class="form-input" id="ingrSupplier" placeholder="vd: Rang xay Tốc Độ">
+                <input class="form-input" id="ingrSupplier" placeholder="Tên NCC">
               </div>
             </div>
             <div class="form-row">
@@ -716,17 +789,17 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Giá nhập (VNĐ)</label>
+                <label class="form-label">Giá nhập (đ)</label>
                 <input class="form-input" type="number" id="ingrCost" placeholder="0">
               </div>
               <div class="form-group">
                 <label class="form-label">Ngưỡng cảnh báo</label>
-                <input class="form-input" type="number" id="ingrMin" placeholder="vd: 2">
+                <input class="form-input" type="number" id="ingrMin" placeholder="2">
               </div>
             </div>
             <div style="display:flex;gap:.6rem">
-              <button class="btn btn-green" onclick="addIngredient()">➕ Nhập kho</button>
-              <button class="btn btn-outline" onclick="clearIngrForm()">✕ Xóa form</button>
+              <button class="btn btn-green" id="ingrSubmitBtn" onclick="addIngredient()">➕ Nhập kho</button>
+              <button class="btn btn-outline" onclick="clearIngrForm()">✕ Xóa</button>
             </div>
           </div>
         </div>
@@ -750,12 +823,151 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
                   <th style="text-align:left;padding:.5rem .7rem;font-weight:800;color:var(--soft)">Nhà cung cấp</th>
                   <th style="text-align:right;padding:.5rem .7rem;font-weight:800;color:var(--soft)">Giá nhập</th>
                   <th style="text-align:center;padding:.5rem .7rem;font-weight:800;color:var(--soft)">Trạng thái</th>
+                  <th style="text-align:center;padding:.5rem .7rem;font-weight:800;color:var(--soft)">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="ingrTableBody"></tbody>
             </table>
           </div>
         </div>
+      </div>
+
+      <!-- Tab: NL Thành phẩm -->
+      <div id="stab-content-semi" style="display:none">
+
+        <!-- Form nhập kho thành phẩm -->
+        <div class="section-block" style="margin-bottom:1rem" id="semiFormBlock">
+          <div class="section-block-header" style="justify-content:space-between">
+            <div class="panel-title" style="margin:0" id="semiFormTitle">📦 Nhập kho thành phẩm</div>
+            <button id="semiCancelEditBtn" onclick="cancelEditSemi()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:2px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:800;cursor:pointer">✕ Huỷ sửa</button>
+          </div>
+          <div class="section-block-body">
+            <input type="hidden" id="semiEditId" value="">
+
+            <!-- NGUỒN — luôn hiện, hàng đầu -->
+            <div class="form-row" style="margin-bottom:.7rem">
+              <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">Nguồn nhập</label>
+                <select class="form-input" id="semiSource" onchange="toggleSemiSource()" style="max-width:280px">
+                  <option value="self">🧪 Tự pha chế</option>
+                  <option value="ncc">🏪 Nhà cung cấp (NCC)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ══ BLOCK NCC ══ -->
+            <div id="semiNccBlock" style="display:none">
+              <!-- Chọn từ NL thô → autofill -->
+              <div class="form-row">
+                <div class="form-group" style="grid-column:1/-1">
+                  <label class="form-label">Chọn từ NL thô <span style="font-size:10px;font-weight:600;color:var(--muted)">(tự điền)</span></label>
+                  <select class="form-input" id="semiNccIngrRef" onchange="autoFillSemiFromIngr()">
+                    <option value="">-- Chọn để tự điền --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Tên thành phẩm</label>
+                  <input class="form-input" id="semiName" placeholder="Cold brew, Syrup gừng...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nhà cung cấp</label>
+                  <input class="form-input" id="semiSupplier" placeholder="Công ty ABC">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Số lượng</label>
+                  <input class="form-input" type="number" id="semiQty" placeholder="0" step="0.1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Đơn vị</label>
+                  <select class="form-input" id="semiUnit">
+                    <option>lít</option><option>ml</option><option>kg</option><option>g</option><option>gói</option><option>hộp</option><option>bình</option><option>chai</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Giá nhập (đ)</label>
+                  <input class="form-input" type="number" id="semiCost" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Ngưỡng cảnh báo</label>
+                  <input class="form-input" type="number" id="semiMin" placeholder="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- ══ BLOCK TỰ PHA CHẾ ══ -->
+            <div id="semiSelfBlock">
+              <!-- Tên thành phẩm -->
+              <div class="form-row">
+                <div class="form-group" style="grid-column:1/-1">
+                  <label class="form-label">Tên thành phẩm</label>
+                  <input class="form-input" id="semiNameSelf" placeholder="vd: Syrup chanh vàng, Cold brew...">
+                </div>
+              </div>
+              <!-- Nguyên liệu -->
+              <div style="background:var(--bg2);border:2px dashed var(--rule);border-radius:10px;padding:.8rem;margin-bottom:.7rem">
+                <div style="font-size:11.5px;font-weight:800;color:#0E5BC7;margin-bottom:.5rem">📋 Nguyên liệu pha chế</div>
+                <div id="semiSelfLines" style="display:flex;flex-direction:column;gap:5px;margin-bottom:.6rem">
+                  <div style="font-size:12px;color:var(--muted);font-weight:600">Chưa có — thêm bên dưới</div>
+                </div>
+                <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap;padding:.6rem;background:#fff;border-radius:8px;border:2px dashed var(--rule)">
+                  <div class="form-group" style="flex:2;min-width:120px">
+                    <label class="form-label">Nguyên liệu thô</label>
+                    <select class="form-input" id="semiSelfIngr" onchange="updateSemiSelfUnit()" style="font-size:12.5px">
+                      <option value="">-- Chọn --</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="flex:1;min-width:75px">
+                    <label class="form-label">Số lượng</label>
+                    <input class="form-input" type="number" id="semiSelfQty" placeholder="0" step="0.01">
+                  </div>
+                  <div style="padding:.45rem .5rem;background:var(--bg);border:2px solid var(--rule);border-radius:8px;font-size:12px;font-weight:700;color:var(--soft);flex-shrink:0;align-self:flex-end;height:36px;display:flex;align-items:center;min-width:36px;justify-content:center" id="semiSelfUnit">—</div>
+                  <button class="btn btn-green" onclick="addSemiSelfLine()" style="height:36px;margin-bottom:0;flex-shrink:0">+ Add</button>
+                </div>
+              </div>
+              <!-- Sản lượng + Đơn vị cùng hàng + Ngưỡng -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">🎯 Sản lượng tạo ra</label>
+                  <div style="display:flex;gap:.4rem;align-items:center">
+                    <input class="form-input" type="number" id="semiSelfYield" placeholder="vd: 1" step="0.01" style="flex:1">
+                    <select class="form-input" id="semiUnitSelfYield" style="width:85px">
+                      <option>lít</option><option>ml</option><option>kg</option><option>g</option><option>gói</option><option>hộp</option><option>bình</option><option>chai</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Ngưỡng cảnh báo</label>
+                  <input class="form-input" type="number" id="semiSelfMin" placeholder="vd: 1">
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:.6rem">
+              <button class="btn btn-green" id="semiSubmitBtn" onclick="addSemi()">➕ Nhập kho</button>
+              <button class="btn btn-outline" onclick="clearSemiForm()">✕ Xóa form</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kho thành phẩm — danh sách card, bấm để mở công thức -->
+        <div class="section-block">
+          <div class="section-block-header" style="flex-wrap:wrap;gap:.5rem">
+            <div class="panel-title" style="margin:0">Kho thành phẩm</div>
+            <div style="display:flex;gap:.5rem;align-items:center;margin-left:auto">
+              <input class="search-input" type="text" id="semiSearch" placeholder="🔍 Tìm thành phẩm..." oninput="renderSemiList()" style="width:180px;font-size:12px;padding:.35rem .7rem">
+            </div>
+          </div>
+          <div class="section-block-body" style="padding:.5rem">
+            <div id="semiList"></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Tab: Khuyến mãi -->
@@ -845,23 +1057,34 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
                 <div style="padding:.45rem .8rem;background:var(--bg);border:2px solid var(--rule);border-radius:8px;font-size:13px;font-weight:800;color:#0E5BC7" id="recipeStockPreview">— ly</div>
               </div>
             </div>
-            <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.4rem">Thêm nguyên liệu vào công thức</div>
+            <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.4rem">Thêm nguyên liệu vào công thức <span style="font-size:10.5px;font-weight:700;color:var(--muted)">(ưu tiên chọn từ Thành phẩm)</span></div>
             <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap">
               <div class="form-group" style="flex:2;min-width:120px">
-                <label class="form-label">Nguyên liệu</label>
+                <label class="form-label">Nguyên liệu <span id="recipeIngrTypeLabel" style="font-size:10px;font-weight:700;background:#D6E6FF;color:#0E5BC7;padding:.1rem .4rem;border-radius:6px">Thành phẩm</span></label>
+                <select class="form-input" id="recipeIngrType" onchange="renderRecipeIngrDropdown()" style="display:none">
+                  <option value="semi">🧪 Thành phẩm</option>
+                  <option value="raw">🌾 Nguyên liệu thô</option>
+                </select>
                 <select class="form-input" id="recipeIngr">
                   <option value="">-- Chọn --</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1;min-width:80px">
                 <label class="form-label">Lượng dùng</label>
-                <input class="form-input" type="number" id="recipeQty" placeholder="0" step="0.1">
+                <input class="form-input" type="number" id="recipeQty" placeholder="0" step="0.01" oninput="updateRecipeConvert()">
               </div>
-              <div class="form-group" style="flex:1;min-width:60px">
-                <label class="form-label">Đơn vị</label>
-                <div style="padding:.45rem .6rem;background:var(--bg);border:2px solid var(--rule);border-radius:8px;font-size:12px;font-weight:700;color:var(--soft)" id="recipeUnit">—</div>
+              <div class="form-group" style="flex:1;min-width:80px">
+                <label class="form-label">Đơn vị nhập</label>
+                <select class="form-input" id="recipeQtyUnit" onchange="updateRecipeConvert()" style="font-size:12px">
+                  <option value="">-- --</option>
+                  <option>ml</option><option>lít</option><option>g</option><option>kg</option><option>gói</option><option>hộp</option><option>chai</option><option>bình</option>
+                </select>
               </div>
-              <button class="btn btn-green" onclick="addRecipeLine()" style="margin-bottom:0;height:36px">+ Thêm</button>
+              <div class="form-group" style="flex-shrink:0;min-width:100px">
+                <label class="form-label">= <span id="recipeUnit" style="color:#0E5BC7">—</span></label>
+                <div style="padding:.45rem .6rem;background:var(--bg);border:2px solid var(--rule);border-radius:8px;font-size:12px;font-weight:700;color:#0E5BC7;min-height:36px;display:flex;align-items:center" id="recipeConvertDisplay">—</div>
+              </div>
+              <button class="btn btn-green" onclick="addRecipeLine()" style="margin-bottom:0;height:36px;align-self:flex-end">+ Thêm</button>
             </div>
             <div id="recipeLines" style="margin-top:.8rem;display:flex;flex-direction:column;gap:5px"></div>
           </div>
@@ -1129,7 +1352,13 @@ async function fbSaveProducts() {
 }
 async function fbLoadProducts() {
   const snap = await db.collection('config').doc('products').get();
-  if(snap.exists && snap.data().data) products = snap.data().data;
+  if(snap.exists && snap.data().data && snap.data().data.length > 0) {
+    products = snap.data().data;
+  } else {
+    // Firestore chưa có data → seed data mặc định lên Firebase
+    await db.collection('config').doc('products').set({ data: products, updatedAt: new Date().toISOString() });
+    console.log('🌱 Đã seed products mặc định lên Firebase');
+  }
 }
 
 // ── Lưu/Load INGREDIENTS ─────────────────────────────
@@ -1142,7 +1371,12 @@ async function fbSaveIngredients() {
 }
 async function fbLoadIngredients() {
   const snap = await db.collection('config').doc('ingredients').get();
-  if(snap.exists && snap.data().data) ingredients = snap.data().data;
+  if(snap.exists && snap.data().data && snap.data().data.length > 0) {
+    ingredients = snap.data().data;
+  } else {
+    await db.collection('config').doc('ingredients').set({ data: ingredients, updatedAt: new Date().toISOString() });
+    console.log('🌱 Đã seed ingredients mặc định lên Firebase');
+  }
 }
 
 // ── Lưu/Load RECIPES ─────────────────────────────────
@@ -1155,7 +1389,10 @@ async function fbSaveRecipes() {
 }
 async function fbLoadRecipes() {
   const snap = await db.collection('config').doc('recipes').get();
-  if(snap.exists && snap.data().data) recipes = snap.data().data;
+  if(snap.exists && snap.data().data) {
+    recipes = snap.data().data;
+  }
+  // recipes mặc định là {} nên không cần seed
 }
 
 // ── Lưu/Load PROMOS ──────────────────────────────────
@@ -1168,7 +1405,9 @@ async function fbSavePromos() {
 }
 async function fbLoadPromos() {
   const snap = await db.collection('config').doc('promos').get();
-  if(snap.exists && snap.data().data) promos = snap.data().data;
+  if(snap.exists && snap.data().data) {
+    promos = snap.data().data;
+  }
 }
 
 // ── Lưu ORDER lên Firestore (mỗi đơn = 1 document) ──
@@ -1234,6 +1473,8 @@ async function initFromFirebase() {
       fbLoadPromos(),
       fbLoadSalesData(),
       fbLoadBankSettings(),
+      fbLoadSemi(),
+      fbLoadSfRecipes(),
     ]);
     // Orders hôm nay
     await fbLoadOrders();
@@ -1261,6 +1502,8 @@ async function initFromFirebase() {
   togglePromoType();
   renderPromoList();
   populatePromoItemSelect();
+  if(typeof renderSemiList  === 'function') renderSemiList();
+  if(typeof renderRecipeList === 'function') renderRecipeList();
 }
 
 // ── Realtime listener: đồng bộ config từ thiết bị khác ──
@@ -1291,6 +1534,19 @@ function startRealtimeSync() {
     if(snap.exists && snap.data().data) {
       promos = snap.data().data;
       renderPromoList();
+    }
+  });
+  // Sync semiFinished
+  db.collection('config').doc('semiFinished').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      semiFinished = snap.data().data;
+      renderSemiList && renderSemiList();
+    }
+  });
+  // Sync sfRecipes
+  db.collection('config').doc('sfRecipes').onSnapshot(snap => {
+    if(snap.exists && snap.data().data) {
+      sfRecipes = snap.data().data;
     }
   });
   // Sync orders hôm nay theo realtime
@@ -1329,8 +1585,15 @@ let products = [
   { id:15, name:'Matcha Khoai Môn',      price:42000, cat:'Matcha', emoji:'💜', stock:999 },
 ];
 
-// recipes: { productId: [ { ingrId, qty } ] }
+// recipes: { productId: [ { ingrId, qty, type:'semi'|'raw' } ] }
 let recipes = {};
+
+// semiFinished: kho nguyên liệu thành phẩm (cold brew, syrup, ...)
+let semiFinished = [];
+
+// sfRecipes: { semiId: { yield: number, lines: [{ingrId, qty}] } }
+// Công thức chế biến thành phẩm từ nguyên liệu thô
+let sfRecipes = {};
 
 const TOPPINGS = [
   { id:'t1', name:'Thạch Cà Phê',   price:5000,  emoji:'🟤' },
@@ -1340,20 +1603,7 @@ const TOPPINGS = [
   { id:'t5', name:'Vụn Dừa',        price:5000,  emoji:'🥥' },
 ];
 
-let ingredients = [
-  { id:1, name:'Cà phê rang xay', qty:2,   unit:'kg',  min:0.5, cost:180000, supplier:'Rang xay Tốc Độ' },
-  { id:2, name:'Sữa tươi',        qty:5,   unit:'lít', min:2,   cost:28000,  supplier:'TH True Milk' },
-  { id:3, name:'Sữa đặc',         qty:10,  unit:'hộp', min:3,   cost:22000,  supplier:'Ông Thọ' },
-  { id:4, name:'Kem tươi (whipping)',qty:1, unit:'lít', min:0.5, cost:85000,  supplier:'Elle & Vire' },
-  { id:5, name:'Matcha bột',      qty:0.5, unit:'kg',  min:0.2, cost:450000, supplier:'Ippodo Kyoto' },
-  { id:6, name:'Thạch cà phê',    qty:3,   unit:'kg',  min:1,   cost:35000,  supplier:'NCC thạch' },
-  { id:7, name:'Thạch trắng mini',qty:2,   unit:'kg',  min:1,   cost:30000,  supplier:'NCC thạch' },
-  { id:8, name:'Vụn dừa',         qty:1,   unit:'kg',  min:0.3, cost:45000,  supplier:'Dừa Bến Tre' },
-  { id:9, name:'Đào ngâm',        qty:3,   unit:'hũ',  min:1,   cost:55000,  supplier:'NCC hoa quả' },
-  { id:10,name:'Chanh vàng',      qty:15,  unit:'quả', min:5,   cost:5000,   supplier:'Chợ đầu mối' },
-  { id:11,name:'Đá viên',         qty:20,  unit:'kg',  min:5,   cost:5000,   supplier:'Xưởng đá Minh' },
-  { id:12,name:'Hạnh nhân sữa',   qty:2,   unit:'lít', min:1,   cost:75000,  supplier:'Nutifood' },
-];
+let ingredients = [];
 
 // Multi-order support
 let orderSlots = { 1: {} }; // slotId -> cart
@@ -1397,9 +1647,18 @@ function switchView(name) {
   const pills = document.querySelectorAll('.topbar-pill');
   if(pillMap[name] !== undefined) pills[pillMap[name]]?.classList.add('active');
 
+  // Ẩn pill "Đơn hàng" & cart panel khi vào Settings
+  const ordersPill = document.querySelectorAll('.topbar-pill')[1];
+  if(ordersPill) ordersPill.style.display = (name === 'settings') ? 'none' : '';
+  const cartPanel = document.getElementById('cartPanel');
+  if(cartPanel) cartPanel.style.display = (name === 'settings') ? 'none' : '';
+  // Mở rộng main content khi không có cart
+  const appEl = document.querySelector('.app');
+  if(appEl) appEl.style.gridTemplateColumns = (name === 'settings') ? '220px 1fr' : '220px 1fr 320px';
+
   if(name==='stats') renderStats();
   if(name==='orders') renderOrders();
-  if(name==='settings') { /* keep current tab */ }
+  if(name==='settings') { switchSettingsTab('menu'); }
 }
 
 // ─── CATEGORIES & PRODUCTS ──────────────────────────────────────────
@@ -1426,14 +1685,25 @@ function filterProducts() {
 }
 
 // Calculate how many cups can be made for a product
+// recipe lines now have: { ingrId: 's123' or 'r123', qty }
 function calcStock(productId) {
   const recipe = recipes[productId];
   if(!recipe || recipe.length === 0) return 999; // no recipe = unlimited
   let min = Infinity;
   for(const line of recipe) {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
-    if(!ingr) continue;
-    const canMake = Math.floor(ingr.qty / line.qty);
+    const sid = line.ingrId;
+    let stock = null;
+    if(typeof sid === 'string' && sid.startsWith('s')) {
+      const s = semiFinished.find(i=>i.id===parseInt(sid.slice(1)));
+      stock = s ? s.qty : null;
+    } else {
+      // legacy numeric or 'r' prefix
+      const rid = typeof sid === 'string' && sid.startsWith('r') ? parseInt(sid.slice(1)) : parseInt(sid);
+      const ingr = ingredients.find(i=>i.id===rid);
+      stock = ingr ? ingr.qty : null;
+    }
+    if(stock === null) continue;
+    const canMake = Math.floor(stock / line.qty);
     if(canMake < min) min = canMake;
   }
   return min === Infinity ? 999 : min;
@@ -1685,8 +1955,15 @@ function doCheckout() {
     const recipe = recipes[i.id];
     if(recipe) {
       recipe.forEach(line=>{
-        const ingr = ingredients.find(g=>g.id===line.ingrId);
-        if(ingr) ingr.qty = Math.max(0, ingr.qty - line.qty * i.qty);
+        const sid = line.ingrId;
+        if(typeof sid === 'string' && sid.startsWith('s')) {
+          const s = semiFinished.find(x=>x.id===parseInt(sid.slice(1)));
+          if(s) s.qty = Math.max(0, s.qty - line.qty * i.qty);
+        } else {
+          const rid = typeof sid === 'string' && sid.startsWith('r') ? parseInt(sid.slice(1)) : parseInt(sid);
+          const ingr = ingredients.find(g=>g.id===rid);
+          if(ingr) ingr.qty = Math.max(0, ingr.qty - line.qty * i.qty);
+        }
       });
     }
   });
@@ -1985,6 +2262,10 @@ function renderIngredients() {
         <div class="ingr-meta">${i.qty} ${i.unit} · ${i.supplier||'—'}</div>
         <div class="ingr-bar-wrap"><div class="ingr-bar ${status}" style="width:${pct}%"></div></div>
         <div class="ingr-status ${status}">${label} · ngưỡng: ${i.min} ${i.unit}</div>
+        <div style="display:flex;gap:5px;margin-top:5px">
+          <button onclick="editIngredient(${i.id})" style="flex:1;padding:.25rem;border-radius:6px;border:2px solid #0E5BC7;background:#D6E6FF;color:#0E5BC7;font-size:11px;font-weight:800;cursor:pointer">✏️ Sửa</button>
+          <button onclick="deleteIngredient(${i.id})" style="flex:1;padding:.25rem;border-radius:6px;border:2px solid #EF4350;background:#FFE0E2;color:#EF4350;font-size:11px;font-weight:800;cursor:pointer">🗑️ Xóa</button>
+        </div>
       </div>`;
   }).join('');
 
@@ -1996,13 +2277,17 @@ function renderIngredients() {
       const label  = i.qty === 0 ? 'Hết kho' : i.qty < i.min ? 'Sắp hết' : 'Đủ kho';
       const colors = {ok:'#0E5BC7',low:'#B8900A',out:'#EF4350'};
       return `<tr>
-        <td style="font-weight:800;color:var(--ink)">${i.name}</td>
-        <td style="text-align:right;font-weight:800;color:${colors[status]}">${i.qty}</td>
-        <td>${i.unit}</td>
-        <td style="text-align:right">${i.min}</td>
-        <td style="color:var(--soft)">${i.supplier||'—'}</td>
-        <td style="text-align:right">${i.cost ? (i.cost/1000).toFixed(0)+'k' : '—'}</td>
-        <td style="text-align:center"><span style="font-size:11px;font-weight:800;padding:.15rem .45rem;border-radius:10px;background:${status==='ok'?'#D6E6FF':status==='low'?'#FFF6CC':'#FFE0E2'};color:${colors[status]}">${label}</span></td>
+        <td style="padding:.45rem .7rem;font-weight:800;color:var(--ink)">${i.name}</td>
+        <td style="padding:.45rem .7rem;text-align:right;font-weight:800;color:${colors[status]}">${i.qty}</td>
+        <td style="padding:.45rem .7rem">${i.unit}</td>
+        <td style="padding:.45rem .7rem;text-align:right">${i.min}</td>
+        <td style="padding:.45rem .7rem;color:var(--soft)">${i.supplier||'—'}</td>
+        <td style="padding:.45rem .7rem;text-align:right">${i.cost ? (i.cost/1000).toFixed(0)+'k' : '—'}</td>
+        <td style="padding:.45rem .7rem;text-align:center"><span style="font-size:11px;font-weight:800;padding:.15rem .45rem;border-radius:10px;background:${status==='ok'?'#D6E6FF':status==='low'?'#FFF6CC':'#FFE0E2'};color:${colors[status]}">${label}</span></td>
+        <td style="padding:.45rem .7rem;text-align:center;white-space:nowrap">
+          <button onclick="editIngredient(${i.id})" style="padding:.2rem .5rem;border-radius:6px;border:2px solid #0E5BC7;background:#D6E6FF;color:#0E5BC7;font-size:11px;font-weight:800;cursor:pointer;margin-right:3px">✏️</button>
+          <button onclick="deleteIngredient(${i.id})" style="padding:.2rem .5rem;border-radius:6px;border:2px solid #EF4350;background:#FFE0E2;color:#EF4350;font-size:11px;font-weight:800;cursor:pointer">🗑️</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -2170,12 +2455,157 @@ function addProduct() {
   const price = parseInt(document.getElementById('prodPrice').value)||0;
   const cat   = document.getElementById('prodCat').value.trim() || 'Khác';
   const emoji = document.getElementById('prodEmoji').value.trim() || '🍱';
-  const stock = parseInt(document.getElementById('prodStock').value)||50;
   if(!name || !price) { showToast('⚠️ Nhập đầy đủ tên và giá'); return; }
-  products.push({ id: Date.now(), name, price, cat, emoji, stock });
-  ['prodName','prodPrice','prodCat','prodEmoji','prodStock'].forEach(id=>document.getElementById(id).value='');
+  products.push({ id: Date.now(), name, price, cat, emoji, stock: 999 });
+  ['prodName','prodPrice','prodCat','prodEmoji'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   showToast(`✓ Đã thêm ${name} vào menu`, 'success');
-  renderCatTabs(); renderProducts();
+  renderCatTabs(); renderProducts(); renderProdManageList();
+}
+
+function deleteProduct(id) {
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm(`Xóa "${p.emoji} ${p.name}" khỏi menu?\n\nMón này sẽ bị xóa vĩnh viễn.`)) return;
+  products = products.filter(x=>x.id!==id);
+  // Xóa luôn công thức nếu có
+  delete recipes[id];
+  showToast(`🗑️ Đã xóa ${p.name}`, '');
+  renderCatTabs(); renderProducts(); renderProdManageList();
+}
+
+function renderProdManageList() {
+  const el = document.getElementById('prodManageList');
+  if(!el) return;
+  const countEl = document.getElementById('prodListCount');
+  if(countEl) countEl.textContent = `${products.length} món`;
+  if(!products.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-weight:700;padding:.5rem">Chưa có món nào.</div>';
+    return;
+  }
+  // Group by category
+  const cats = [...new Set(products.map(p=>p.cat))];
+  el.innerHTML = cats.map(cat => {
+    const catProds = products.filter(p=>p.cat===cat);
+    return `
+      <div style="margin-bottom:.8rem">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);padding:.3rem .5rem;letter-spacing:.05em">${cat.toUpperCase()}</div>
+        ${catProds.map(p=>`
+          <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--bg);border-radius:8px;border:2px solid var(--rule);margin-bottom:5px">
+            <span style="font-size:20px;flex-shrink:0">${p.emoji}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--ink)">${p.name}</div>
+              <div style="font-size:11px;font-weight:700;color:#0E5BC7">${fmtFull(p.price)}</div>
+            </div>
+            <button onclick="editProduct(${p.id})" style="flex-shrink:0;padding:.3rem .6rem;border-radius:8px;border:2px solid #0E5BC7;background:#D6E6FF;color:#0E5BC7;font-size:11px;font-weight:800;cursor:pointer">✏️ Sửa</button>
+            <button onclick="deleteProduct(${p.id})" style="flex-shrink:0;padding:.3rem .6rem;border-radius:8px;border:2px solid #EF4350;background:#FFE0E2;color:#EF4350;font-size:11px;font-weight:800;cursor:pointer">🗑️ Xóa</button>
+          </div>`).join('')}
+      </div>`;
+  }).join('');
+}
+
+// ─── EDIT PRODUCT (điền vào form, đổi nút thành Cập nhật) ────────────
+function editProduct(id) {
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('prodEditId').value  = id;
+  document.getElementById('prodName').value    = p.name;
+  document.getElementById('prodPrice').value   = p.price;
+  document.getElementById('prodCat').value     = p.cat;
+  document.getElementById('prodEmoji').value   = p.emoji;
+  document.getElementById('prodFormTitle').textContent = '✏️ Sửa món';
+  document.getElementById('prodSubmitBtn').textContent = '💾 Cập nhật món';
+  document.getElementById('prodSubmitBtn').onclick = saveEditProduct;
+  document.getElementById('prodCancelEditBtn').style.display = 'inline-block';
+  // Highlight form + scroll lên
+  const block = document.getElementById('prodFormBlock');
+  block.style.border = '2px solid #0E5BC7';
+  block.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function saveEditProduct() {
+  const id    = parseInt(document.getElementById('prodEditId').value);
+  const name  = document.getElementById('prodName').value.trim();
+  const price = parseInt(document.getElementById('prodPrice').value)||0;
+  const cat   = document.getElementById('prodCat').value.trim() || 'Khác';
+  const emoji = document.getElementById('prodEmoji').value.trim() || '🍱';
+  if(!name || !price) { showToast('⚠️ Nhập đầy đủ tên và giá'); return; }
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  p.name = name; p.price = price; p.cat = cat; p.emoji = emoji;
+  showToast(`✓ Đã cập nhật "${p.name}"`, 'success');
+  cancelEditProduct();
+  renderCatTabs(); renderProducts(); renderProdManageList();
+  if(window.fbSaveProducts) fbSaveProducts();
+}
+
+function cancelEditProduct() {
+  document.getElementById('prodEditId').value  = '';
+  ['prodName','prodPrice','prodCat','prodEmoji'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('prodFormTitle').textContent = 'Thêm món vào menu';
+  document.getElementById('prodSubmitBtn').textContent = '➕ Thêm vào menu';
+  document.getElementById('prodSubmitBtn').onclick = addProduct;
+  document.getElementById('prodCancelEditBtn').style.display = 'none';
+  document.getElementById('prodFormBlock').style.border = '';
+}
+
+// ─── EDIT / DELETE INGREDIENT (điền vào form, đổi nút thành Cập nhật) ─
+function editIngredient(id) {
+  const i = ingredients.find(x=>x.id===id);
+  if(!i) return;
+  document.getElementById('ingrEditId').value    = id;
+  document.getElementById('ingrName').value      = i.name;
+  document.getElementById('ingrSupplier').value  = i.supplier||'';
+  document.getElementById('ingrQty').value       = i.qty;
+  document.getElementById('ingrUnit').value      = i.unit;
+  document.getElementById('ingrCost').value      = i.cost||'';
+  document.getElementById('ingrMin').value       = i.min||'';
+  document.getElementById('ingrFormTitle').textContent = '✏️ Sửa nguyên liệu';
+  document.getElementById('ingrSubmitBtn').textContent = '💾 Cập nhật kho';
+  document.getElementById('ingrSubmitBtn').onclick = saveEditIngredient;
+  document.getElementById('ingrCancelEditBtn').style.display = 'inline-block';
+  // Highlight form + scroll lên
+  const block = document.getElementById('ingrFormBlock');
+  block.style.border = '2px solid #0E5BC7';
+  block.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function saveEditIngredient() {
+  const id   = parseInt(document.getElementById('ingrEditId').value);
+  const name = document.getElementById('ingrName').value.trim();
+  const qty  = parseFloat(document.getElementById('ingrQty').value);
+  const unit = document.getElementById('ingrUnit').value;
+  const cost = parseInt(document.getElementById('ingrCost').value)||0;
+  const min  = parseFloat(document.getElementById('ingrMin').value)||0;
+  const sup  = document.getElementById('ingrSupplier').value.trim();
+  if(!name || isNaN(qty)) { showToast('⚠️ Vui lòng nhập tên và số lượng'); return; }
+  const ing = ingredients.find(x=>x.id===id);
+  if(!ing) return;
+  ing.name = name; ing.qty = qty; ing.unit = unit;
+  ing.cost = cost; ing.min = min; ing.supplier = sup;
+  showToast(`✓ Đã cập nhật "${ing.name}"`, 'success');
+  cancelEditIngredient();
+  renderIngredients(); updateLowBadge();
+  if(window.fbSaveIngredients) fbSaveIngredients();
+}
+
+function cancelEditIngredient() {
+  document.getElementById('ingrEditId').value = '';
+  clearIngrForm();
+  document.getElementById('ingrFormTitle').textContent = 'Nhập nguyên liệu';
+  document.getElementById('ingrSubmitBtn').textContent = '➕ Nhập kho';
+  document.getElementById('ingrSubmitBtn').onclick = addIngredient;
+  document.getElementById('ingrCancelEditBtn').style.display = 'none';
+  document.getElementById('ingrFormBlock').style.border = '';
+}
+
+function deleteIngredient(id) {
+  const i = ingredients.find(x=>x.id===id);
+  if(!i) return;
+  if(!confirm(`Xóa "${i.name}" khỏi kho?\n\nThao tác này không thể hoàn tác.`)) return;
+  ingredients = ingredients.filter(x=>x.id!==id);
+  showToast(`🗑️ Đã xóa ${i.name}`, '');
+  renderIngredients(); updateLowBadge();
+  if(window.fbSaveIngredients) fbSaveIngredients();
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────
@@ -2196,14 +2626,18 @@ function showToast(msg, type='') {
 
 // ─── SETTINGS TABS ───────────────────────────────────────────────────
 function switchSettingsTab(tab) {
-  ['menu','ingr','recipe','promo'].forEach(t=>{
+  ['menu','ingr','semi','recipe','promo'].forEach(t=>{
     document.getElementById('stab-content-'+t).style.display = tab===t ? 'block' : 'none';
     document.getElementById('stab-'+t).classList.toggle('active', tab===t);
   });
+  if(tab==='menu')   renderProdManageList();
   if(tab==='recipe') renderRecipeSelectors();
   if(tab==='ingr')   renderIngredients();
+  if(tab==='semi')   { renderSemiList(); toggleSemiSource(); }
   if(tab==='promo')  { renderPromoList(); populatePromoItemSelect(); }
 }
+
+
 
 // ─── RECIPE FUNCTIONS ─────────────────────────────────────────────────
 function renderRecipeSelectors() {
@@ -2214,15 +2648,27 @@ function renderRecipeSelectors() {
     products.map(p=>`<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
   if(cur) ps.value = cur;
 
-  // Ingredient dropdown
-  const is = document.getElementById('recipeIngr');
-  const ci = is.value;
-  is.innerHTML = '<option value="">-- Chọn nguyên liệu --</option>' +
-    ingredients.map(i=>`<option value="${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
-  if(ci) is.value = ci;
-
+  renderRecipeIngrDropdown();
   renderRecipeIngredientSelector();
   renderRecipeList();
+}
+
+function renderRecipeIngrDropdown() {
+  const type = document.getElementById('recipeIngrType')?.value || 'semi';
+  const is = document.getElementById('recipeIngr');
+  if(!is) return;
+  const ci = is.value;
+  if(type === 'semi') {
+    is.innerHTML = '<option value="">-- Chọn thành phẩm --</option>' +
+      semiFinished.map(i=>`<option value="s${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
+  } else {
+    is.innerHTML = '<option value="">-- Chọn NL thô --</option>' +
+      ingredients.map(i=>`<option value="r${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
+  }
+  if(ci) is.value = ci;
+  // update label badge
+  const lbl = document.getElementById('recipeIngrTypeLabel');
+  if(lbl) { lbl.textContent = type==='semi' ? 'Thành phẩm' : 'Thô'; lbl.style.background = type==='semi' ? '#D6E6FF' : '#FFF6CC'; lbl.style.color = type==='semi' ? '#0E5BC7' : '#B8900A'; }
 }
 
 function renderRecipeIngredientSelector() {
@@ -2235,48 +2681,122 @@ function renderRecipeIngredientSelector() {
   renderCurrentRecipeLines(pid);
 }
 
+function getIngrNameUnit(ingrId) {
+  if(typeof ingrId === 'string' && ingrId.startsWith('s')) {
+    const s = semiFinished.find(i=>i.id===parseInt(ingrId.slice(1)));
+    return s ? { name:'🧪 '+s.name, unit:s.unit } : { name:'?', unit:'' };
+  }
+  const rid = typeof ingrId === 'string' && ingrId.startsWith('r') ? parseInt(ingrId.slice(1)) : parseInt(ingrId);
+  const ingr = ingredients.find(i=>i.id===rid);
+  return ingr ? { name:'🌾 '+ingr.name, unit:ingr.unit } : { name:'?', unit:'' };
+}
+
 function renderCurrentRecipeLines(pid) {
   const lines = recipes[pid] || [];
   const el = document.getElementById('recipeLines');
   el.innerHTML = lines.map((line,idx) => {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const {name, unit} = getIngrNameUnit(line.ingrId);
     return `<div class="recipe-line">
-      <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-      <span class="recipe-line-qty">${line.qty} ${ingr?ingr.unit:''}/ly</span>
+      <span class="recipe-line-name">${name}</span>
+      <span class="recipe-line-qty">${line.qty} ${unit}/ly</span>
       <button class="recipe-del" onclick="removeRecipeLine(${pid},${idx})">✕</button>
     </div>`;
   }).join('') || '<div style="font-size:12px;color:var(--muted);font-weight:600">Chưa có nguyên liệu nào — thêm phía trên</div>';
 }
 
+// ── Unit conversion table (convert to base unit of ingredient) ───────
+const UNIT_TO_BASE = {
+  // Volume → lít
+  'lít': 1, 'l': 1,
+  'ml': 0.001,
+  // Weight → kg
+  'kg': 1,
+  'g': 0.001,
+  // Count — no conversion
+  'gói': 1, 'hộp': 1, 'bình': 1, 'chai': 1, 'hũ': 1, 'quả': 1, 'cái': 1,
+};
+// Returns factor to convert FROM inputUnit TO baseUnit of ingredient
+function getConvertFactor(inputUnit, baseUnit) {
+  if(!inputUnit || !baseUnit || inputUnit === baseUnit) return 1;
+  const toBase = { 'ml':0.001,'lít':1,'l':1,'g':0.001,'kg':1,'gói':1,'hộp':1,'bình':1,'chai':1,'hũ':1,'quả':1,'cái':1 };
+  const fromFactor = toBase[inputUnit] ?? 1;
+  const toFactor   = toBase[baseUnit]  ?? 1;
+  // e.g. inputUnit=ml (0.001 lit), baseUnit=lít (1 lit) → factor = 0.001/1 = 0.001
+  if((inputUnit==='ml'||inputUnit==='lít'||inputUnit==='l') &&
+     (baseUnit==='ml'||baseUnit==='lít'||baseUnit==='l')) {
+    return fromFactor / toFactor;
+  }
+  if((inputUnit==='g'||inputUnit==='kg') && (baseUnit==='g'||baseUnit==='kg')) {
+    return fromFactor / toFactor;
+  }
+  // Same category not detected → assume same
+  return 1;
+}
+
+function updateRecipeConvert() {
+  const rawVal  = document.getElementById('recipeIngr')?.value;
+  const qty     = parseFloat(document.getElementById('recipeQty')?.value) || 0;
+  const inUnit  = document.getElementById('recipeQtyUnit')?.value || '';
+  const unitLbl = document.getElementById('recipeUnit');
+  const dispEl  = document.getElementById('recipeConvertDisplay');
+  if(!rawVal || !qty || !inUnit) {
+    if(dispEl) dispEl.textContent = '—';
+    return;
+  }
+  const {unit: baseUnit} = getIngrNameUnit(rawVal);
+  if(unitLbl) unitLbl.textContent = baseUnit || '—';
+  const factor   = getConvertFactor(inUnit, baseUnit);
+  const converted = +(qty * factor).toFixed(4);
+  if(dispEl) dispEl.textContent = `${converted} ${baseUnit}`;
+}
+
 // Update unit label when ingredient changes
 document.addEventListener('change', e => {
   if(e.target.id === 'recipeIngr') {
-    const iid = parseInt(e.target.value);
-    const ingr = ingredients.find(i=>i.id===iid);
-    document.getElementById('recipeUnit').textContent = ingr ? ingr.unit : '—';
+    const {unit} = getIngrNameUnit(e.target.value);
+    // Populate qtyUnit select with sensible options and pre-select matching
+    const qtyUnitSel = document.getElementById('recipeQtyUnit');
+    if(qtyUnitSel) {
+      // Auto-select same unit as ingredient
+      for(let opt of qtyUnitSel.options) { if(opt.value === unit) { qtyUnitSel.value = unit; break; } }
+    }
+    if(document.getElementById('recipeUnit')) document.getElementById('recipeUnit').textContent = unit||'—';
+    updateRecipeConvert();
   }
+  if(e.target.id === 'recipeIngrType') { renderRecipeIngrDropdown(); }
 });
 
 function addRecipeLine() {
-  const pid  = parseInt(document.getElementById('recipeProd').value);
-  const iid  = parseInt(document.getElementById('recipeIngr').value);
-  const qty  = parseFloat(document.getElementById('recipeQty').value);
-  if(!pid) { showToast('⚠️ Chọn món trước'); return; }
-  if(!iid) { showToast('⚠️ Chọn nguyên liệu'); return; }
-  if(!qty || qty <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
+  const pid    = parseInt(document.getElementById('recipeProd').value);
+  const rawVal = document.getElementById('recipeIngr').value;
+  const qtyInput = parseFloat(document.getElementById('recipeQty').value);
+  const inUnit   = document.getElementById('recipeQtyUnit').value;
+  if(!pid)    { showToast('⚠️ Chọn món trước'); return; }
+  if(!rawVal) { showToast('⚠️ Chọn nguyên liệu'); return; }
+  if(!qtyInput || qtyInput <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
+  if(!inUnit) { showToast('⚠️ Chọn đơn vị'); return; }
+
+  const {unit: baseUnit} = getIngrNameUnit(rawVal);
+  const factor   = getConvertFactor(inUnit, baseUnit);
+  const qty      = +(qtyInput * factor).toFixed(4); // qty lưu theo đơn vị gốc của NL
+
   if(!recipes[pid]) recipes[pid] = [];
-  // Remove existing entry for same ingredient, then add new
-  recipes[pid] = recipes[pid].filter(l=>l.ingrId!==iid);
-  recipes[pid].push({ ingrId:iid, qty });
+  recipes[pid] = recipes[pid].filter(l=>l.ingrId!==rawVal);
+  recipes[pid].push({ ingrId:rawVal, qty, qtyInput, inUnit });
+
   document.getElementById('recipeQty').value = '';
-  document.getElementById('recipeIngr').value = '';
+  document.getElementById('recipeQtyUnit').value = '';
   document.getElementById('recipeUnit').textContent = '—';
+  if(document.getElementById('recipeConvertDisplay')) document.getElementById('recipeConvertDisplay').textContent = '—';
   renderRecipeIngredientSelector();
   renderRecipeList();
   renderProducts();
-  const ingr = ingredients.find(i=>i.id===iid);
+
+  let ingrName = '?';
+  if(rawVal.startsWith('s')) { const s = semiFinished.find(i=>i.id===parseInt(rawVal.slice(1))); ingrName = s?s.name:rawVal; }
+  else { const i = ingredients.find(x=>x.id===parseInt(rawVal.startsWith('r')?rawVal.slice(1):rawVal)); ingrName = i?i.name:rawVal; }
   const prod = products.find(p=>p.id===pid);
-  showToast(`✓ ${ingr.name} → ${prod.emoji}${prod.name}`, 'success');
+  showToast(`✓ ${ingrName} ${qtyInput}${inUnit}=${qty}${baseUnit} → ${prod?.emoji}${prod?.name}`, 'success');
 }
 
 function removeRecipeLine(pid, idx) {
@@ -2299,10 +2819,11 @@ function renderRecipeList() {
     const avail = calcStock(prod.id);
     const lines = recipes[k];
     const linesHtml = lines.map(line=>{
-      const ingr = ingredients.find(i=>i.id===line.ingrId);
+      const {name, unit} = getIngrNameUnit(line.ingrId);
+      const displayQty = (line.qtyInput != null && line.inUnit) ? `${line.qtyInput} ${line.inUnit}` : `${line.qty} ${unit}`;
       return `<div class="recipe-line">
-        <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-        <span class="recipe-line-qty">${line.qty} ${ingr?ingr.unit:''}/ly</span>
+        <span class="recipe-line-name">${name}</span>
+        <span class="recipe-line-qty">${displayQty}/ly</span>
       </div>`;
     }).join('');
     const stockColor = avail===0?'#EF4350':avail<=3?'#B8900A':'#0E5BC7';
@@ -2422,6 +2943,508 @@ function calcChange() {
 function toggleCashPanel() {
   const panel = document.getElementById('cashPanel');
   if(panel) panel.style.display = selectedPay === 'Tiền mặt' ? 'flex' : 'none';
+}
+
+// ─── SEMI-FINISHED (Nguyên liệu thành phẩm) ──────────────────────────
+let semiExpandedId = null;
+let semiSelfLines  = []; // temp lines cho form Tự pha chế
+
+// ── Source toggle ────────────────────────────────────────────────────
+function toggleSemiSource() {
+  const src = document.getElementById('semiSource')?.value || 'self';
+  document.getElementById('semiNccBlock').style.display  = src === 'ncc'  ? 'block' : 'none';
+  document.getElementById('semiSelfBlock').style.display = src === 'self' ? 'block' : 'none';
+
+  // Reset toàn bộ input khi đổi nguồn (trừ khi đang edit)
+  const editId = document.getElementById('semiEditId')?.value;
+  if(!editId) {
+    // Clear NCC fields
+    ['semiName','semiQty','semiCost','semiMin','semiSupplier'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    const nccRef = document.getElementById('semiNccIngrRef');
+    if(nccRef) nccRef.value = '';
+    // Clear Self fields
+    ['semiNameSelf','semiSelfYield','semiSelfMin'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    semiSelfLines = [];
+    renderSemiSelfLines();
+    // Reset semiSelfIngr & qty
+    const ssiEl = document.getElementById('semiSelfIngr'); if(ssiEl) ssiEl.value = '';
+    const ssqEl = document.getElementById('semiSelfQty');  if(ssqEl) ssqEl.value = '';
+    const ssuEl = document.getElementById('semiSelfUnit'); if(ssuEl) ssuEl.textContent = '—';
+  }
+
+  if(src === 'ncc') {
+    // Populate autofill dropdown
+    const sel = document.getElementById('semiNccIngrRef');
+    if(sel) {
+      sel.innerHTML = '<option value="">-- Chọn để tự điền --</option>' +
+        ingredients.map(i=>`<option value="${i.id}">${i.name} (${i.qty} ${i.unit})</option>`).join('');
+    }
+  } else {
+    populateSemiSelfIngrDropdown();
+  }
+}
+
+// ── NCC: autofill ALL fields from ingredient ─────────────────────────
+function autoFillSemiFromIngr() {
+  const iid  = parseInt(document.getElementById('semiNccIngrRef').value);
+  if(!iid) return;
+  const ingr = ingredients.find(i=>i.id===iid);
+  if(!ingr) return;
+  document.getElementById('semiName').value     = ingr.name;
+  document.getElementById('semiSupplier').value = ingr.supplier || '';
+  document.getElementById('semiQty').value      = ingr.qty;
+  document.getElementById('semiCost').value     = ingr.cost || '';
+  document.getElementById('semiMin').value      = ingr.min  || '';
+  // Match unit option
+  const unitSel = document.getElementById('semiUnit');
+  for(let opt of unitSel.options) { if(opt.value === ingr.unit) { unitSel.value = ingr.unit; break; } }
+}
+
+// ── Tự pha: populate ingredient dropdown ────────────────────────────
+function populateSemiSelfIngrDropdown() {
+  const sel = document.getElementById('semiSelfIngr');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Chọn --</option>' +
+    ingredients.map(i=>`<option value="${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
+}
+
+function updateSemiSelfUnit() {
+  const iid  = parseInt(document.getElementById('semiSelfIngr').value);
+  const ingr = ingredients.find(i=>i.id===iid);
+  document.getElementById('semiSelfUnit').textContent = ingr ? ingr.unit : '—';
+}
+
+function addSemiSelfLine() {
+  const iid = parseInt(document.getElementById('semiSelfIngr').value);
+  const qty = parseFloat(document.getElementById('semiSelfQty').value);
+  if(!iid) { showToast('⚠️ Chọn nguyên liệu thô'); return; }
+  if(!qty || qty <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
+  const ingr = ingredients.find(i=>i.id===iid);
+  if(!ingr) return;
+  semiSelfLines = semiSelfLines.filter(l=>l.ingrId!==iid);
+  semiSelfLines.push({ ingrId: iid, qty });
+  document.getElementById('semiSelfIngr').value       = '';
+  document.getElementById('semiSelfQty').value        = '';
+  document.getElementById('semiSelfUnit').textContent = '—';
+  renderSemiSelfLines();
+  showToast(`✓ Thêm ${ingr.name}`, 'success');
+}
+
+function removeSemiSelfLine(idx) {
+  semiSelfLines.splice(idx, 1);
+  renderSemiSelfLines();
+}
+
+function renderSemiSelfLines() {
+  const el = document.getElementById('semiSelfLines');
+  if(!el) return;
+  if(!semiSelfLines.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);font-weight:600">Chưa có — thêm bên dưới</div>';
+    return;
+  }
+  el.innerHTML = semiSelfLines.map((line, idx) => {
+    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const ok   = ingr && ingr.qty >= line.qty;
+    return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
+      <span class="recipe-line-name">🌾 ${ingr?ingr.name:'?'}</span>
+      <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${ingr?ingr.unit:''} ${ok?'':'⚠️thiếu'}</span>
+      <button class="recipe-del" onclick="removeSemiSelfLine(${idx})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── clearSemiForm: LUÔN xóa cả 2 block ──────────────────────────────
+function clearSemiForm() {
+  // NCC fields
+  ['semiName','semiQty','semiCost','semiMin','semiSupplier'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  const nccRef = document.getElementById('semiNccIngrRef');
+  if(nccRef) nccRef.value = '';
+  // Self fields
+  ['semiNameSelf','semiSelfYield','semiSelfMin'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  semiSelfLines = [];
+  renderSemiSelfLines();
+  document.getElementById('semiEditId').value = '';
+  // Reset về Tự pha chế
+  const srcSel = document.getElementById('semiSource');
+  if(srcSel) { srcSel.value = 'self'; toggleSemiSource(); }
+}
+
+// ── addSemi ──────────────────────────────────────────────────────────
+function addSemi() {
+  const editId = document.getElementById('semiEditId').value;
+  const src    = document.getElementById('semiSource')?.value || 'self';
+
+  if(editId) {
+    // Sửa — NCC layout
+    const name = document.getElementById('semiName').value.trim();
+    const qty  = parseFloat(document.getElementById('semiQty').value)||0;
+    const unit = document.getElementById('semiUnit').value;
+    const cost = parseInt(document.getElementById('semiCost').value)||0;
+    const min  = parseFloat(document.getElementById('semiMin').value)||0;
+    const sup  = document.getElementById('semiSupplier').value.trim();
+    if(!name) { showToast('⚠️ Nhập tên thành phẩm'); return; }
+    const s = semiFinished.find(x=>x.id===parseInt(editId));
+    if(s) { s.name=name; s.qty=qty; s.unit=unit; s.cost=cost; s.min=min; s.supplier=sup; }
+    showToast(`✓ Đã cập nhật "${name}"`, 'success');
+    cancelEditSemi();
+    renderSemiList();
+    if(window.fbSaveSemi) fbSaveSemi();
+    return;
+  }
+
+  if(src === 'ncc') {
+    const name = document.getElementById('semiName').value.trim();
+    const qty  = parseFloat(document.getElementById('semiQty').value);
+    const unit = document.getElementById('semiUnit').value;
+    const cost = parseInt(document.getElementById('semiCost').value)||0;
+    const min  = parseFloat(document.getElementById('semiMin').value)||0;
+    const sup  = document.getElementById('semiSupplier').value.trim();
+    if(!name) { showToast('⚠️ Nhập tên thành phẩm'); return; }
+    if(isNaN(qty)||qty<=0) { showToast('⚠️ Nhập số lượng'); return; }
+    const existing = semiFinished.find(i=>i.name.toLowerCase()===name.toLowerCase());
+    if(existing) {
+      existing.qty = +(existing.qty + qty).toFixed(3);
+      showToast(`✓ Cộng thêm ${qty} ${unit} ${name}`, 'success');
+    } else {
+      semiFinished.push({ id: Date.now(), name, qty, unit, min, cost, supplier: sup||'NCC' });
+      showToast(`✓ Đã thêm ${name}`, 'success');
+    }
+  } else {
+    // Tự pha chế
+    const name = document.getElementById('semiNameSelf').value.trim();
+    const unit = document.getElementById('semiUnitSelfYield').value;
+    const yld  = parseFloat(document.getElementById('semiSelfYield').value);
+    const min  = parseFloat(document.getElementById('semiSelfMin').value)||0;
+    if(!name) { showToast('⚠️ Nhập tên thành phẩm'); return; }
+    if(!yld||yld<=0) { showToast('⚠️ Nhập sản lượng tạo ra'); return; }
+    if(!semiSelfLines.length) { showToast('⚠️ Thêm ít nhất 1 nguyên liệu'); return; }
+    // Kiểm tra đủ NL
+    for(const line of semiSelfLines) {
+      const ingr = ingredients.find(i=>i.id===line.ingrId);
+      if(!ingr||ingr.qty<line.qty) { showToast(`⚠️ Không đủ ${ingr?ingr.name:'NL'}`); return; }
+    }
+    // Trừ NL thô
+    semiSelfLines.forEach(line => {
+      const ingr = ingredients.find(i=>i.id===line.ingrId);
+      if(ingr) ingr.qty = Math.max(0, +(ingr.qty - line.qty).toFixed(3));
+    });
+    // Nhập kho
+    let sid;
+    const existing = semiFinished.find(i=>i.name.toLowerCase()===name.toLowerCase());
+    if(existing) {
+      existing.qty = +(existing.qty + yld).toFixed(3);
+      sid = existing.id;
+      showToast(`✓ Pha thêm ${yld} ${unit} ${name}`, 'success');
+    } else {
+      sid = Date.now();
+      semiFinished.push({ id: sid, name, qty: yld, unit, min, cost: 0, supplier:'Tự pha chế' });
+      showToast(`✓ Pha chế & nhập kho ${yld} ${unit} ${name}`, 'success');
+    }
+    // Lưu công thức sfRecipes
+    sfRecipes[sid] = { yield: yld, lines: semiSelfLines.map(l=>({...l})) };
+    if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+    if(window.fbSaveIngredients) fbSaveIngredients();
+    renderIngredients(); updateLowBadge();
+  }
+
+  clearSemiForm();
+  renderSemiList();
+  if(window.fbSaveSemi) fbSaveSemi();
+}
+
+function editSemi(id) {
+  const s = semiFinished.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('semiEditId').value = id;
+  // Force NCC layout cho sửa
+  const srcSel = document.getElementById('semiSource');
+  if(srcSel) { srcSel.value = 'ncc'; toggleSemiSource(); }
+  document.getElementById('semiName').value     = s.name;
+  document.getElementById('semiSupplier').value = s.supplier||'';
+  document.getElementById('semiQty').value      = s.qty;
+  document.getElementById('semiCost').value     = s.cost||'';
+  document.getElementById('semiMin').value      = s.min||'';
+  const unitSel = document.getElementById('semiUnit');
+  for(let opt of unitSel.options) { if(opt.value===s.unit){ unitSel.value=s.unit; break; } }
+  document.getElementById('semiFormTitle').textContent = '✏️ Sửa thành phẩm';
+  document.getElementById('semiSubmitBtn').textContent = '💾 Cập nhật';
+  document.getElementById('semiCancelEditBtn').style.display = 'inline-block';
+  document.getElementById('semiFormBlock').style.border = '2px solid #0E5BC7';
+  document.getElementById('semiFormBlock').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function cancelEditSemi() {
+  clearSemiForm();
+  document.getElementById('semiFormTitle').textContent = '📦 Nhập kho thành phẩm';
+  document.getElementById('semiSubmitBtn').textContent = '➕ Nhập kho';
+  document.getElementById('semiCancelEditBtn').style.display = 'none';
+  document.getElementById('semiFormBlock').style.border = '';
+}
+
+function deleteSemi(id) {
+  const s = semiFinished.find(x=>x.id===id);
+  if(!s) return;
+  if(!confirm(`Xóa "${s.name}" khỏi kho?\n\nThao tác này không thể hoàn tác.`)) return;
+  semiFinished = semiFinished.filter(x=>x.id!==id);
+  delete sfRecipes[id];
+  if(semiExpandedId===id) semiExpandedId=null;
+  showToast(`🗑️ Đã xóa ${s.name}`, '');
+  renderSemiList();
+  if(window.fbSaveSemi) fbSaveSemi();
+}
+
+// Toggle expand card để xem/sửa công thức
+function toggleSemiCard(id) {
+  semiExpandedId = semiExpandedId===id ? null : id;
+  renderSemiList();
+}
+
+// Build cảnh báo thiếu nguyên liệu cho 1 thành phẩm
+function getSemiWarnings(s) {
+  const rec = sfRecipes[s.id];
+  if(!rec || !rec.lines || rec.lines.length===0) return null;
+  const missing = [];
+  rec.lines.forEach(line => {
+    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    if(!ingr) { missing.push(`Không tìm thấy NL (id=${line.ingrId})`); return; }
+    // Để sản xuất 1 mẻ: cần line.qty, có ingr.qty
+    if(ingr.qty < line.qty) missing.push(`${ingr.name}: cần ${line.qty} ${ingr.unit}, còn ${ingr.qty} ${ingr.unit}`);
+  });
+  return missing.length ? missing : null;
+}
+
+function renderSemiList() {
+  const q = (document.getElementById('semiSearch')?.value || '').toLowerCase();
+  const filtered = semiFinished.filter(i => i.name.toLowerCase().includes(q));
+  const el = document.getElementById('semiList');
+  if(!el) return;
+  if(!filtered.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-weight:700;padding:.5rem">Chưa có thành phẩm nào. Nhập kho ở trên.</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(s => {
+    const rec = sfRecipes[s.id];
+    const hasRecipe = rec && rec.lines && rec.lines.length > 0;
+    const warnings = getSemiWarnings(s);
+    const statusCls = s.qty===0 ? 'out' : s.qty < s.min ? 'low' : 'ok';
+    const statusLbl = s.qty===0 ? '🔴 Hết kho' : s.qty < s.min ? '🟡 Sắp hết' : '🟢 Đủ kho';
+    const statusClr = s.qty===0 ? '#EF4350' : s.qty < s.min ? '#B8900A' : '#0E5BC7';
+    const isOpen = semiExpandedId===s.id;
+    const pct = Math.min(100, Math.round((s.qty / ((s.min||1) * 3)) * 100));
+
+    // Inline công thức panel (chỉ render khi mở)
+    let bodyHtml = '';
+    if(isOpen) {
+      // Cảnh báo thiếu nguyên liệu
+      let warnHtml = '';
+      if(hasRecipe && warnings) {
+        warnHtml = `<div class="semi-warning">⚠️ <div><b>Thiếu nguyên liệu cho 1 mẻ sản xuất:</b><br>${warnings.map(w=>'• '+w).join('<br>')}</div></div>`;
+      } else if(hasRecipe && !warnings) {
+        warnHtml = `<div class="semi-ok-note">✓ Đủ nguyên liệu cho 1 mẻ sản xuất</div>`;
+      }
+
+      // Hiện công thức hiện tại
+      const linesHtml = hasRecipe
+        ? rec.lines.map((line,idx) => {
+            const ingr = ingredients.find(i=>i.id===line.ingrId);
+            const ok = ingr && ingr.qty >= line.qty;
+            return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
+              <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
+              <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${ingr?ingr.unit:''}/mẻ</span>
+              <button class="recipe-del" onclick="event.stopPropagation();removeSfRecipeLine(${s.id},${idx})">✕</button>
+            </div>`;
+          }).join('')
+        : '<div style="font-size:12px;color:var(--muted);font-weight:600;padding:.3rem 0">Chưa có công thức — thêm nguyên liệu bên dưới</div>';
+
+      // Sản lượng mỗi mẻ
+      const yieldVal = rec && rec.yield ? rec.yield : '';
+      const yieldUnit = s.unit;
+
+      // Form thêm NL vào công thức
+      const ingrOpts = ingredients.map(i=>`<option value="${i.id}">${i.name} (${i.qty} ${i.unit})</option>`).join('');
+
+      // Panel sản xuất
+      let produceHtml = '';
+      if(hasRecipe) {
+        produceHtml = `
+        <div style="margin-top:.8rem;padding:.7rem;background:var(--bg);border-radius:8px;border:2px solid var(--rule)">
+          <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.5rem">⚗️ Sản xuất</div>
+          <div style="display:flex;gap:.5rem;align-items:flex-end">
+            <div class="form-group" style="flex:1">
+              <label class="form-label">Số mẻ</label>
+              <input class="form-input" type="number" id="produceBatches_${s.id}" min="0.1" step="0.1" value="1" oninput="renderInlineProducePreview(${s.id})" style="font-size:13px;padding:.4rem .6rem">
+            </div>
+            <button class="btn btn-green" onclick="event.stopPropagation();executeProduceInline(${s.id})" style="margin-bottom:0;height:36px;white-space:nowrap">⚗️ Sản xuất</button>
+          </div>
+          <div id="producePreview_${s.id}" style="margin-top:.5rem"></div>
+        </div>`;
+      }
+
+      bodyHtml = `<div class="semi-card-body">
+        ${warnHtml}
+        <div style="font-size:11.5px;font-weight:800;color:var(--soft);margin-bottom:.4rem">📋 Công thức chế biến</div>
+        <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+          <span style="font-size:12px;font-weight:700;color:var(--soft)">Sản lượng mỗi mẻ:</span>
+          <input type="number" value="${yieldVal}" placeholder="vd: 1" step="0.1"
+            id="sfYield_${s.id}" onchange="saveSfYield(${s.id})"
+            style="width:70px;padding:.3rem .5rem;border:2px solid var(--rule);border-radius:6px;font-size:12.5px;font-weight:800;color:#0E5BC7;outline:none">
+          <span style="font-size:12px;font-weight:700;color:var(--soft)">${yieldUnit}</span>
+        </div>
+        <div style="margin-bottom:.6rem">${linesHtml}</div>
+        <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap;padding:.6rem;background:var(--bg);border-radius:8px;border:2px dashed var(--rule)">
+          <div class="form-group" style="flex:2;min-width:120px">
+            <label class="form-label">+ Nguyên liệu thô</label>
+            <select class="form-input" id="sfIngr_${s.id}" onchange="updateSfUnit(${s.id})">
+              <option value="">-- Chọn --</option>${ingrOpts}
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;min-width:75px">
+            <label class="form-label">Lượng/mẻ</label>
+            <input class="form-input" type="number" id="sfQty_${s.id}" placeholder="0" step="0.1">
+          </div>
+          <div style="padding:.45rem .5rem;background:#fff;border:2px solid var(--rule);border-radius:8px;font-size:12px;font-weight:700;color:var(--soft);flex-shrink:0;align-self:flex-end;margin-bottom:0;height:36px;display:flex;align-items:center" id="sfUnit_${s.id}">—</div>
+          <button class="btn btn-green" onclick="event.stopPropagation();addSfLine(${s.id})" style="height:36px;margin-bottom:0;flex-shrink:0">+ Thêm</button>
+        </div>
+        ${produceHtml}
+        <div style="display:flex;gap:.4rem;margin-top:.8rem">
+          <button onclick="event.stopPropagation();editSemi(${s.id})" class="btn btn-outline" style="font-size:11px;padding:.25rem .7rem">✏️ Sửa thông tin</button>
+          <button onclick="event.stopPropagation();deleteSemi(${s.id})" class="btn" style="font-size:11px;padding:.25rem .7rem;background:#FFE0E2;border-color:#EF4350;color:#EF4350">🗑️ Xóa</button>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="semi-card ${isOpen?'expanded':''}" id="semi-card-${s.id}">
+      <div class="semi-card-header" onclick="toggleSemiCard(${s.id})">
+        <div style="flex:1;min-width:0">
+          <div class="semi-card-name">🧪 ${s.name}</div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:2px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;color:var(--muted)">${s.supplier||'Tự pha chế'}</span>
+            ${hasRecipe ? `<span style="font-size:10px;font-weight:800;background:#D6E6FF;color:#0E5BC7;padding:.1rem .4rem;border-radius:6px">📋 Có công thức</span>` : `<span style="font-size:10px;font-weight:800;background:#FFF6CC;color:#B8900A;padding:.1rem .4rem;border-radius:6px">⚠️ Chưa có CT</span>`}
+            ${warnings ? `<span style="font-size:10px;font-weight:800;background:#FFE0E2;color:#EF4350;padding:.1rem .4rem;border-radius:6px">⚠️ Thiếu NL</span>` : ''}
+          </div>
+          <div style="margin-top:4px;height:4px;background:var(--rule);border-radius:2px;overflow:hidden;max-width:180px">
+            <div style="height:100%;width:${pct}%;background:${statusClr};border-radius:2px;transition:width .4s"></div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="semi-card-qty" style="color:${statusClr}">${s.qty} ${s.unit}</div>
+          <div style="font-size:11px;font-weight:700;color:${statusClr}">${statusLbl}</div>
+        </div>
+        <div style="font-size:16px;color:var(--muted);flex-shrink:0;transition:transform .2s;transform:rotate(${isOpen?'90':'0'}deg)">›</div>
+      </div>
+      ${bodyHtml}
+    </div>`;
+  }).join('');
+
+  // Sau khi render, auto-preview sản xuất nếu card đang mở
+  if(semiExpandedId) {
+    const s = semiFinished.find(x=>x.id===semiExpandedId);
+    if(s) renderInlineProducePreview(semiExpandedId);
+  }
+}
+
+// Cập nhật unit khi chọn NL trong inline form
+function updateSfUnit(sid) {
+  const sel = document.getElementById(`sfIngr_${sid}`);
+  const iid = parseInt(sel?.value);
+  const ingr = ingredients.find(i=>i.id===iid);
+  const unitEl = document.getElementById(`sfUnit_${sid}`);
+  if(unitEl) unitEl.textContent = ingr ? ingr.unit : '—';
+}
+
+// Save yield khi thay đổi
+function saveSfYield(sid) {
+  const yld = parseFloat(document.getElementById(`sfYield_${sid}`)?.value) || 1;
+  if(!sfRecipes[sid]) sfRecipes[sid] = { yield:yld, lines:[] };
+  sfRecipes[sid].yield = yld;
+  if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+}
+
+// Thêm NL vào công thức inline
+function addSfLine(sid) {
+  const iid  = parseInt(document.getElementById(`sfIngr_${sid}`)?.value);
+  const qty  = parseFloat(document.getElementById(`sfQty_${sid}`)?.value);
+  const yld  = parseFloat(document.getElementById(`sfYield_${sid}`)?.value) || 1;
+  if(!iid) { showToast('⚠️ Chọn nguyên liệu thô'); return; }
+  if(!qty || qty <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
+  if(!sfRecipes[sid]) sfRecipes[sid] = { yield:yld, lines:[] };
+  sfRecipes[sid].yield = yld;
+  sfRecipes[sid].lines = (sfRecipes[sid].lines||[]).filter(l=>l.ingrId!==iid);
+  sfRecipes[sid].lines.push({ ingrId:iid, qty });
+  const ingr = ingredients.find(i=>i.id===iid);
+  const s = semiFinished.find(x=>x.id===sid);
+  showToast(`✓ ${ingr?.name} → ${s?.name}`, 'success');
+  renderSemiList();
+  if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+}
+
+function removeSfRecipeLine(sid, idx) {
+  if(sfRecipes[sid]) sfRecipes[sid].lines.splice(idx,1);
+  renderSemiList();
+  if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+}
+
+// Preview sản xuất inline trên card
+function renderInlineProducePreview(sid) {
+  const batches = parseFloat(document.getElementById(`produceBatches_${sid}`)?.value) || 1;
+  const el = document.getElementById(`producePreview_${sid}`);
+  if(!el) return;
+  const rec = sfRecipes[sid];
+  if(!rec || !rec.lines || rec.lines.length===0) { el.innerHTML=''; return; }
+  const s = semiFinished.find(x=>x.id===sid);
+  let canProduce = true;
+  const rows = rec.lines.map(line => {
+    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const need = +(line.qty * batches).toFixed(3);
+    const has = ingr ? ingr.qty : 0;
+    const ok = has >= need;
+    if(!ok) canProduce = false;
+    return `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;padding:.25rem .4rem;background:${ok?'var(--bg)':'#FFE0E2'};border-radius:5px;margin-bottom:3px">
+      <span>${ingr?ingr.name:'?'}</span>
+      <span style="color:${ok?'#0E5BC7':'#EF4350'}">Cần ${need} / Còn ${has} ${ingr?ingr.unit:''}</span>
+    </div>`;
+  }).join('');
+  const willProduce = +(rec.yield * batches).toFixed(3);
+  el.innerHTML = `<div style="font-size:11.5px">${rows}</div>
+    <div style="margin-top:.4rem;padding:.3rem .5rem;background:${canProduce?'#D6E6FF':'#FFE0E2'};border-radius:6px;font-size:12.5px;font-weight:800;color:${canProduce?'#0E5BC7':'#EF4350'}">
+      ${canProduce ? `✓ Sẽ được <b>${willProduce} ${s?.unit}</b> ${s?.name}` : '⚠️ Không đủ nguyên liệu thô'}
+    </div>`;
+}
+
+// Thực thi sản xuất từ card
+function executeProduceInline(sid) {
+  const batches = parseFloat(document.getElementById(`produceBatches_${sid}`)?.value) || 1;
+  const s = semiFinished.find(x=>x.id===sid);
+  const rec = sfRecipes[sid];
+  if(!rec || !rec.lines || rec.lines.length===0) { showToast('⚠️ Chưa có công thức chế biến'); return; }
+  for(const line of rec.lines) {
+    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const need = line.qty * batches;
+    if(!ingr || ingr.qty < need) { showToast(`⚠️ Không đủ ${ingr?ingr.name:'nguyên liệu'}`); return; }
+  }
+  rec.lines.forEach(line => {
+    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    if(ingr) ingr.qty = Math.max(0, +(ingr.qty - line.qty * batches).toFixed(3));
+  });
+  const willProduce = +(rec.yield * batches).toFixed(3);
+  s.qty = +(s.qty + willProduce).toFixed(3);
+  showToast(`✓ Sản xuất ${willProduce} ${s.unit} ${s.name}`, 'success');
+  renderSemiList(); renderIngredients(); updateLowBadge(); renderProducts();
+  if(window.fbSaveIngredients) fbSaveIngredients();
+  if(window.fbSaveSemi) fbSaveSemi();
+}
+
+// Populate dropdown thành phẩm cho tab Công thức món
+function populateSemiDropdowns() {
+  renderSemiList();
 }
 
 // ─── PROMO / CAMPAIGN ─────────────────────────────────────────────────
@@ -2570,6 +3593,14 @@ window.addProduct = function() {
   fbSaveProducts();
 };
 
+// Override deleteProduct để save lên Firebase
+const _deleteProduct_orig = deleteProduct;
+window.deleteProduct = function(id) {
+  _deleteProduct_orig(id);
+  fbSaveProducts();
+  fbSaveRecipes();
+};
+
 // Override addIngredient
 const _addIngredient_orig = addIngredient;
 window.addIngredient = function() {
@@ -2590,6 +3621,66 @@ window.removeRecipeLine = function(pid, idx) {
   _removeRecipeLine_orig(pid, idx);
   fbSaveRecipes();
 };
+
+// ── Firebase helpers for semiFinished & sfRecipes ──
+window.fbSaveSemi = async function() {
+  // Luôn lưu localStorage làm fallback
+  try { localStorage.setItem('cafeSemiFinished', JSON.stringify(semiFinished)); } catch(e) {}
+  if(!window.db) return;
+  setFbStatus('saving');
+  try {
+    await db.collection('config').doc('semiFinished').set({ data: semiFinished, updatedAt: new Date().toISOString() });
+    setFbStatus('online');
+  } catch(e) { console.warn('fbSaveSemi error',e); setFbStatus('offline'); }
+};
+
+window.fbSaveSfRecipes = async function() {
+  // Luôn lưu localStorage làm fallback
+  try { localStorage.setItem('cafeSfRecipes', JSON.stringify(sfRecipes)); } catch(e) {}
+  if(!window.db) return;
+  try {
+    const serializable = JSON.parse(JSON.stringify(sfRecipes));
+    await db.collection('config').doc('sfRecipes').set({ data: serializable });
+  } catch(e) { console.warn('fbSaveSfRecipes error',e); }
+};
+
+async function fbLoadSemi() {
+  // Thử load localStorage trước làm tạm
+  try {
+    const local = localStorage.getItem('cafeSemiFinished');
+    if(local) { const parsed = JSON.parse(local); if(Array.isArray(parsed) && parsed.length) semiFinished = parsed; }
+  } catch(e) {}
+  if(!window.db) return;
+  try {
+    const snap = await db.collection('config').doc('semiFinished').get();
+    if(snap.exists && snap.data().data && snap.data().data.length > 0) {
+      semiFinished = snap.data().data;
+      // Đồng bộ lại localStorage
+      try { localStorage.setItem('cafeSemiFinished', JSON.stringify(semiFinished)); } catch(e) {}
+    } else if(semiFinished.length) {
+      // Firebase chưa có → seed từ localStorage lên
+      await db.collection('config').doc('semiFinished').set({ data: semiFinished, updatedAt: new Date().toISOString() });
+    }
+  } catch(e) { console.warn('fbLoadSemi error',e); }
+}
+
+async function fbLoadSfRecipes() {
+  // Thử load localStorage trước
+  try {
+    const local = localStorage.getItem('cafeSfRecipes');
+    if(local) { const parsed = JSON.parse(local); if(parsed && typeof parsed === 'object') sfRecipes = parsed; }
+  } catch(e) {}
+  if(!window.db) return;
+  try {
+    const snap = await db.collection('config').doc('sfRecipes').get();
+    if(snap.exists && snap.data().data && Object.keys(snap.data().data).length > 0) {
+      sfRecipes = snap.data().data;
+      try { localStorage.setItem('cafeSfRecipes', JSON.stringify(sfRecipes)); } catch(e) {}
+    } else if(Object.keys(sfRecipes).length) {
+      await db.collection('config').doc('sfRecipes').set({ data: JSON.parse(JSON.stringify(sfRecipes)) });
+    }
+  } catch(e) { console.warn('fbLoadSfRecipes error',e); }
+}
 
 // Override addPromo
 const _addPromo_orig = addPromo;
@@ -2620,7 +3711,8 @@ window.doCheckout = async function() {
   if(orders.length > 0) {
     await fbSaveOrder(orders[0]);
     await fbSaveSalesData();
-    await fbSaveIngredients(); // ingredients đã bị trừ nguyên liệu
+    await fbSaveIngredients(); // ingredients đã bị trừ nguyên liệu thô
+    if(window.fbSaveSemi) await fbSaveSemi(); // semiFinished đã bị trừ thành phẩm
   }
 };
 
