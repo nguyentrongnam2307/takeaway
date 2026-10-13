@@ -730,6 +730,17 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
         </div>
       </div>
 
+      <!-- Manual amount override -->
+      <div style="background:var(--bg);border:2px solid var(--rule);border-radius:10px;padding:.6rem .9rem;margin-bottom:.7rem">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:.4rem">💰 Số tiền thanh toán</div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input class="form-input" type="number" id="qrManualAmount" placeholder="Tự nhập số tiền..." oninput="updateQR()" style="flex:1;padding:.38rem .7rem;font-size:13px;font-weight:800">
+          <span style="font-size:12px;font-weight:800;color:var(--soft);white-space:nowrap">VNĐ</span>
+          <button onclick="clearManualAmount()" style="padding:.35rem .7rem;border-radius:8px;border:2px solid var(--rule);background:#fff;font-size:11px;font-weight:800;color:var(--soft);cursor:pointer;white-space:nowrap" title="Dùng tiền từ đơn hàng">↺ Đơn</button>
+        </div>
+        <div style="font-size:10.5px;font-weight:600;color:var(--muted);margin-top:.3rem" id="qrAmountHint">Đang dùng số tiền từ đơn hàng</div>
+      </div>
+
       <div class="qr-box">
         <img class="qr-img" id="qrImage" src="" alt="QR Code">
         <div class="qr-bank-name" id="qrBankLabel">—</div>
@@ -1077,9 +1088,9 @@ function checkout() {
 
 // ── Bank settings (persist in memory)
 let bankSettings = {
-  bank: localStorage.getItem('cafeBank') || 'VCB',
-  acct: localStorage.getItem('cafeAcct') || '',
-  name: localStorage.getItem('cafeName') || '',
+  bank: localStorage.getItem('cafeBank') || 'TCB',
+  acct: localStorage.getItem('cafeAcct') || '19033779329018',
+  name: localStorage.getItem('cafeName') || 'NGUYEN TRONG NAM',
 };
 
 let currentReceiptOrder = null;
@@ -1127,12 +1138,16 @@ function switchReceiptTab(tab) {
   if(tab==='qr') updateQR();
 }
 
+function clearManualAmount() {
+  document.getElementById('qrManualAmount').value = '';
+  updateQR();
+}
+
 function updateQR() {
   const bank  = document.getElementById('qrBank').value;
   const acct  = document.getElementById('qrAcct').value.trim();
   const name  = document.getElementById('qrName').value.trim();
   const order = currentReceiptOrder;
-  if(!order) return;
 
   // Save settings
   bankSettings = { bank, acct, name };
@@ -1140,8 +1155,21 @@ function updateQR() {
   localStorage.setItem('cafeAcct', acct);
   localStorage.setItem('cafeName', name);
 
-  const amount  = order.total;
-  const desc    = 'Thanh toan don ' + String(order.id).padStart(3,'0');
+  // Amount: manual input wins; fallback to order total
+  const manualVal = document.getElementById('qrManualAmount').value;
+  const manual = manualVal ? parseInt(manualVal) : 0;
+  const amount = manual > 0 ? manual : (order ? order.total : 0);
+
+  const hintEl = document.getElementById('qrAmountHint');
+  if(manual > 0) {
+    hintEl.textContent = '✏️ Đang dùng số tiền tự nhập';
+    hintEl.style.color = '#0E5BC7';
+  } else {
+    hintEl.textContent = order ? 'Đang dùng số tiền từ đơn hàng #' + String(order.id).padStart(3,'0') : 'Nhập số tiền hoặc mở từ đơn hàng';
+    hintEl.style.color = '';
+  }
+
+  const desc    = order ? 'Thanh toan don ' + String(order.id).padStart(3,'0') : 'Cafe thanh toan';
   const descEnc = encodeURIComponent(desc);
 
   // VietQR standard URL
