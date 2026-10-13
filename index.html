@@ -369,6 +369,38 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 .size-btn:hover { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
 .size-btn.selected { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
 
+
+/* ══════════ QR MODAL ══════════ */
+.qr-modal { max-width:360px; border-color:var(--blue); box-shadow:0 8px 0 var(--blue); }
+.qr-modal .modal-title { color:var(--blue); }
+.qr-box {
+  background:var(--blue-light); border:2px solid var(--blue);
+  border-radius:var(--radius); padding:1rem; text-align:center; margin:.8rem 0;
+}
+.qr-img { width:200px; height:200px; border-radius:10px; background:#fff; border:3px solid var(--blue); display:block; margin:0 auto .6rem; }
+.qr-bank-name { font-family:'Baloo 2',cursive; font-size:1rem; font-weight:800; color:var(--blue); }
+.qr-acct { font-size:13px; font-weight:700; color:var(--soft); margin:.2rem 0; }
+.qr-amount { font-family:'Baloo 2',cursive; font-size:1.5rem; font-weight:800; color:var(--ink); margin:.4rem 0 0; }
+.qr-desc { font-size:11.5px; font-weight:700; color:var(--muted); }
+.qr-waiting { display:flex; align-items:center; justify-content:center; gap:.5rem; padding:.5rem; background:#fff; border-radius:8px; border:2px solid var(--rule); font-size:12.5px; font-weight:700; color:var(--soft); margin-top:.5rem; }
+.qr-dot { width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+/* ══════════ PRINT BILL ══════════ */
+.print-preview {
+  background:#fff; border:2px dashed var(--rule); border-radius:var(--radius);
+  padding:1rem; font-family:'Courier New',monospace; font-size:12px;
+  line-height:1.6; max-height:320px; overflow-y:auto; margin:.6rem 0;
+  color:#111;
+}
+.print-preview .bill-center { text-align:center; }
+.print-preview .bill-line { border-top:1px dashed #ccc; margin:.3rem 0; }
+.print-preview .bill-bold { font-weight:bold; }
+@media print {
+  body > *:not(#printFrame) { display:none !important; }
+  #printFrame { display:block !important; position:fixed; inset:0; border:none; width:100%; height:100%; }
+}
+
 /* ══════════ TOAST ══════════ */
 .toast {
   position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(80px);
@@ -622,15 +654,77 @@ html, body { height: 100%; font-family: 'Nunito', sans-serif; color: var(--ink);
 
 <!-- RECEIPT MODAL -->
 <div class="modal-overlay" id="receiptModal">
-  <div class="modal">
+  <div class="modal" style="max-width:460px">
     <div class="modal-title">🎉 Thanh toán thành công!</div>
-    <div id="receiptContent"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="printReceipt()">🖨️ In hoá đơn</button>
-      <button class="btn btn-green" onclick="closeModal()">✓ Xong</button>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem">
+      <button class="pay-btn selected" id="tabBill" onclick="switchReceiptTab('bill')" style="flex:1">🧾 Hoá đơn</button>
+      <button class="pay-btn" id="tabQR" onclick="switchReceiptTab('qr')" style="flex:1">📱 QR Chuyển khoản</button>
+    </div>
+
+    <!-- Bill tab -->
+    <div id="tabContentBill">
+      <div id="receiptContent"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="printReceipt()">🖨️ In bill</button>
+        <button class="btn btn-green" onclick="closeModal()">✓ Xong</button>
+      </div>
+    </div>
+
+    <!-- QR tab -->
+    <div id="tabContentQR" style="display:none">
+      <!-- Bank config bar -->
+      <div style="background:var(--bg);border:2px solid var(--rule);border-radius:10px;padding:.7rem .9rem;margin-bottom:.7rem">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:.5rem">⚙️ Cài đặt tài khoản ngân hàng</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+          <div>
+            <div style="font-size:10.5px;font-weight:800;color:var(--soft);margin-bottom:.25rem">Ngân hàng</div>
+            <select class="form-input" id="qrBank" onchange="updateQR()" style="padding:.35rem .6rem;font-size:12px">
+              <option value="VCB">Vietcombank (VCB)</option>
+              <option value="TCB">Techcombank (TCB)</option>
+              <option value="MB">MBBank (MB)</option>
+              <option value="VPB">VPBank (VPB)</option>
+              <option value="ACB">ACB</option>
+              <option value="BIDV">BIDV</option>
+              <option value="VTB">Vietinbank (VTB)</option>
+              <option value="TPB">TPBank (TPB)</option>
+              <option value="MSB">MSB</option>
+              <option value="OCB">OCB</option>
+              <option value="SHB">SHB</option>
+              <option value="VIB">VIB</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10.5px;font-weight:800;color:var(--soft);margin-bottom:.25rem">Số tài khoản</div>
+            <input class="form-input" id="qrAcct" placeholder="0123456789" oninput="updateQR()" style="padding:.35rem .6rem;font-size:12px">
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10.5px;font-weight:800;color:var(--soft);margin-bottom:.25rem">Tên chủ tài khoản</div>
+          <input class="form-input" id="qrName" placeholder="NGUYEN VAN A" oninput="updateQR()" style="padding:.35rem .6rem;font-size:12px;width:100%">
+        </div>
+      </div>
+
+      <div class="qr-box">
+        <img class="qr-img" id="qrImage" src="" alt="QR Code">
+        <div class="qr-bank-name" id="qrBankLabel">—</div>
+        <div class="qr-acct" id="qrAcctLabel">—</div>
+        <div class="qr-amount" id="qrAmountLabel">0đ</div>
+        <div class="qr-desc" id="qrDescLabel">—</div>
+        <div class="qr-waiting"><div class="qr-dot"></div> Chờ khách chuyển khoản...</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">✕ Huỷ</button>
+        <button class="btn btn-green" onclick="confirmPaid()">✓ Đã nhận tiền</button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Hidden print iframe -->
+<iframe id="printFrame" style="display:none;position:fixed;inset:0;border:none;width:100%;height:100%"></iframe>
 
 <div class="toast" id="toast"></div>
 
@@ -957,7 +1051,17 @@ function checkout() {
   clearCart();
 }
 
+// ── Bank settings (persist in memory)
+let bankSettings = {
+  bank: localStorage.getItem('cafeBank') || 'VCB',
+  acct: localStorage.getItem('cafeAcct') || '',
+  name: localStorage.getItem('cafeName') || '',
+};
+
+let currentReceiptOrder = null;
+
 function showReceipt(order) {
+  currentReceiptOrder = order;
   const itemRows = order.items.map(i=>`
     <div class="receipt-row">
       <span style="display:flex;flex-direction:column;gap:1px">
@@ -972,16 +1076,137 @@ function showReceipt(order) {
     <div class="receipt-row"><span>Đơn #${String(order.id).padStart(3,'0')}</span><span>${order.time}</span></div>
     <hr class="modal-divider">
     ${itemRows}
-    <div class="receipt-row"><span>Phí đóng gói</span><span>${fmt(PACK_FEE)}</span></div>
     <div class="receipt-row total"><span>TỔNG</span><span>${fmt(order.total)}</span></div>
     <div class="receipt-row"><span>Thanh toán</span><span>${order.pay}</span></div>
     ${order.note ? `<div class="receipt-row"><span>Ghi chú</span><span style="text-align:right;max-width:180px">${order.note}</span></div>` : ''}
   `;
+
+  // Restore saved bank settings
+  document.getElementById('qrBank').value = bankSettings.bank;
+  document.getElementById('qrAcct').value = bankSettings.acct;
+  document.getElementById('qrName').value = bankSettings.name;
+
+  switchReceiptTab('bill');
   document.getElementById('receiptModal').classList.add('open');
+
+  // Auto-switch to QR if payment method is transfer
+  if(order.pay === 'Chuyển khoản' || order.pay === 'Momo' || order.pay === 'ZaloPay') {
+    setTimeout(()=> switchReceiptTab('qr'), 150);
+  }
 }
 
-function closeModal() { document.getElementById('receiptModal').classList.remove('open'); }
-function printReceipt() { showToast('🖨️ Đang gửi lệnh in...'); closeModal(); }
+function switchReceiptTab(tab) {
+  document.getElementById('tabContentBill').style.display = tab==='bill' ? 'block' : 'none';
+  document.getElementById('tabContentQR').style.display  = tab==='qr'   ? 'block' : 'none';
+  document.getElementById('tabBill').classList.toggle('selected', tab==='bill');
+  document.getElementById('tabQR').classList.toggle('selected', tab==='qr');
+  if(tab==='qr') updateQR();
+}
+
+function updateQR() {
+  const bank  = document.getElementById('qrBank').value;
+  const acct  = document.getElementById('qrAcct').value.trim();
+  const name  = document.getElementById('qrName').value.trim();
+  const order = currentReceiptOrder;
+  if(!order) return;
+
+  // Save settings
+  bankSettings = { bank, acct, name };
+  localStorage.setItem('cafeBank', bank);
+  localStorage.setItem('cafeAcct', acct);
+  localStorage.setItem('cafeName', name);
+
+  const amount  = order.total;
+  const desc    = 'Thanh toan don ' + String(order.id).padStart(3,'0');
+  const descEnc = encodeURIComponent(desc);
+
+  // VietQR standard URL
+  const qrUrl = acct
+    ? `https://img.vietqr.io/image/${bank}-${acct}-compact2.png?amount=${amount}&addInfo=${descEnc}&accountName=${encodeURIComponent(name||'')}`
+    : '';
+
+  const imgEl = document.getElementById('qrImage');
+  if(qrUrl) {
+    imgEl.src = qrUrl;
+    imgEl.onerror = () => { imgEl.src=''; imgEl.alt='⚠️ Nhập số TK để tạo QR'; };
+  } else {
+    imgEl.src = '';
+    imgEl.alt = '← Nhập số tài khoản';
+  }
+
+  const bankNames = {VCB:'Vietcombank',TCB:'Techcombank',MB:'MBBank',VPB:'VPBank',ACB:'ACB',BIDV:'BIDV',VTB:'Vietinbank',TPB:'TPBank',MSB:'MSB',OCB:'OCB',SHB:'SHB',VIB:'VIB'};
+  document.getElementById('qrBankLabel').textContent  = bankNames[bank] || bank;
+  document.getElementById('qrAcctLabel').textContent  = acct || '—';
+  document.getElementById('qrAmountLabel').textContent = fmtFull(amount);
+  document.getElementById('qrDescLabel').textContent  = desc;
+}
+
+function fmtFull(n) {
+  return n.toLocaleString('vi-VN') + 'đ';
+}
+
+function confirmPaid() {
+  showToast('✓ Đã xác nhận thanh toán', 'success');
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById('receiptModal').classList.remove('open');
+  currentReceiptOrder = null;
+}
+
+function printReceipt() {
+  const order = currentReceiptOrder;
+  if(!order) return;
+
+  const lines = order.items.map(i => {
+    const pad = (s,n) => String(s).padEnd(n,' ').slice(0,n);
+    const base = pad(i.emoji+' '+i.name+' x'+i.qty, 28);
+    const price = fmtFull(i.price*i.qty).padStart(10,' ');
+    const note = i.note ? '\n    > '+i.note : '';
+    return base + price + note;
+  }).join('\n');
+
+  const dashes = '-'.repeat(38);
+  const bill = `
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body { font-family:'Courier New',monospace; font-size:12px; width:300px; margin:0 auto; padding:8px; }
+  .c { text-align:center; }
+  .r { text-align:right; }
+  .b { font-weight:bold; font-size:13px; }
+  .lg { font-size:15px; font-weight:bold; }
+  pre { white-space:pre-wrap; margin:0; font-family:inherit; font-size:12px; }
+</style>
+</head><body>
+<div class="c lg">☕ CAFÉ MANAGER</div>
+<div class="c" style="font-size:11px;margin:.2rem 0">-----------------------------------</div>
+<div class="c">Đơn #${String(order.id).padStart(3,'0')} · ${order.time}</div>
+<div class="c" style="font-size:10px">${new Date().toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+<pre>${dashes}</pre>
+<pre>${lines}</pre>
+<pre>${dashes}</pre>
+<div style="display:flex;justify-content:space-between" class="b"><span>TỔNG CỘNG</span><span>${fmtFull(order.total)}</span></div>
+<div style="display:flex;justify-content:space-between"><span>Thanh toán</span><span>${order.pay}</span></div>
+${order.note ? `<div style="font-size:11px;margin-top:.3rem">📝 ${order.note}</div>` : ''}
+<pre>${dashes}</pre>
+<div class="c" style="font-size:11px">Cảm ơn quý khách! 🙏</div>
+<div class="c" style="font-size:10px;margin-top:.2rem">Hẹn gặp lại lần sau ☕</div>
+</body></html>`;
+
+  const frame = document.getElementById('printFrame');
+  frame.style.display = 'block';
+  frame.contentDocument.open();
+  frame.contentDocument.write(bill);
+  frame.contentDocument.close();
+  setTimeout(()=>{
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+    setTimeout(()=>{ frame.style.display='none'; }, 1000);
+  }, 400);
+  showToast('🖨️ Đang mở cửa sổ in...', 'success');
+}
 
 // ─── INGREDIENTS ─────────────────────────────────────────────────────
 function addIngredient() {
