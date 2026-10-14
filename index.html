@@ -1657,27 +1657,7 @@ function startRealtimeSync() {
 </script>
 <script>
 // ─── DATA ───────────────────────────────────────────────────────────
-let products = [
-  // Cà Phê
-  { id:1,  name:'Cà Phê Đen',            price:25000, cat:'Cà Phê', emoji:'☕', stock:999 },
-  { id:2,  name:'Cà Phê Sữa',            price:30000, cat:'Cà Phê', emoji:'🥛', stock:999 },
-  { id:3,  name:'Bạc Xỉu',               price:30000, cat:'Cà Phê', emoji:'🍶', stock:999 },
-  { id:4,  name:'Cà Phê Muối',           price:35000, cat:'Cà Phê', emoji:'🧂', stock:999 },
-  { id:5,  name:'Phindi Hạnh Nhân',      price:45000, cat:'Cà Phê', emoji:'🌰', stock:999 },
-  { id:6,  name:'Buôn Mê (Kem Dẻo)',    price:40000, cat:'Cà Phê', emoji:'🍦', stock:999 },
-  // Coldbrew
-  { id:7,  name:'Coldbrew Chanh Vàng',   price:40000, cat:'Coldbrew', emoji:'🍋', stock:999 },
-  { id:8,  name:'Coldbrew Mơ Xí Muội',  price:40000, cat:'Coldbrew', emoji:'🍑', stock:999 },
-  // Trà
-  { id:9,  name:'Trà Đào Cam Sả',        price:35000, cat:'Trà', emoji:'🍑', stock:999 },
-  { id:10, name:'Trà Ổi Hồng',           price:35000, cat:'Trà', emoji:'🍈', stock:999 },
-  { id:11, name:'Trà Lựu Hạt Lạnh',     price:38000, cat:'Trà', emoji:'🍷', stock:999 },
-  // Matcha
-  { id:12, name:'Matcha Latte',          price:40000, cat:'Matcha', emoji:'🍵', stock:999 },
-  { id:13, name:'Coco Matcha',           price:42000, cat:'Matcha', emoji:'🥥', stock:999 },
-  { id:14, name:'Coldwhisk',             price:40000, cat:'Matcha', emoji:'❄️', stock:999 },
-  { id:15, name:'Matcha Khoai Môn',      price:42000, cat:'Matcha', emoji:'💜', stock:999 },
-];
+let products = [];
 
 // recipes: { productId: [ { ingrId, qty, type:'semi'|'raw' } ] }
 let recipes = {};
