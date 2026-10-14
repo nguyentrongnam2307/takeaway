@@ -1256,7 +1256,14 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
 <div class="modal-overlay" id="toppingModal">
   <div class="modal topping-modal">
     <div class="modal-title" id="toppingModalTitle">☕ Thêm tuỳ chọn</div>
-    
+
+    <!-- Giá realtime -->
+    <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:1rem;padding:.6rem .9rem;background:var(--bg);border-radius:10px;border:1px solid var(--rule)">
+      <span style="font-size:12px;font-weight:400;color:var(--muted)">Thành tiền:</span>
+      <span id="toppingLivePrice" style="font-family:'Segoe UI',cursive;font-size:1.35rem;font-weight:700;color:#0E5BC7">0đ</span>
+      <span id="toppingPriceBreakdown" style="font-size:11px;font-weight:400;color:var(--muted)"></span>
+    </div>
+
     <div style="font-size:11.5px;font-weight:400;color:var(--soft);margin-bottom:.4rem;">Kích cỡ</div>
     <div class="size-grid" id="sizeGrid">
       <button class="size-btn selected" onclick="selectSize(this,'S')">S · Nhỏ</button>
@@ -1264,14 +1271,15 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
       <button class="size-btn" onclick="selectSize(this,'L')">L · Lớn <span style="font-size:10px;color:var(--muted)">+10k</span></button>
     </div>
 
-    <div style="font-size:11.5px;font-weight:400;color:var(--soft);margin-bottom:.4rem;">Topping</div>
+    <div style="font-size:11.5px;font-weight:400;color:var(--soft);margin:.7rem 0 .4rem;">Topping</div>
     <div class="topping-grid" id="toppingGrid"></div>
+    <div id="toppingEmptyNote" style="display:none;font-size:12px;font-weight:400;color:var(--muted);padding:.4rem .2rem">Chưa có topping — thêm tại Cài đặt → Thành phẩm</div>
 
-    <textarea class="note-input" id="itemNote" rows="2" placeholder="📝 Ghi chú cho món này (ít đá, ít ngọt...)" style="width:100%;margin:.5rem 0"></textarea>
+    <textarea class="note-input" id="itemNote" rows="2" placeholder="📝 Ghi chú cho món này (ít đá, ít ngọt...)" style="width:100%;margin:.6rem 0"></textarea>
 
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeToppingModal()">Huỷ</button>
-      <button class="btn btn-green" onclick="confirmAddToCart()">Thêm vào giỏ →</button>
+      <button class="btn btn-green" onclick="confirmAddToCart()" id="toppingConfirmBtn">Thêm vào giỏ →</button>
     </div>
   </div>
 </div>
@@ -1915,28 +1923,60 @@ function openToppingModal(prod) {
   document.querySelector('.size-btn').classList.add('selected');
   selectedSize = 'S';
   // Render toppings
+  const toppings = getToppings();
   const grid = document.getElementById('toppingGrid');
-  grid.innerHTML = TOPPINGS.map(t=>`
-    <div class="topping-card" id="tc-${t.id}" onclick="toggleTopping('${t.id}')">
-      <span>${t.emoji}</span>
-      <span>${t.name}</span>
-      <span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>
-    </div>
-  `).join('');
+  const emptyNote = document.getElementById('toppingEmptyNote');
+  if(toppings.length) {
+    grid.innerHTML = toppings.map(t=>`
+      <div class="topping-card" id="tc-${t.id}" onclick="toggleTopping('${t.id}')">
+        <span>${t.emoji}</span>
+        <span>${t.name}</span>
+        <span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>
+      </div>
+    `).join('');
+    if(emptyNote) emptyNote.style.display = 'none';
+  } else {
+    grid.innerHTML = '';
+    if(emptyNote) emptyNote.style.display = 'block';
+  }
   document.getElementById('itemNote').value = '';
+  updateToppingLivePrice();
   document.getElementById('toppingModal').classList.add('open');
+}
+
+function updateToppingLivePrice() {
+  if(!pendingProduct) return;
+  const toppings = getToppings();
+  const toppingSum = toppings.filter(t=>selectedToppings.has(t.id)).reduce((a,t)=>a+t.price,0);
+  const sizeAdd = SIZE_PRICE[selectedSize] || 0;
+  const total = pendingProduct.price + toppingSum + sizeAdd;
+
+  document.getElementById('toppingLivePrice').textContent = fmtFull(total);
+
+  // Breakdown chỉ hiện khi có thêm
+  const parts = [];
+  if(sizeAdd) parts.push(`size +${sizeAdd/1000}k`);
+  if(toppingSum) parts.push(`topping +${toppingSum/1000}k`);
+  const bdEl = document.getElementById('toppingPriceBreakdown');
+  bdEl.textContent = parts.length ? `(${fmtFull(pendingProduct.price)} + ${parts.join(' + ')})` : '';
+
+  // Cập nhật label nút
+  const btn = document.getElementById('toppingConfirmBtn');
+  if(btn) btn.textContent = `Thêm vào giỏ · ${fmtFull(total)} →`;
 }
 
 function toggleTopping(tid) {
   const el = document.getElementById('tc-'+tid);
   if(selectedToppings.has(tid)) { selectedToppings.delete(tid); el.classList.remove('selected'); }
   else { selectedToppings.add(tid); el.classList.add('selected'); }
+  updateToppingLivePrice();
 }
 
 function selectSize(btn, size) {
   document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedSize = size;
+  updateToppingLivePrice();
 }
 
 function closeToppingModal() {
