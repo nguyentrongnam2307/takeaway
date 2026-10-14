@@ -310,22 +310,25 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
 /* ══════════ ORDERS LIST ══════════ */
 .orders-list { display:flex; flex-direction:column; gap:8px; }
 .order-card {
-  background:#fff; border-radius:var(--radius); border:1px solid var(--rule);
+  background:#fff; border-radius:var(--radius); border:1.5px solid var(--rule);
   padding:.75rem 1rem; display:flex; align-items:center; gap:1rem;
   box-shadow:0 2px 0 var(--rule);
+  transition:background .2s, border-color .2s;
 }
-.order-card.pending { border-left:4px solid var(--yellow); }
-.order-card.done    { border-left:4px solid var(--green); opacity:.7; }
+.order-card.pending   { background:#FFFBEA; border-color:#F5C518; border-left:5px solid #F5C518; box-shadow:0 2px 0 #e6b800; }
+.order-card.done      { background:#F0FFF4; border-color:#22c55e; border-left:5px solid #22c55e; box-shadow:0 2px 0 #16a34a; opacity:.8; }
+.order-card.cancelled { border-left:4px solid #ccc; opacity:.45; }
 .order-num { font-family:'Segoe UI',cursive; font-size:1.2rem; font-weight:400; color:var(--green); flex-shrink:0; }
 .order-info { flex:1; }
 .order-items-text { font-size:12.5px; font-weight:400; color:var(--ink); }
 .order-meta { font-size:11px; font-weight:400; color:var(--muted); }
 .order-amount { font-family:'Segoe UI',cursive; font-size:1rem; font-weight:400; color:var(--ink); flex-shrink:0; }
 .order-status {
-  font-size:10.5px; font-weight:400; padding:.2rem .65rem; border-radius:20px;
+  font-size:11px; font-weight:800; padding:.25rem .75rem; border-radius:20px;
 }
-.order-status.pending { background:#FFF6CC; color:#B8900A; }
-.order-status.done    { background:#D6E6FF;  color:#0E5BC7; }
+.order-status.pending   { background:#F5C518; color:#7a5a00; }
+.order-status.done      { background:#22c55e; color:#fff; }
+.order-status.cancelled { background:#e5e7eb; color:#9ca3af; }
 
 /* ══════════ MODAL ══════════ */
 .modal-overlay {
@@ -347,8 +350,8 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
 .receipt-row { display:flex; justify-content:space-between; font-size:13px; font-weight:400; color:var(--soft); padding:.25rem 0; }
 .receipt-row.total { font-size:15px; font-weight:400; color:var(--ink); padding-top:.5rem; border-top:2px dashed var(--rule); margin-top:.3rem; }
 .receipt-row.total span:last-child { color:var(--green); }
-.modal-actions { display:flex; gap:.6rem; margin-top:1.2rem; }
-.modal-actions .btn { flex:1; text-align:center; }
+.modal-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1.2rem; }
+.modal-actions .btn { flex:1; min-width:90px; text-align:center; padding:.5rem .6rem; font-size:13px; }
 
 /* ══════════ TAB VIEWS ══════════ */
 .view { display:none; }
@@ -695,12 +698,11 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
 
     <!-- ORDER DETAIL MODAL (inside main content flow) -->
     <div class="modal-overlay" id="orderDetailModal">
-      <div class="modal" style="max-width:460px">
+      <div class="modal" style="max-width:520px">
         <div class="modal-title">🧾 Chi tiết đơn hàng</div>
         <div id="orderDetailContent"></div>
-        <div class="modal-actions">
-          <button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')">✕ Đóng</button>
-          <button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button>
+        <div class="modal-actions" id="orderDetailActions">
+          <!-- filled dynamically -->
         </div>
       </div>
     </div>
@@ -1303,7 +1305,7 @@ html, body { height: 100%; font-family: 'Segoe UI'; color: var(--ink); font-size
 
 <!-- RECEIPT MODAL -->
 <div class="modal-overlay" id="receiptModal">
-  <div class="modal" style="max-width:460px">
+  <div class="modal" style="max-width:520px">
     <div class="modal-title">🎉 Thanh toán thành công!</div>
 
     <!-- Tabs -->
@@ -1662,14 +1664,85 @@ function startRealtimeSync() {
   });
   // Sync orders hôm nay theo realtime
   const today = new Date().toISOString().slice(0,10);
+  let _knownOrderIds = null; // null = lần load đầu, chưa so sánh
   db.collection('orders').where('date','==',today).onSnapshot(snap => {
-    if(!snap.empty) {
-      orders = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
-      orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
-      // Nếu đang ở tab orders thì re-render
-      if(document.getElementById('view-orders')?.classList.contains('active')) renderOrders();
+    const newOrders = snap.docs.map(d => d.data()).sort((a,b) => b.id - a.id);
+    // Phát hiện đơn mới từ khách
+    if (_knownOrderIds !== null) {
+      newOrders.forEach(o => {
+        if (!_knownOrderIds.has(String(o.id)) && o.source === 'customer') {
+          notifyNewCustomerOrder(o);
+        }
+      });
     }
+    _knownOrderIds = new Set(newOrders.map(o => String(o.id)));
+    orders = newOrders;
+    orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
+    updateOrdersBadge();
+    if(document.getElementById('view-orders')?.classList.contains('active')) renderOrders();
   });
+}
+
+// ─── THÔNG BÁO ĐƠN MỚI TỪ KHÁCH ────────────────────────────────────
+let _unreadCustomerOrders = 0;
+
+function notifyNewCustomerOrder(o) {
+  _unreadCustomerOrders++;
+  updateOrdersBadge();
+  // Toast thông báo
+  showNewOrderToast(o);
+  // Âm thanh ding
+  playNotifSound();
+}
+
+function updateOrdersBadge() {
+  // Badge trên pill "Đơn hàng" topbar
+  const pill = [...document.querySelectorAll('.topbar-pill')].find(p => p.textContent.includes('Đơn hàng'));
+  if (!pill) return;
+  const existing = pill.querySelector('.notif-badge');
+  if (_unreadCustomerOrders > 0) {
+    if (existing) { existing.textContent = _unreadCustomerOrders; }
+    else {
+      const b = document.createElement('span');
+      b.className = 'notif-badge';
+      b.textContent = _unreadCustomerOrders;
+      b.style.cssText = 'background:#EF4350;color:#fff;font-size:10px;font-weight:800;padding:.1rem .4rem;border-radius:10px;margin-left:.4rem;vertical-align:middle';
+      pill.appendChild(b);
+    }
+  } else if (existing) existing.remove();
+}
+
+function clearOrdersBadge() {
+  _unreadCustomerOrders = 0;
+  updateOrdersBadge();
+}
+
+function showNewOrderToast(o) {
+  const items = o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ');
+  const msg = `🛎️ Đơn mới từ khách: ${o.custName} — ${items}`;
+  // Dùng toast có sẵn nếu có, không thì tạo tạm
+  const t = document.getElementById('toast') || document.getElementById('snackbar');
+  if (t) {
+    t.textContent = msg;
+    t.className = (t.className||'').replace(/show|ok|err/g,'').trim() + ' show ok';
+    setTimeout(()=>{ t.className = t.className.replace('show','').trim(); }, 4000);
+  }
+}
+
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1100].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.25);
+      o.start(ctx.currentTime + i*0.15);
+      o.stop(ctx.currentTime + i*0.15 + 0.25);
+    });
+  } catch(e) {}
 }
 </script>
 <script>
@@ -1739,17 +1812,18 @@ function switchView(name) {
   const pills = document.querySelectorAll('.topbar-pill');
   if(pillMap[name] !== undefined) pills[pillMap[name]]?.classList.add('active');
 
-  // Ẩn pill "Đơn hàng" & cart panel khi vào Settings
+  // Ẩn pill "Đơn hàng" & cart panel khi vào Settings / Orders / Stats
   const ordersPill = document.querySelectorAll('.topbar-pill')[1];
   if(ordersPill) ordersPill.style.display = (name === 'settings') ? 'none' : '';
   const cartPanel = document.getElementById('cartPanel');
-  if(cartPanel) cartPanel.style.display = (name === 'settings') ? 'none' : '';
+  const hideCart = (name === 'settings' || name === 'orders' || name === 'stats');
+  if(cartPanel) cartPanel.style.display = hideCart ? 'none' : '';
   // Mở rộng main content khi không có cart
   const appEl = document.querySelector('.app');
-  if(appEl) appEl.style.gridTemplateColumns = (name === 'settings') ? '180px 1fr' : '180px 1fr 320px';
+  if(appEl) appEl.style.gridTemplateColumns = hideCart ? '180px 1fr' : '180px 1fr 320px';
 
   if(name==='stats') renderStats();
-  if(name==='orders') renderOrders();
+  if(name==='orders') { renderOrders(); clearOrdersBadge(); }
   if(name==='settings') { switchSettingsTab('menu'); }
 }
 
@@ -2488,16 +2562,20 @@ function renderOrders() {
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-weight:400;">Chưa có đơn hàng nào hôm nay 📦</div>';
     return;
   }
+  const statusLabel = {pending:'⏳ Chờ thanh toán', done:'✅ Hoàn thành', cancelled:'❌ Đã hủy'};
   el.innerHTML = orders.map(o=>`
     <div class="order-card ${o.status}" onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Nhấn để xem chi tiết">
       <div class="order-num">#${String(o.id).padStart(3,'0')}</div>
       <div class="order-info">
-        <div class="order-items-text">${o.items.map(i=>`${i.emoji} ${i.name}×${i.qty}`).join(' · ')}</div>
+        <div class="order-items-text">
+          ${o.source==='customer'?`<span style="background:#FFE0E2;color:#EF4350;font-size:10px;font-weight:800;padding:.1rem .4rem;border-radius:6px;margin-right:.3rem">🛎️ Khách đặt · ${o.custName||''}</span>`:''}
+          ${o.items.map(i=>`${i.emoji} ${i.name}×${i.qty}`).join(' · ')}
+        </div>
         <div class="order-meta">${o.time} · ${o.pay}${o.note?` · ${o.note}`:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem">
         <div class="order-amount">${fmt(o.total)}</div>
-        <span class="order-status ${o.status}">${o.status==='done'?'Hoàn thành':'Đang xử lý'}</span>
+        <span class="order-status ${o.status}">${statusLabel[o.status]||o.status}</span>
         <span style="font-size:10px;color:var(--muted);font-weight:400">🔍 Chi tiết</span>
       </div>
     </div>`).join('');
@@ -2509,15 +2587,24 @@ function viewOrderDetail(id) {
   const el = document.getElementById('orderDetailContent');
   el.innerHTML = `
     <div class="receipt-row"><span>Đơn #${String(o.id).padStart(3,'0')}</span><span>${o.time}</span></div>
+    ${o.source==='customer'?`<div class="receipt-row" style="background:#FFF0F0;border-radius:6px;padding:.3rem .5rem;margin:.2rem 0"><span>🛎️ Khách đặt online</span><span style="font-weight:700;color:#EF4350">${o.custName||''}${o.custPhone?' · '+o.custPhone:''}</span></div>`:''}
     <hr class="modal-divider">
-    ${o.items.map(i=>`
-      <div class="receipt-row">
-        <span style="display:flex;flex-direction:column;gap:1px">
-          <span>${i.emoji} ${i.name} × ${i.qty}</span>
-          ${i.note?`<span style="font-size:11px;color:var(--muted)">${i.note}</span>`:''}
-        </span>
-        <span>${fmt(i.price*i.qty)}</span>
-      </div>`).join('')}
+    ${o.items.map(i=>{
+      // Tách note thành các phần để hiển thị riêng
+      const noteParts = i.note ? i.note.split(' · ').filter(Boolean) : [];
+      const tags = noteParts.map(p => {
+        const isSize = p.startsWith('Size ');
+        return `<span style="display:inline-flex;align-items:center;gap:2px;background:${isSize?'#EEF4FF':'#FFF8E0'};color:${isSize?'#0E5BC7':'#8a6500'};font-size:11px;font-weight:700;padding:.15rem .5rem;border-radius:20px;border:1px solid ${isSize?'#bcd4ff':'#f0d060'}">${p}</span>`;
+      }).join('');
+      return `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:.5rem 0;border-bottom:1px dashed var(--rule);gap:.5rem">
+        <div style="display:flex;flex-direction:column;gap:.35rem;flex:1">
+          <div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.emoji} ${i.name} <span style="font-weight:400;color:var(--muted)">× ${i.qty}</span></div>
+          ${tags ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${tags}</div>` : ''}
+        </div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap">${fmt(i.price*i.qty)}</div>
+      </div>`;
+    }).join('')}
     <hr class="modal-divider">
     ${o.discount>0?`<div class="receipt-row"><span>Tạm tính</span><span>${fmt(o.sub)}</span></div><div class="receipt-row"><span>🎁 Giảm giá</span><span style="color:#0E5BC7">-${fmt(o.discount)}</span></div>`:''}
     <div class="receipt-row total"><span>TỔNG</span><span>${fmt(o.total)}</span></div>
@@ -2527,6 +2614,64 @@ function viewOrderDetail(id) {
   `;
   document.getElementById('orderDetailModal')._currentOrder = o;
   document.getElementById('orderDetailModal').classList.add('open');
+  renderOrderDetailActions(o);
+}
+
+function renderOrderDetailActions(o) {
+  const acts = document.getElementById('orderDetailActions');
+  const close = `<button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')">✕ Đóng</button>`;
+  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button>`;
+
+  let extra = '';
+  if (o.status === 'pending') {
+    extra = `
+      <button class="btn" style="background:#EF4350;color:#fff;border:none" onclick="confirmCancelOrder(${o.id})">❌ Hủy đơn</button>
+      <button class="btn" style="background:#15803d;color:#fff;border:none" onclick="confirmCompleteOrder(${o.id})">✅ Xác nhận hoàn thành</button>`;
+  } else if (o.status === 'done' || o.status === 'cancelled') {
+    extra = `<button class="btn" style="background:#7A90B8;color:#fff;border:none" onclick="confirmRestoreOrder(${o.id})">↩️ Khôi phục</button>`;
+  }
+
+  acts.innerHTML = close + print + extra;
+}
+
+function confirmCancelOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  if (!confirm(`Hủy đơn #${String(o.id).slice(-6)}?\n\nĐơn này sẽ bị đánh dấu đã hủy.`)) return;
+  updateOrderStatus(id, 'cancelled');
+}
+
+function confirmCompleteOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  if (!confirm(`Xác nhận hoàn thành đơn #${String(o.id).slice(-6)}?\n\nĐơn này sẽ được tính vào doanh thu.`)) return;
+  updateOrderStatus(id, 'done');
+}
+
+function confirmRestoreOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const msg = `Khôi phục đơn #${String(o.id).slice(-6)} về trạng thái chờ xử lý?\n\nĐơn này sẽ bị xóa khỏi doanh thu.`;
+  if (!confirm(msg)) return;
+  updateOrderStatus(id, 'pending');
+}
+
+async function updateOrderStatus(id, newStatus) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = newStatus;
+  renderOrderDetailActions(o);
+  renderOrders();
+  // Re-render revenue table immediately if stats view is active
+  if (document.getElementById('view-stats')?.classList.contains('active')) {
+    renderRevenueTable();
+    renderStats();
+  }
+  try {
+    await db.collection('orders').doc(String(id)).update({ status: newStatus });
+  } catch(e) {
+    console.error('updateOrderStatus:', e);
+  }
 }
 
 function printOrderDetail() {
@@ -2549,6 +2694,7 @@ function renderRevenueTable() {
 
   const today = new Date().toISOString().slice(0,10);
   let filtered = orders.filter(o=>{
+    if (o.status !== 'done') return false; // chỉ đơn hoàn thành
     const dateOk = filter === 'all' ? true
       : filter === 'today' ? o.date === today
       : filter === 'day'   ? (dateInput?.value ? o.date === dateInput.value : true)
@@ -2570,7 +2716,7 @@ function renderRevenueTable() {
       <tr onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Xem chi tiết">
         <td style="font-family:'Segoe UI',cursive;font-weight:400;color:#0E5BC7">#${String(o.id).padStart(3,'0')}</td>
         <td style="color:var(--muted)">${o.date||''} ${o.time}</td>
-        <td>${o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ')}</td>
+        <td style="color:var(--soft)">${o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ')}</td>
         <td>${o.pay}</td>
         <td style="text-align:right;font-family:'Segoe UI',cursive;font-weight:400;color:var(--ink)">${fmt(o.total)}</td>
       </tr>`).join('');
@@ -2583,8 +2729,9 @@ function renderRevenueTable() {
 
 // ─── STATS ───────────────────────────────────────────────────────────
 function renderStats() {
-  const totalRevenue = orders.reduce((a,o)=>a+o.total, 0);
-  const totalOrders  = orders.length;
+  const doneOrders   = orders.filter(o => o.status === 'done');
+  const totalRevenue = doneOrders.reduce((a,o)=>a+o.total, 0);
+  const totalOrders  = doneOrders.length;
   const avg = totalOrders ? Math.round(totalRevenue/totalOrders) : 0;
 
   document.getElementById('statRevenue').textContent = fmt(totalRevenue);
