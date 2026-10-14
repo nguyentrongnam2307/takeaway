@@ -519,14 +519,28 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
 /* ══════════ TOAST ══════════ */
 .toast {
-  position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(80px);
+  position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(120px);
   background:var(--ink); color:#fff; padding:.6rem 1.4rem;
   border-radius:20px; font-size:13px; font-weight:400;
-  z-index:9999; transition:transform .3s; white-space:nowrap;
-  border:1px solid rgba(255,255,255,.12);
+  z-index:9999; transition:transform .3s cubic-bezier(.34,1.56,.64,1); white-space:nowrap;
+  border:1px solid rgba(255,255,255,.12); max-width:90vw; text-align:center;
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
 .toast.success { background:var(--green); }
+/* New order alert toast */
+.toast-neworder {
+  position:fixed; top:1rem; left:50%; transform:translateX(-50%) translateY(-120px);
+  background:#EF4350; color:#fff;
+  padding:.8rem 1.6rem; border-radius:16px;
+  font-size:15px; font-weight:600; z-index:10000;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 6px 24px rgba(239,67,80,.45);
+  white-space:nowrap; max-width:92vw; text-align:center;
+  border:2px solid rgba(255,255,255,.3);
+}
+.toast-neworder.show { transform:translateX(-50%) translateY(0); }
+@keyframes ring { 0%,100%{transform:translateX(-50%) translateY(0) rotate(0)} 20%{transform:translateX(-50%) translateY(0) rotate(-6deg)} 40%{transform:translateX(-50%) translateY(0) rotate(6deg)} 60%{transform:translateX(-50%) translateY(0) rotate(-4deg)} 80%{transform:translateX(-50%) translateY(0) rotate(4deg)} }
+.toast-neworder.ring { animation:ring .5s ease .35s; }
 
 /* ══════════ ORDER TABS ══════════ */
 .order-tab {
@@ -761,12 +775,13 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     <!-- SETTINGS VIEW -->
     <div class="view" id="view-settings">
       <!-- Settings tab bar -->
-      <div class="settings-tabs" style="grid-template-columns:repeat(5,1fr);display:grid">
+      <div class="settings-tabs" style="grid-template-columns:repeat(6,1fr);display:grid">
         <button class="settings-tab active" id="stab-menu" onclick="switchSettingsTab('menu')">Món</button>
         <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">NL Thô</button>
         <button class="settings-tab" id="stab-semi" onclick="switchSettingsTab('semi')">Thành phẩm</button>
         <button class="settings-tab" id="stab-recipe" onclick="switchSettingsTab('recipe')">Công thức</button>
         <button class="settings-tab" id="stab-promo" onclick="switchSettingsTab('promo')">Khuyến mãi</button>
+        <button class="settings-tab" id="stab-notif" onclick="switchSettingsTab('notif')">🔔 Thông báo</button>
       </div>
 
       <!-- Tab: Thêm món -->
@@ -1144,6 +1159,60 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
         </div>
       </div>
 
+
+      <!-- Tab: Thông báo -->
+      <div id="stab-content-notif" style="display:none">
+        <div class="section-block" style="margin-bottom:1rem">
+          <div class="section-block-header">
+            <div class="panel-title" style="margin:0">🤖 Telegram Bot</div>
+          </div>
+          <div class="section-block-body">
+            <div style="background:#EBF3FF;border:1px solid #bcd4ff;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:12.5px;color:#0C2D68;line-height:1.7">
+              <b>Cách lấy thông tin:</b><br>
+              1. Chat với <b>@BotFather</b> → <code>/newbot</code> → copy <b>Token</b><br>
+              2. Chat với <b>@userinfobot</b> → copy <b>Chat ID</b><br>
+              3. Nhắn 1 tin cho bot của bạn trước (để bot gửi được)
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:2">
+                <label class="form-label">Bot Token</label>
+                <input class="form-input" id="tgToken" placeholder="123456789:ABCdef..." style="font-family:monospace;font-size:12px">
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Chat ID</label>
+                <input class="form-input" id="tgChatId" placeholder="-100123456" style="font-family:monospace;font-size:12px">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:.8rem">
+              <label class="form-label" style="display:flex;align-items:center;gap:.5rem">
+                <input type="checkbox" id="tgEnabled" style="width:15px;height:15px">
+                Bật thông báo Telegram khi có đơn mới
+              </label>
+            </div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button class="btn btn-green" onclick="saveTgSettings()">💾 Lưu cài đặt</button>
+              <button class="btn btn-outline" onclick="testTgNotif()">📨 Gửi tin thử</button>
+            </div>
+            <div id="tgStatus" style="margin-top:.7rem;font-size:12px;font-weight:400"></div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-header"><div class="panel-title" style="margin:0">Nội dung thông báo</div></div>
+          <div class="section-block-body">
+            <p style="font-size:12.5px;color:var(--soft);margin-bottom:.5rem">Tin nhắn Telegram sẽ gửi dạng:</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:.7rem 1rem;font-size:12px;font-family:monospace;color:#333;line-height:1.8">
+              🛎️ <b>ĐƠN MỚI!</b><br>
+              👤 Khách: [tên khách]<br>
+              📦 Món: [danh sách món]<br>
+              💰 Tổng: [số tiền]đ<br>
+              💳 Thanh toán: [hình thức]<br>
+              🕐 [giờ đặt]
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tab: Công thức -->
       <div id="stab-content-recipe" style="display:none">
         <!-- Form nhập công thức -->
@@ -1415,6 +1484,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 <iframe id="printFrame" style="display:none;position:fixed;inset:0;border:none;width:100%;height:100%"></iframe>
 
 <div class="toast" id="toast"></div>
+<div class="toast-neworder" id="toastNewOrder"></div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -1692,6 +1762,8 @@ function notifyNewCustomerOrder(o) {
   showNewOrderToast(o);
   // Âm thanh ding
   playNotifSound();
+  // Telegram
+  sendTelegram(buildTgMessage(o));
 }
 
 function updateOrdersBadge() {
@@ -1718,30 +1790,52 @@ function clearOrdersBadge() {
 
 function showNewOrderToast(o) {
   const items = o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ');
-  const msg = `🛎️ Đơn mới từ khách: ${o.custName} — ${items}`;
-  // Dùng toast có sẵn nếu có, không thì tạo tạm
-  const t = document.getElementById('toast') || document.getElementById('snackbar');
-  if (t) {
-    t.textContent = msg;
-    t.className = (t.className||'').replace(/show|ok|err/g,'').trim() + ' show ok';
-    setTimeout(()=>{ t.className = t.className.replace('show','').trim(); }, 4000);
+  const name = o.custName ? ` · ${o.custName}` : '';
+  const msg = `🛎️ ĐƠN MỚI${name}\n${items}`;
+
+  // Big red alert toast at top
+  const el = document.getElementById('toastNewOrder');
+  if (el) {
+    el.innerHTML = `🛎️ Đơn mới${name}<br><span style="font-size:12px;font-weight:400;opacity:.9">${items}</span>`;
+    el.classList.add('show');
+    setTimeout(() => el.classList.add('ring'), 10);
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => {
+      el.classList.remove('show','ring');
+    }, 6000);
   }
+}
+
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx || _audioCtx.state === 'closed') {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
 }
 
 function playNotifSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [880, 1100].forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = 'sine'; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.25);
-      o.start(ctx.currentTime + i*0.15);
-      o.stop(ctx.currentTime + i*0.15 + 0.25);
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    // 3-note ding: Do-Mi-Sol (cheerful cash register style)
+    const notes = [523, 659, 784]; // C5, E5, G5
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = now + i * 0.13;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.5, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.start(t);
+      osc.stop(t + 0.35);
     });
-  } catch(e) {}
+  } catch(e) { console.warn('playNotifSound:', e); }
 }
 </script>
 <script>
@@ -2249,6 +2343,9 @@ function doCheckout() {
 }
 
 // ── Bank settings (persist in memory)
+// Load telegram settings at startup
+try { const _tg=JSON.parse(localStorage.getItem('tgSettings')||'{}'); tgSettings={token:_tg.token||'',chatId:_tg.chatId||'',enabled:!!_tg.enabled}; } catch(e){}
+
 let bankSettings = {
   bank: localStorage.getItem('cafeBank') || 'TCB',
   acct: localStorage.getItem('cafeAcct') || '19033779329018',
@@ -3003,7 +3100,7 @@ function showToast(msg, type='') {
 
 // ─── SETTINGS TABS ───────────────────────────────────────────────────
 function switchSettingsTab(tab) {
-  ['menu','ingr','semi','recipe','promo'].forEach(t=>{
+  ['menu','ingr','semi','recipe','promo','notif'].forEach(t=>{
     document.getElementById('stab-content-'+t).style.display = tab===t ? 'block' : 'none';
     document.getElementById('stab-'+t).classList.toggle('active', tab===t);
   });
@@ -3012,6 +3109,7 @@ function switchSettingsTab(tab) {
   if(tab==='ingr')   renderIngredients();
   if(tab==='semi')   { renderSemiList(); toggleSemiSource(); }
   if(tab==='promo')  { renderPromoList(); populatePromoItemSelect(); }
+  if(tab==='notif')  loadTgSettings();
 }
 
 
@@ -4296,6 +4394,76 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('⚠️ Chưa cấu hình Firebase — chạy với dữ liệu local');
   }
 });
+
+
+// ─── TELEGRAM NOTIFICATIONS ──────────────────────────────────────────
+let tgSettings = { token:'', chatId:'', enabled:false };
+
+function loadTgSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('tgSettings') || '{}');
+    tgSettings = { token: s.token||'', chatId: s.chatId||'', enabled: !!s.enabled };
+  } catch(e) {}
+  const el = id => document.getElementById(id);
+  if(el('tgToken'))   el('tgToken').value    = tgSettings.token;
+  if(el('tgChatId'))  el('tgChatId').value   = tgSettings.chatId;
+  if(el('tgEnabled')) el('tgEnabled').checked = tgSettings.enabled;
+}
+
+function saveTgSettings() {
+  tgSettings.token   = (document.getElementById('tgToken')?.value||'').trim();
+  tgSettings.chatId  = (document.getElementById('tgChatId')?.value||'').trim();
+  tgSettings.enabled = document.getElementById('tgEnabled')?.checked || false;
+  localStorage.setItem('tgSettings', JSON.stringify(tgSettings));
+  const st = document.getElementById('tgStatus');
+  if(st) { st.style.color='#15803d'; st.textContent='✅ Đã lưu!'; setTimeout(()=>st.textContent='',2500); }
+}
+
+async function sendTelegram(text) {
+  const { token, chatId, enabled } = tgSettings;
+  if (!enabled || !token || !chatId) return;
+  try {
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
+    });
+    const data = await res.json();
+    if (!data.ok) console.warn('Telegram error:', data.description);
+  } catch(e) { console.warn('sendTelegram:', e); }
+}
+
+async function testTgNotif() {
+  saveTgSettings();
+  const st = document.getElementById('tgStatus');
+  if(!tgSettings.token || !tgSettings.chatId) {
+    if(st) { st.style.color='#EF4350'; st.textContent='⚠️ Chưa nhập Token và Chat ID!'; }
+    return;
+  }
+  if(st) { st.style.color='#0E5BC7'; st.textContent='📨 Đang gửi...'; }
+  const msg = `🛎️ <b>TEST — ĐƠN MỚI!</b>\n\n👤 Khách: Test User\n📦 Món: ☕ Cà Phê Muối×1\n💰 Tổng: 35.000đ\n💳 Thanh toán: Tiền mặt\n🕐 ${new Date().toLocaleTimeString('vi-VN')}`;
+  try {
+    await sendTelegram(msg);
+    if(st) { st.style.color='#15803d'; st.textContent='✅ Gửi thành công! Kiểm tra Telegram của bạn.'; }
+  } catch(e) {
+    if(st) { st.style.color='#EF4350'; st.textContent='❌ Lỗi: ' + e.message; }
+  }
+}
+
+function buildTgMessage(o) {
+  const items = o.items.map(i=>`  • ${i.emoji} ${i.name} ×${i.qty} — ${(i.price*i.qty).toLocaleString('vi-VN')}đ`).join('\n');
+  const name  = o.custName ? `👤 Khách: <b>${o.custName}</b>${o.custPhone ? ' · '+o.custPhone : ''}` : '';
+  return [
+    '🛎️ <b>ĐƠN MỚI!</b>',
+    name,
+    `📦 Món:\n${items}`,
+    `💰 <b>Tổng: ${o.total.toLocaleString('vi-VN')}đ</b>`,
+    `💳 Thanh toán: ${o.pay}`,
+    `🕐 ${o.time || new Date().toLocaleTimeString('vi-VN')}`,
+    `🔖 Đơn #${String(o.id).slice(-6)}`
+  ].filter(Boolean).join('\n\n');
+}
 
 </script>
 </body>
