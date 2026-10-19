@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -314,7 +315,32 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   box-shadow:0 2px 0 var(--rule);
   transition:background .2s, border-color .2s;
 }
+/* pending chưa click: nổi bật */
 .order-card.pending    { background:#FFFBEA; border-color:#F5C518; border-left:5px solid #F5C518; box-shadow:0 2px 0 #e6b800; }
+.order-card.pending.unseen {
+  background:#FFF8D6;
+  border-color:#E6A800;
+  border-left:5px solid #E6A800;
+  box-shadow:0 3px 8px rgba(230,168,0,.28);
+  outline:2px solid #F5C518;
+  outline-offset:1px;
+}
+/* pending đã click: mờ hơn */
+.order-card.pending.seen {
+  background:#FAFAF5;
+  border-color:#D4C980;
+  border-left:5px solid #D4C980;
+  box-shadow:0 1px 0 #c8ba50;
+  opacity:.78;
+}
+/* dot nhấp nháy */
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.2} }
+.unseen-dot {
+  width:9px; height:9px; border-radius:50%;
+  background:#EF4350; flex-shrink:0;
+  animation:blink-dot 1.2s ease-in-out infinite;
+  box-shadow:0 0 0 2px #FFE0E2;
+}
 .order-card.processing { background:#EFF6FF; border-color:#3b82f6; border-left:5px solid #3b82f6; box-shadow:0 2px 0 #2563eb; }
 .order-card.done       { background:#F0FFF4; border-color:#22c55e; border-left:5px solid #22c55e; box-shadow:0 2px 0 #16a34a; opacity:.8; }
 .order-card.cancelled  { border-left:4px solid #ccc; opacity:.45; }
@@ -464,6 +490,11 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   color:#0E5BC7;
 }
 
+/* ══════════ INGREDIENT TABLE ZEBRA ══════════ */
+#ingrTable tbody tr:nth-child(odd)  { background: #F5F8FF; }
+#ingrTable tbody tr:nth-child(even) { background: #FFFFFF; }
+#ingrTable tbody tr:hover           { background: #EBF3FF !important; }
+
 /* ══════════ SEMI-FINISHED CARDS ══════════ */
 .semi-card {
   background:#fff; border:1px solid var(--rule); border-radius:var(--radius);
@@ -518,6 +549,41 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 /* Stock badge on product card */
 .prod-stock-bar { height:4px; border-radius:2px; margin-top:3px; overflow:hidden; background:var(--rule); }
 .prod-stock-bar-fill { height:100%; border-radius:2px; transition:width .4s; }
+
+/* ══════════ LOW STOCK POPUP ══════════ */
+.low-stock-popup {
+  position:fixed;
+  background:#fff; border:1.5px solid #EF4350;
+  border-radius:12px; box-shadow:0 6px 24px rgba(239,67,80,.25);
+  z-index:9000; overflow:hidden;
+  opacity:0; pointer-events:none;
+  transform:translateY(6px);
+  transition:opacity .18s, transform .18s;
+  width:240px;
+}
+.low-stock-popup.open { opacity:1; pointer-events:all; transform:translateY(0); }
+.low-stock-popup-header {
+  background:#EF4350; color:#fff;
+  font-size:11.5px; font-weight:700;
+  padding:.45rem .8rem;
+  display:flex; align-items:center; gap:.4rem;
+}
+.low-stock-popup-body { padding:.4rem .5rem; display:flex; flex-direction:column; gap:3px; max-height:220px; overflow-y:auto; }
+.low-stock-row {
+  display:flex; flex-direction:column; gap:2px;
+  padding:.35rem .6rem; border-radius:8px; font-size:12px;
+  background:#FFF5F5;
+}
+.low-stock-row.out { background:#FFE0E2; }
+.low-stock-name { font-weight:600; color:#1a1a1a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.low-stock-qty { font-size:11px; font-weight:700; color:#EF4350; }
+.low-stock-qty.warn { color:#d97706; }
+.low-stock-popup-footer {
+  padding:.35rem .8rem; border-top:1px solid #f3e0e0;
+  font-size:11px; color:#EF4350; text-align:center; cursor:pointer;
+  background:#fff8f8;
+}
+.low-stock-popup-footer:hover { background:#FFE0E2; }
 
 /* ══════════ TOAST ══════════ */
 .toast {
@@ -679,11 +745,18 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   <nav class="sidenav">
     <div class="nav-label">Menu</div>
     <div class="nav-item active" onclick="switchView('pos')"><span class="nav-icon">🛒</span><span>Bán hàng</span></div>
-    <div class="nav-item" onclick="switchView('orders')"><span class="nav-icon">📋</span><span>Đơn hàng</span></div>
+    <div class="nav-item" onclick="switchView('orders')"><span class="nav-icon">📋</span><span>Đơn hàng</span><span class="nav-badge" id="pendingBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="switchView('stats')"><span class="nav-icon">📊</span><span>Doanh thu</span></div>
 
     <div class="nav-label" style="margin-top:auto">Cài đặt</div>
-    <div class="nav-item" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span>Cài đặt</span><span class="nav-badge" id="lowBadge" style="display:none">0</span></div>
+    <div style="position:relative">
+      <div class="nav-item" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span>Cài đặt</span><span class="nav-badge" id="lowBadge" style="display:none;cursor:pointer" onclick="toggleLowStockPopup(event)">0</span></div>
+      <div class="low-stock-popup" id="lowStockPopup">
+        <div class="low-stock-popup-header">⚠️ Nguyên liệu cần bổ sung</div>
+        <div class="low-stock-popup-body" id="lowStockPopupBody"></div>
+        <div class="low-stock-popup-footer" onclick="switchView('settings');switchSettingsTab('ingr');closeLowStockPopup()">→ Vào Cài đặt để cập nhật</div>
+      </div>
+    </div>
   </nav>
 
   <!-- MAIN CONTENT -->
@@ -868,13 +941,28 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Số lượng</label>
-                <input class="form-input" type="number" id="ingrQty" placeholder="0" step="0.1">
+                <input class="form-input" type="number" id="ingrQty" placeholder="0" step="0.1" oninput="calcIngrConvert()">
               </div>
               <div class="form-group">
                 <label class="form-label">Đơn vị</label>
-                <select class="form-input" id="ingrUnit">
+                <select class="form-input" id="ingrUnit" onchange="calcIngrConvert()">
                   <option>kg</option><option>g</option><option>lít</option><option>ml</option><option>gói</option><option>hộp</option><option>cái</option>
                 </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Quy cách / Định lượng 1 đơn vị</label>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input class="form-input" type="number" id="ingrSpec" placeholder="454" step="0.01" oninput="calcIngrConvert()" style="flex:1;min-width:0">
+                  <select class="form-input" id="ingrSpecUnit" onchange="calcIngrConvert()" style="width:72px;padding:.5rem .4rem">
+                    <option>g</option><option>kg</option><option>ml</option><option>lít</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Quy đổi ra</label>
+                <input class="form-input" id="ingrConvert" placeholder="—" disabled style="background:#F0F4FA;color:var(--soft);cursor:default;font-weight:700;color:#0E5BC7">
               </div>
             </div>
             <div class="form-row">
@@ -884,7 +972,12 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
               </div>
               <div class="form-group">
                 <label class="form-label">Ngưỡng cảnh báo</label>
-                <input class="form-input" type="number" id="ingrMin" placeholder="2">
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input class="form-input" type="number" id="ingrMin" placeholder="2" step="0.01" style="flex:1;min-width:0">
+                  <select class="form-input" id="ingrMinUnit" style="width:72px;padding:.5rem .4rem">
+                    <option>g</option><option>kg</option><option>ml</option><option>lít</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div style="display:flex;gap:.6rem">
@@ -908,6 +1001,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
                   <th style="text-align:right;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Số lượng</th>
                   <th style="text-align:left;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Đơn vị</th>
                   <th style="text-align:right;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Ngưỡng</th>
+                  <th style="text-align:right;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Tồn quy đổi</th>
                   <th style="text-align:left;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Nhà cung cấp</th>
                   <th style="text-align:right;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Giá nhập</th>
                   <th style="text-align:center;padding:.5rem .7rem;font-weight:400;color:var(--soft)">Trạng thái</th>
@@ -1628,6 +1722,7 @@ async function initFromFirebase() {
   renderProducts();
   renderIngredients();
   updateLowBadge();
+  updatePendingBadge();
   renderOrderTabs();
   togglePromoType();
   renderPromoList();
@@ -1712,6 +1807,7 @@ function startRealtimeSync() {
     orders = newOrders;
     orderCounter = Math.max(...orders.map(o=>Number(o.id)||0), 0) + 1;
     updateOrdersBadge();
+    updatePendingBadge();
     if(document.getElementById('view-orders')?.classList.contains('active')) renderOrders();
   });
 }
@@ -1719,6 +1815,22 @@ function startRealtimeSync() {
 // ─── THÔNG BÁO ĐƠN MỚI TỪ KHÁCH ────────────────────────────────────
 let _unreadCustomerOrders = 0;
 let _readOrderIds = new Set(JSON.parse(localStorage.getItem('readOrderIds')||'[]'));
+// Badge đơn pending chưa click: tất cả pending (không phân biệt source)
+let _seenPendingIds = new Set(JSON.parse(localStorage.getItem('seenPendingIds')||'[]'));
+
+function updatePendingBadge() {
+  const unseen = orders.filter(o => o.status === 'pending' && !_seenPendingIds.has(String(o.id))).length;
+  const el = document.getElementById('pendingBadge');
+  if (!el) return;
+  el.textContent = unseen;
+  el.style.display = unseen > 0 ? 'inline' : 'none';
+}
+
+function markPendingSeen(orderId) {
+  _seenPendingIds.add(String(orderId));
+  try { localStorage.setItem('seenPendingIds', JSON.stringify([..._seenPendingIds])); } catch(e) {}
+  updatePendingBadge();
+}
 
 function showUnreadOnLoadAlert(unreadList) {
   const el = document.getElementById('toastNewOrder');
@@ -2575,12 +2687,15 @@ function printReceipt() {
 
 // ─── INGREDIENTS ─────────────────────────────────────────────────────
 function addIngredient() {
-  const name = document.getElementById('ingrName').value.trim();
-  const qty  = parseFloat(document.getElementById('ingrQty').value);
-  const unit = document.getElementById('ingrUnit').value;
-  const cost = parseInt(document.getElementById('ingrCost').value)||0;
-  const min  = parseFloat(document.getElementById('ingrMin').value)||0;
-  const sup  = document.getElementById('ingrSupplier').value.trim();
+  const name     = document.getElementById('ingrName').value.trim();
+  const qty      = parseFloat(document.getElementById('ingrQty').value);
+  const unit     = document.getElementById('ingrUnit').value;
+  const cost     = parseInt(document.getElementById('ingrCost').value)||0;
+  const min      = parseFloat(document.getElementById('ingrMin').value)||0;
+  const sup      = document.getElementById('ingrSupplier').value.trim();
+  const spec     = parseFloat(document.getElementById('ingrSpec')?.value)||0;
+  const specUnit = document.getElementById('ingrSpecUnit')?.value||'g';
+  const minUnit  = document.getElementById('ingrMinUnit')?.value||'g';
 
   if(!name || isNaN(qty)) { showToast('⚠️ Vui lòng nhập tên và số lượng'); return; }
 
@@ -2589,7 +2704,7 @@ function addIngredient() {
     existing.qty += qty;
     showToast(`✓ Đã cộng thêm ${qty} ${unit} ${name}`, 'success');
   } else {
-    ingredients.push({ id: Date.now(), name, qty, unit, min, cost, supplier:sup });
+    ingredients.push({ id: Date.now(), name, qty, unit, min, minUnit, cost, supplier:sup, spec, specUnit });
     showToast(`✓ Đã thêm ${name} vào kho`, 'success');
   }
   clearIngrForm();
@@ -2598,9 +2713,73 @@ function addIngredient() {
 }
 
 function clearIngrForm() {
-  ['ingrName','ingrQty','ingrCost','ingrMin','ingrSupplier'].forEach(id=>{
+  ['ingrName','ingrQty','ingrCost','ingrMin','ingrSupplier','ingrSpec'].forEach(id=>{
     document.getElementById(id).value='';
   });
+  const conv = document.getElementById('ingrConvert');
+  if(conv) conv.value = '';
+  const minUnitEl = document.getElementById('ingrMinUnit');
+  if(minUnitEl) minUnitEl.value = 'g';
+}
+
+function calcIngrConvert() {
+  const qty      = parseFloat(document.getElementById('ingrQty')?.value) || 0;
+  const unit     = document.getElementById('ingrUnit')?.value || '';
+  const spec     = parseFloat(document.getElementById('ingrSpec')?.value) || 0;
+  const specUnit = document.getElementById('ingrSpecUnit')?.value || 'g';
+  const conv     = document.getElementById('ingrConvert');
+  if(!conv) return;
+  if(!qty || !spec) { conv.value = '—'; return; }
+
+  const total = qty * spec; // tổng theo specUnit
+
+  // Quy đổi về đơn vị phù hợp để hiển thị
+  let display = '';
+  if(specUnit === 'g') {
+    if(total >= 1000) display = `${(total/1000).toLocaleString('vi-VN',{maximumFractionDigits:2})} kg`;
+    else              display = `${total.toLocaleString('vi-VN',{maximumFractionDigits:2})} g`;
+  } else if(specUnit === 'kg') {
+    if(total < 1)     display = `${(total*1000).toLocaleString('vi-VN',{maximumFractionDigits:2})} g`;
+    else              display = `${total.toLocaleString('vi-VN',{maximumFractionDigits:2})} kg`;
+  } else if(specUnit === 'ml') {
+    if(total >= 1000) display = `${(total/1000).toLocaleString('vi-VN',{maximumFractionDigits:2})} lít`;
+    else              display = `${total.toLocaleString('vi-VN',{maximumFractionDigits:2})} ml`;
+  } else if(specUnit === 'lít') {
+    if(total < 1)     display = `${(total*1000).toLocaleString('vi-VN',{maximumFractionDigits:2})} ml`;
+    else              display = `${total.toLocaleString('vi-VN',{maximumFractionDigits:2})} lít`;
+  } else {
+    display = `${total.toLocaleString('vi-VN',{maximumFractionDigits:2})} ${specUnit}`;
+  }
+  conv.value = `${qty} ${unit} × ${spec} ${specUnit} = ${display}`;
+}
+
+// Format số base (g/ml) thành chuỗi dễ đọc
+function formatBase(valBase, specUnit) {
+  const isWeight = specUnit === 'g' || specUnit === 'kg';
+  if(isWeight) {
+    if(valBase >= 1000) return (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' kg';
+    return valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' g';
+  } else {
+    if(valBase >= 1000) return (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' lít';
+    return valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' ml';
+  }
+}
+
+// Chuyển về đơn vị cơ sở (g hoặc ml) để so sánh
+function toBase(val, unit) {
+  if(unit === 'kg')  return val * 1000;
+  if(unit === 'lít') return val * 1000;
+  return val; // g hoặc ml giữ nguyên
+}
+// Tổng quy đổi của tồn kho (qty * spec → g/ml)
+function ingrTotalInBase(i) {
+  if(!i.spec || !i.specUnit) return i.qty;
+  return i.qty * toBase(i.spec, i.specUnit);
+}
+// Ngưỡng cảnh báo → cùng base unit
+function ingrMinInBase(i) {
+  if(!i.min) return 0;
+  return toBase(i.min, i.minUnit || i.specUnit || 'g');
 }
 
 function renderIngredients() {
@@ -2610,14 +2789,29 @@ function renderIngredients() {
   const tbody = document.getElementById('ingrTableBody');
   if(tbody) {
     tbody.innerHTML = filtered.map(i=>{
-      const status = i.qty === 0 ? 'out' : i.qty < i.min ? 'low' : 'ok';
-      const label  = i.qty === 0 ? 'Hết kho' : i.qty < i.min ? 'Sắp hết' : 'Đủ kho';
+      // Tính tổng quy đổi (về g hoặc ml làm cơ sở so sánh)
+      const totalConverted = ingrTotalInBase(i);   // số thực tế → base unit (g/ml)
+      const minConverted   = ingrMinInBase(i);     // ngưỡng → cùng base unit
+      const hasSpec = i.spec && i.spec > 0;
+      const status = i.qty === 0 ? 'out'
+                   : hasSpec ? (totalConverted < minConverted ? 'low' : 'ok')
+                   : (i.qty < i.min ? 'low' : 'ok');
+      const label  = i.qty === 0 ? 'Hết kho' : status === 'low' ? 'Sắp hết' : 'Đủ kho';
       const colors = {ok:'#0E5BC7',low:'#B8900A',out:'#EF4350'};
+      // Ngưỡng: chỉ hiện nếu có min VÀ có minUnit (tức là đã nhập đúng kiểu mới)
+      const hasMinUnit = i.min && i.minUnit;
+      const minDisplay = hasMinUnit ? `${i.min} ${i.minUnit}` : (i.min ? `${i.min}` : '—');
+      // Tồn quy đổi
+      const convertedDisplay = hasSpec
+        ? formatBase(ingrTotalInBase(i), i.specUnit)
+        : '—';
+      const convertedColor = status === 'out' ? '#EF4350' : status === 'low' ? '#B8900A' : '#0E5BC7';
       return `<tr>
         <td style="padding:.45rem .7rem;font-weight:400;color:var(--ink)">${i.name}</td>
         <td style="padding:.45rem .7rem;text-align:right;font-weight:400;color:${colors[status]}">${i.qty}</td>
         <td style="padding:.45rem .7rem">${i.unit}</td>
-        <td style="padding:.45rem .7rem;text-align:right">${i.min}</td>
+        <td style="padding:.45rem .7rem;text-align:right;color:var(--soft);font-size:12px">${minDisplay}</td>
+        <td style="padding:.45rem .7rem;text-align:right;font-weight:700;color:${convertedColor}">${convertedDisplay}</td>
         <td style="padding:.45rem .7rem;color:var(--soft)">${i.supplier||'—'}</td>
         <td style="padding:.45rem .7rem;text-align:right">${i.cost ? (i.cost/1000).toFixed(0)+'k' : '—'}</td>
         <td style="padding:.45rem .7rem;text-align:center"><span style="font-size:11px;font-weight:400;padding:.15rem .45rem;border-radius:10px;background:${status==='ok'?'#D6E6FF':status==='low'?'#FFF6CC':'#FFE0E2'};color:${colors[status]}">${label}</span></td>
@@ -2632,11 +2826,61 @@ function renderIngredients() {
 
 
 function updateLowBadge() {
-  const low = ingredients.filter(i=>i.qty<i.min).length;
+  const lowList = ingredients.filter(i=>{
+    if(i.qty === 0) return true;
+    if(i.spec && i.spec > 0) return ingrTotalInBase(i) < ingrMinInBase(i);
+    return i.qty < i.min;
+  });
   const el = document.getElementById('lowBadge');
-  el.textContent = low;
-  el.style.display = low ? 'inline' : 'none';
+  el.textContent = lowList.length;
+  el.style.display = lowList.length ? 'inline' : 'none';
+  // populate popup
+  const body = document.getElementById('lowStockPopupBody');
+  if(body) {
+    body.innerHTML = lowList.length ? lowList.map(i=>{
+      const isOut = i.qty <= 0;
+      const label = isOut ? '🔴 Hết' : '🟡 Sắp hết';
+      const qtyClass = isOut ? 'low-stock-qty' : 'low-stock-qty warn';
+      return `<div class="low-stock-row${isOut?' out':''}">
+        <span class="low-stock-name">${i.name}</span>
+        <span class="${qtyClass}">${label} (còn ${i.qty} ${i.unit||''})</span>
+      </div>`;
+    }).join('') : '';
+  }
 }
+
+function toggleLowStockPopup(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('lowStockPopup');
+  if(popup.classList.contains('open')) { popup.classList.remove('open'); return; }
+  // Position: above the badge, aligned to left edge of sidebar
+  const badge = document.getElementById('lowBadge');
+  const rect = badge.getBoundingClientRect();
+  const popupW = 240;
+  // Try to place to the right of sidebar, fallback to left-aligned
+  const sidenavEl = document.querySelector('.sidenav');
+  const sideW = sidenavEl ? sidenavEl.getBoundingClientRect().right : rect.right;
+  let left = sideW + 8;
+  // If not enough space on right, place above aligned left
+  if(left + popupW > window.innerWidth - 8) left = Math.max(8, rect.left);
+  const bottom = window.innerHeight - rect.top + 8;
+  popup.style.left = left + 'px';
+  popup.style.bottom = bottom + 'px';
+  popup.style.top = 'auto';
+  popup.classList.add('open');
+}
+
+function closeLowStockPopup() {
+  document.getElementById('lowStockPopup')?.classList.remove('open');
+}
+
+// Close popup khi click ra ngoài
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('lowStockPopup');
+  if(popup && !popup.contains(e.target) && e.target.id !== 'lowBadge') {
+    popup.classList.remove('open');
+  }
+});
 
 // ─── ORDERS ──────────────────────────────────────────────────────────
 function renderOrders() {
@@ -2646,8 +2890,23 @@ function renderOrders() {
     return;
   }
   const statusLabel = {pending:'⏳ Chờ xử lý', processing:'🔧 Đang làm', done:'✅ Hoàn thành', cancelled:'❌ Đã hủy'};
-  el.innerHTML = orders.map(o=>`
-    <div class="order-card ${o.status}" onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Nhấn để xem chi tiết">
+  el.innerHTML = orders.map(o=>{
+    const isPending = o.status === 'pending';
+    const isSeen = _seenPendingIds.has(String(o.id));
+    const seenClass = isPending ? (isSeen ? ' seen' : ' unseen') : '';
+    const dotHtml = isPending && !isSeen
+      ? `<span class="unseen-dot" title="Chưa xem"></span>`
+      : isPending && isSeen
+        ? `<span style="font-size:14px;opacity:.6" title="Đã xem">👁️</span>`
+        : '';
+    const hintText = isPending && !isSeen
+      ? `<span style="font-size:10px;color:#c47c00;font-weight:700">● Chưa xem</span>`
+      : isPending && isSeen
+        ? `<span style="font-size:10px;color:var(--muted);font-weight:400">👁️ Đã xem</span>`
+        : `<span style="font-size:10px;color:var(--muted);font-weight:400">🔍 Chi tiết</span>`;
+    return `
+    <div class="order-card ${o.status}${seenClass}" onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Nhấn để xem chi tiết">
+      ${dotHtml ? `<div style="display:flex;align-items:center">${dotHtml}</div>` : ''}
       <div class="order-num">#${String(o.id).padStart(3,'0')}</div>
       <div class="order-info">
         <div class="order-items-text">
@@ -2659,9 +2918,10 @@ function renderOrders() {
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem">
         <div class="order-amount">${fmt(o.total)}</div>
         <span class="order-status ${o.status}">${statusLabel[o.status]||o.status}</span>
-        <span style="font-size:10px;color:var(--muted);font-weight:400">🔍 Chi tiết</span>
+        ${hintText}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function viewOrderDetail(id) {
@@ -2698,6 +2958,7 @@ function viewOrderDetail(id) {
   document.getElementById('orderDetailModal')._currentOrder = o;
   document.getElementById('orderDetailModal').classList.add('open');
   if(o.source==='customer') markOrderRead(o.id);
+  if(o.status==='pending') markPendingSeen(o.id);
   renderOrderDetailActions(o);
 }
 
@@ -2757,6 +3018,7 @@ async function updateOrderStatus(id, newStatus) {
   o.status = newStatus;
   renderOrderDetailActions(o);
   renderOrders();
+  updatePendingBadge();
   // Re-render revenue table immediately if stats view is active
   if (document.getElementById('view-stats')?.classList.contains('active')) {
     renderRevenueTable();
@@ -3045,6 +3307,10 @@ function editIngredient(id) {
   document.getElementById('ingrUnit').value      = i.unit;
   document.getElementById('ingrCost').value      = i.cost||'';
   document.getElementById('ingrMin').value       = i.min||'';
+  if(document.getElementById('ingrSpec'))     document.getElementById('ingrSpec').value     = i.spec||'';
+  if(document.getElementById('ingrSpecUnit')) document.getElementById('ingrSpecUnit').value = i.specUnit||'g';
+  if(document.getElementById('ingrMinUnit'))  document.getElementById('ingrMinUnit').value  = i.minUnit||'g';
+  calcIngrConvert();
   document.getElementById('ingrFormTitle').textContent = '✏️ Sửa nguyên liệu';
   document.getElementById('ingrSubmitBtn').textContent = '💾 Cập nhật kho';
   document.getElementById('ingrSubmitBtn').onclick = saveEditIngredient;
@@ -3056,18 +3322,22 @@ function editIngredient(id) {
 }
 
 function saveEditIngredient() {
-  const id   = parseInt(document.getElementById('ingrEditId').value);
-  const name = document.getElementById('ingrName').value.trim();
-  const qty  = parseFloat(document.getElementById('ingrQty').value);
-  const unit = document.getElementById('ingrUnit').value;
-  const cost = parseInt(document.getElementById('ingrCost').value)||0;
-  const min  = parseFloat(document.getElementById('ingrMin').value)||0;
-  const sup  = document.getElementById('ingrSupplier').value.trim();
+  const id       = parseInt(document.getElementById('ingrEditId').value);
+  const name     = document.getElementById('ingrName').value.trim();
+  const qty      = parseFloat(document.getElementById('ingrQty').value);
+  const unit     = document.getElementById('ingrUnit').value;
+  const cost     = parseInt(document.getElementById('ingrCost').value)||0;
+  const min      = parseFloat(document.getElementById('ingrMin').value)||0;
+  const sup      = document.getElementById('ingrSupplier').value.trim();
+  const spec     = parseFloat(document.getElementById('ingrSpec')?.value)||0;
+  const specUnit = document.getElementById('ingrSpecUnit')?.value||'g';
+  const minUnit  = document.getElementById('ingrMinUnit')?.value||'g';
   if(!name || isNaN(qty)) { showToast('⚠️ Vui lòng nhập tên và số lượng'); return; }
   const ing = ingredients.find(x=>x.id===id);
   if(!ing) return;
   ing.name = name; ing.qty = qty; ing.unit = unit;
-  ing.cost = cost; ing.min = min; ing.supplier = sup;
+  ing.cost = cost; ing.min = min; ing.minUnit = minUnit; ing.supplier = sup;
+  ing.spec = spec; ing.specUnit = specUnit;
   showToast(`✓ Đã cập nhật "${ing.name}"`, 'success');
   cancelEditIngredient();
   renderIngredients(); updateLowBadge();
@@ -3500,12 +3770,13 @@ function toggleSemiSource() {
 const _ssState = {}; // { key: { focusIdx } }
 
 function ssGetItems(key) {
-  // Trả về danh sách options cho từng dropdown
-  return ingredients.map(i => ({
-    id: i.id,
-    label: i.name,
-    sub: `còn ${i.qty} ${i.unit}`
-  }));
+  return ingredients.map(i => {
+    let sub = `còn ${i.qty} ${i.unit}`;
+    if(i.spec && i.spec > 0) {
+      sub += ` · ${formatBase(ingrTotalInBase(i), i.specUnit)}`;
+    }
+    return { id: i.id, label: i.name, sub };
+  });
 }
 
 function ssRender(key, filter) {
@@ -3546,7 +3817,7 @@ function ssFilter(key) {
   const val = document.getElementById(`ssInput_${key}`)?.value || '';
   // Xử lý riêng theo key
   if(key === 'NccIngrRef') { document.getElementById('semiNccIngrRef').value = ''; }
-  if(key === 'SelfIngr')   { document.getElementById('semiSelfIngr').value   = ''; updateSemiSelfUnit(); }
+  if(key === 'selfIngr')   { document.getElementById('semiSelfIngr').value   = ''; updateSemiSelfUnit(); }
   ssRender(key, val);
   document.getElementById(`ssDropdown_${key}`)?.classList.add('open');
   const clearBtn = document.getElementById(`ssClear_${key}`);
@@ -3634,9 +3905,13 @@ function toggleToppingFields() {
 function populateSemiSelfIngrDropdown() { /* handled by ssOpen/ssRender */ }
 
 function updateSemiSelfUnit() {
-  const iid  = parseInt(document.getElementById('semiSelfIngr').value);
+  const raw  = document.getElementById('semiSelfIngr').value;
+  const iid  = parseInt(raw);
   const ingr = ingredients.find(i=>i.id===iid);
-  document.getElementById('semiSelfUnit').textContent = ingr ? ingr.unit : '—';
+  // Hiện specUnit nếu có quy cách, không thì dùng unit gốc
+  const unit = (ingr && raw) ? (ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit) : '—';
+  const el = document.getElementById('semiSelfUnit');
+  if(el) { el.textContent = unit; el.style.width = 'auto'; el.style.minWidth = '36px'; }
 }
 
 function addSemiSelfLine() {
@@ -3646,8 +3921,10 @@ function addSemiSelfLine() {
   if(!qty || qty <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
   const ingr = ingredients.find(i=>i.id===iid);
   if(!ingr) return;
+  // qtyUnit: đơn vị của qty nhập vào (specUnit nếu có quy cách, không thì unit gốc)
+  const qtyUnit = ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit;
   semiSelfLines = semiSelfLines.filter(l=>l.ingrId!==iid);
-  semiSelfLines.push({ ingrId: iid, qty });
+  semiSelfLines.push({ ingrId: iid, qty, qtyUnit });
   // Reset cả 2 searchable select + hidden input
   ssReset('selfIngr');
   document.getElementById('semiSelfIngr').value = '';
@@ -3671,10 +3948,21 @@ function renderSemiSelfLines() {
   }
   el.innerHTML = semiSelfLines.map((line, idx) => {
     const ingr = ingredients.find(i=>i.id===line.ingrId);
-    const ok   = ingr && ingr.qty >= line.qty;
+    // Kiểm tra đủ kho: nếu có quy cách thì so sánh tồn quy đổi vs qty nhập (cùng base)
+    let ok = false;
+    if(ingr) {
+      if(ingr.spec && ingr.spec > 0) {
+        const stockBase = ingrTotalInBase(ingr);          // tồn → base (g/ml)
+        const needBase  = toBase(line.qty, line.qtyUnit || ingr.specUnit || ingr.unit);
+        ok = stockBase >= needBase;
+      } else {
+        ok = ingr.qty >= line.qty;
+      }
+    }
+    const unit = line.qtyUnit || (ingr ? ingr.unit : '');
     return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
       <span class="recipe-line-name">🌾 ${ingr?ingr.name:'?'}</span>
-      <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${ingr?ingr.unit:''} ${ok?'':'⚠️thiếu'}</span>
+      <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit} ${ok?'':'⚠️thiếu'}</span>
       <button class="recipe-del" onclick="removeSemiSelfLine(${idx})">✕</button>
     </div>`;
   }).join('');
@@ -3885,6 +4173,19 @@ function toggleSemiCard(id) {
 }
 
 // Build cảnh báo thiếu nguyên liệu cho 1 thành phẩm
+// Trả về đơn vị hiển thị của 1 dòng công thức (qtyUnit nếu có, không thì unit gốc)
+function semiLineUnit(line, ingr) {
+  return line.qtyUnit || (ingr ? ingr.unit : '');
+}
+// Kiểm tra đủ kho cho 1 dòng công thức (so sánh tồn quy đổi nếu có spec)
+function semiLineOk(line, ingr) {
+  if(!ingr) return false;
+  if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+    return ingrTotalInBase(ingr) >= toBase(line.qty, line.qtyUnit);
+  }
+  return ingr.qty >= line.qty;
+}
+
 function getSemiWarnings(s) {
   const rec = sfRecipes[s.id];
   if(!rec || !rec.lines || rec.lines.length===0) return null;
@@ -3892,8 +4193,13 @@ function getSemiWarnings(s) {
   rec.lines.forEach(line => {
     const ingr = ingredients.find(i=>i.id===line.ingrId);
     if(!ingr) { missing.push(`Không tìm thấy NL (id=${line.ingrId})`); return; }
-    // Để sản xuất 1 mẻ: cần line.qty, có ingr.qty
-    if(ingr.qty < line.qty) missing.push(`${ingr.name}: cần ${line.qty} ${ingr.unit}, còn ${ingr.qty} ${ingr.unit}`);
+    if(!semiLineOk(line, ingr)) {
+      const unit = semiLineUnit(line, ingr);
+      const stockDisplay = (ingr.spec && ingr.spec > 0)
+        ? formatBase(ingrTotalInBase(ingr), ingr.specUnit)
+        : `${ingr.qty} ${ingr.unit}`;
+      missing.push(`${ingr.name}: cần ${line.qty} ${unit}, còn ${stockDisplay}`);
+    }
   });
   return missing.length ? missing : null;
 }
@@ -3933,10 +4239,11 @@ function renderSemiList() {
       const linesHtml = hasRecipe
         ? rec.lines.map((line,idx) => {
             const ingr = ingredients.find(i=>i.id===line.ingrId);
-            const ok = ingr && ingr.qty >= line.qty;
+            const ok = semiLineOk(line, ingr);
+            const unit = semiLineUnit(line, ingr);
             return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
               <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-              <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${ingr?ingr.unit:''}/mẻ</span>
+              <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit}/mẻ</span>
               <button class="recipe-del" onclick="event.stopPropagation();removeSfRecipeLine(${s.id},${idx})">✕</button>
             </div>`;
           }).join('')
@@ -3972,10 +4279,11 @@ function renderSemiList() {
             <div style="font-size:11px;font-weight:400;color:var(--muted);margin-bottom:.3rem">Sản lượng mỗi mẻ: <b style="color:#0E5BC7">${yieldVal} ${yieldUnit}</b></div>
             ${rec.lines.map(line => {
               const ingr = ingredients.find(i=>i.id===line.ingrId);
-              const ok = ingr && ingr.qty >= line.qty;
+              const ok = semiLineOk(line, ingr);
+              const unit = semiLineUnit(line, ingr);
               return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
                 <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-                <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${ingr?ingr.unit:''}/mẻ</span>
+                <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit}/mẻ</span>
               </div>`;
             }).join('')}
           </div>`
@@ -4077,12 +4385,24 @@ function renderInlineProducePreview(sid) {
   const rows = rec.lines.map(line => {
     const ingr = ingredients.find(i=>i.id===line.ingrId);
     const need = +(line.qty * batches).toFixed(3);
-    const has = ingr ? ingr.qty : 0;
-    const ok = has >= need;
+    const unit = semiLineUnit(line, ingr);
+    let ok = false;
+    let stockDisplay = '?';
+    if(ingr) {
+      if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+        const needBase = toBase(need, line.qtyUnit);
+        const hasBase  = ingrTotalInBase(ingr);
+        ok = hasBase >= needBase;
+        stockDisplay = formatBase(hasBase, ingr.specUnit);
+      } else {
+        ok = ingr.qty >= need;
+        stockDisplay = `${ingr.qty} ${ingr.unit}`;
+      }
+    }
     if(!ok) canProduce = false;
     return `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:400;padding:.25rem .4rem;background:${ok?'var(--bg)':'#FFE0E2'};border-radius:5px;margin-bottom:3px">
       <span>${ingr?ingr.name:'?'}</span>
-      <span style="color:${ok?'#0E5BC7':'#EF4350'}">Cần ${need} / Còn ${has} ${ingr?ingr.unit:''}</span>
+      <span style="color:${ok?'#0E5BC7':'#EF4350'}">Cần ${need} ${unit} / Còn ${stockDisplay}</span>
     </div>`;
   }).join('');
   const willProduce = +(rec.yield * batches).toFixed(3);
@@ -4101,11 +4421,28 @@ function executeProduceInline(sid) {
   for(const line of rec.lines) {
     const ingr = ingredients.find(i=>i.id===line.ingrId);
     const need = line.qty * batches;
-    if(!ingr || ingr.qty < need) { showToast(`⚠️ Không đủ ${ingr?ingr.name:'nguyên liệu'}`); return; }
+    if(!ingr) { showToast(`⚠️ Không tìm thấy nguyên liệu`); return; }
+    if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+      if(ingrTotalInBase(ingr) < toBase(need, line.qtyUnit)) {
+        showToast(`⚠️ Không đủ ${ingr.name}`); return;
+      }
+    } else {
+      if(ingr.qty < need) { showToast(`⚠️ Không đủ ${ingr.name}`); return; }
+    }
   }
   rec.lines.forEach(line => {
     const ingr = ingredients.find(i=>i.id===line.ingrId);
-    if(ingr) ingr.qty = Math.max(0, +(ingr.qty - line.qty * batches).toFixed(3));
+    if(!ingr) return;
+    const need = line.qty * batches;
+    if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+      // Quy đổi ngược: needBase / spec → số đơn vị gốc cần trừ
+      const needBase     = toBase(need, line.qtyUnit);
+      const specBase     = toBase(ingr.spec, ingr.specUnit);
+      const unitsToDeduct = needBase / specBase;
+      ingr.qty = Math.max(0, +(ingr.qty - unitsToDeduct).toFixed(4));
+    } else {
+      ingr.qty = Math.max(0, +(ingr.qty - need).toFixed(3));
+    }
   });
   const willProduce = +(rec.yield * batches).toFixed(3);
   s.qty = +(s.qty + willProduce).toFixed(3);
@@ -4413,3 +4750,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+</body></html>
