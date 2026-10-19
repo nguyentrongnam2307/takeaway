@@ -737,11 +737,11 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   <header class="topbar">
     <div class="brand">☕ <span>Café</span> Manager</div>
     <div class="topbar-info">
-      <div class="topbar-pill active" onclick="switchView('pos')">🛒 Bán hàng</div>
-      <div class="topbar-pill" onclick="switchView('orders')">📋 Đơn hàng</div>
-      <div class="topbar-pill" onclick="switchView('stats')">📊 Doanh thu</div>
+      <div class="topbar-pill active" onclick="switchView('pos')" style="display:none">🛒 Bán hàng</div>
+      <div class="topbar-pill" onclick="switchView('orders')" style="display:none">📋 Đơn hàng</div>
+      <div class="topbar-pill" onclick="switchView('stats')" style="display:none">📊 Doanh thu</div>
       <div class="topbar-time" id="clock"></div>
-      <div id="fbStatus" style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.7);white-space:nowrap;padding:.2rem .6rem;background:rgba(255,255,255,.07);border-radius:10px;border:1px solid rgba(255,255,255,.15)">⏳ Firebase</div>
+      <div id="fbStatus" style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.7);white-space:nowrap;padding:.2rem .6rem;background:rgba(255,255,255,.07);border-radius:10px;border:1px solid rgba(255,255,255,.15)">⏳ Kết nối</div>
     </div>
   </header>
 
@@ -1342,7 +1342,6 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     <div class="cart-footer">
       <div class="cart-totals">
         <div class="total-row"><span>Tạm tính</span><span id="subtotal">0đ</span></div>
-        <div class="total-row"><span>Phí đóng gói</span><span id="packFee">2.000đ</span></div>
         <div class="total-row grand"><span>Tổng cộng</span><span class="amount" id="grandTotal">0đ</span></div>
       </div>
 
@@ -1557,8 +1556,8 @@ function setFbStatus(status) {
   if(!el) return;
   const map = {
     connecting: { icon:'⏳', text:'Đang kết nối...', color:'rgba(255,203,61,0.9)' },
-    online:     { icon:'🟢', text:'Firebase', color:'rgba(255,255,255,0.7)' },
-    offline:    { icon:'🔴', text:'Ngoại tuyến', color:'#EF4350' },
+    online:     { icon:'🟢', text:'Kết nối', color:'rgba(255,255,255,0.7)' },
+    offline:    { icon:'🔴', text:'Mất kết nối', color:'#EF4350' },
     saving:     { icon:'💾', text:'Đang lưu...', color:'rgba(255,203,61,0.9)' },
   };
   const s = map[status] || map.online;
@@ -1580,10 +1579,14 @@ async function fbSaveProducts() {
 }
 async function fbLoadProducts() {
   const snap = await db.collection('config').doc('products').get();
-  if(snap.exists && snap.data().data && snap.data().data.length > 0) {
-    products = snap.data().data;
+  if(snap.exists) {
+    // Document tồn tại → luôn dùng data từ Firebase, kể cả khi rỗng
+    if(snap.data().data && snap.data().data.length > 0) {
+      products = snap.data().data;
+    }
+    // Nếu Firebase trả về rỗng → giữ nguyên products local, KHÔNG ghi đè
   } else {
-    // Firestore chưa có data → seed data mặc định lên Firebase
+    // Document chưa tồn tại lần nào → seed lần đầu
     await db.collection('config').doc('products').set({ data: products, updatedAt: new Date().toISOString() });
     console.log('🌱 Đã seed products mặc định lên Firebase');
   }
@@ -1599,8 +1602,10 @@ async function fbSaveIngredients() {
 }
 async function fbLoadIngredients() {
   const snap = await db.collection('config').doc('ingredients').get();
-  if(snap.exists && snap.data().data && snap.data().data.length > 0) {
-    ingredients = snap.data().data;
+  if(snap.exists) {
+    if(snap.data().data && snap.data().data.length > 0) {
+      ingredients = snap.data().data;
+    }
   } else {
     await db.collection('config').doc('ingredients').set({ data: ingredients, updatedAt: new Date().toISOString() });
     console.log('🌱 Đã seed ingredients mặc định lên Firebase');
@@ -2058,9 +2063,7 @@ function switchView(name) {
   const pills = document.querySelectorAll('.topbar-pill');
   if(pillMap[name] !== undefined) pills[pillMap[name]]?.classList.add('active');
 
-  // Ẩn pill "Đơn hàng" & cart panel khi vào Settings / Orders / Stats
-  const ordersPill = document.querySelectorAll('.topbar-pill')[1];
-  if(ordersPill) ordersPill.style.display = (name === 'settings') ? 'none' : '';
+  // cart panel khi vào Settings / Orders / Stats
   const cartPanel = document.getElementById('cartPanel');
   const hideCart = (name === 'settings' || name === 'orders' || name === 'stats');
   if(cartPanel) cartPanel.style.display = hideCart ? 'none' : '';
@@ -2372,7 +2375,6 @@ function renderCart() {
       </div>`;
     document.getElementById('subtotal').textContent = '0đ';
     document.getElementById('grandTotal').textContent = '0đ';
-    document.getElementById('packFee').textContent = '0đ';
     checkBtn.disabled = true;
     return;
   }
@@ -2397,11 +2399,8 @@ function renderCart() {
 
   const sub = ids.reduce((a,k)=>a+cart[k].price*cart[k].qty, 0);
   const discount = calcPromoDiscount(sub);
-  const grand = sub - discount + PACK_FEE;
+  const grand = sub - discount;
   document.getElementById('subtotal').textContent = fmt(sub);
-  document.getElementById('packFee').textContent = discount > 0
-    ? `🎁 -${fmt(discount)}`
-    : fmt(PACK_FEE);
   document.getElementById('grandTotal').textContent = fmt(grand);
   checkBtn.disabled = false;
   calcChange();
@@ -2419,7 +2418,7 @@ function checkout() {
   const items = Object.values(cart);
   const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
   const discount = calcPromoDiscount(sub);
-  const grand = sub - discount + PACK_FEE;
+  const grand = sub - discount;
 
   const summaryEl = document.getElementById('confirmOrderSummary');
   const cashEl = document.getElementById('cashReceived');
@@ -2441,7 +2440,7 @@ function doCheckout() {
   const items = Object.values(cart);
   const sub = items.reduce((a,i)=>a+i.price*i.qty,0);
   const discount = calcPromoDiscount(sub);
-  const grand = sub - discount + PACK_FEE;
+  const grand = sub - discount;
   const note = document.getElementById('orderNote').value;
   const cashEl = document.getElementById('cashReceived');
   const cashReceived = parseInt(cashEl ? cashEl.value : 0) || 0;
@@ -3741,7 +3740,7 @@ function calcChange() {
   const ids = Object.keys(cart);
   if(ids.length) {
     const sub = ids.reduce((a,k)=>a+cart[k].price*cart[k].qty,0);
-    grand = sub - calcPromoDiscount(sub) + PACK_FEE;
+    grand = sub - calcPromoDiscount(sub);
   }
   if(cashVal <= 0 || !grand) { changeEl.textContent = '—'; return; }
   const change = cashVal - grand;
