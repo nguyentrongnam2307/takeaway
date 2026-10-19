@@ -605,10 +605,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   box-shadow:0 6px 24px rgba(239,67,80,.45);
   white-space:nowrap; max-width:92vw; text-align:center;
   border:2px solid rgba(255,255,255,.3);
+  cursor:pointer; user-select:none; touch-action:pan-y;
 }
 .toast-neworder.show { transform:translateX(-50%) translateY(0); }
+.toast-neworder.dismissing { transform:translateX(-50%) translateY(-140px) !important; transition:transform .25s ease-in !important; }
 @keyframes ring { 0%,100%{transform:translateX(-50%) translateY(0) rotate(0)} 20%{transform:translateX(-50%) translateY(0) rotate(-6deg)} 40%{transform:translateX(-50%) translateY(0) rotate(6deg)} 60%{transform:translateX(-50%) translateY(0) rotate(-4deg)} 80%{transform:translateX(-50%) translateY(0) rotate(4deg)} }
 .toast-neworder.ring { animation:ring .5s ease .35s; }
+/* Hint "vuốt lên để đóng" */
+.toast-neworder::after { content:'↑ vuốt để đóng'; display:block; font-size:9px; font-weight:400; opacity:.55; margin-top:.2rem; letter-spacing:.04em; }
 
 /* ══════════ ORDER TABS ══════════ */
 .order-tab {
@@ -1906,6 +1910,54 @@ function showNewOrderToast(o) {
     }, 6000);
   }
 }
+
+// ── Swipe-up / click-to-dismiss cho toastNewOrder ──────────────────────────
+(function() {
+  function dismissToast(el) {
+    if (!el || !el.classList.contains('show')) return;
+    clearTimeout(el._timer);
+    el.classList.remove('ring');
+    el.classList.add('dismissing');
+    setTimeout(() => {
+      el.classList.remove('show', 'dismissing');
+    }, 260);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('toastNewOrder');
+    if (!el) return;
+
+    // Click để đóng
+    el.addEventListener('click', () => dismissToast(el));
+
+    // Touch swipe-up để đóng
+    let _touchStartY = null;
+    el.addEventListener('touchstart', e => {
+      _touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener('touchmove', e => {
+      if (_touchStartY === null) return;
+      const dy = e.touches[0].clientY - _touchStartY;
+      if (dy < -8) { // vuốt lên >= 8px
+        dismissToast(el);
+        _touchStartY = null;
+      }
+    }, { passive: true });
+    el.addEventListener('touchend', () => { _touchStartY = null; }, { passive: true });
+
+    // Mouse drag lên (desktop)
+    let _mouseStartY = null;
+    el.addEventListener('mousedown', e => { _mouseStartY = e.clientY; });
+    el.addEventListener('mousemove', e => {
+      if (_mouseStartY === null) return;
+      if (_mouseStartY - e.clientY > 8) {
+        dismissToast(el);
+        _mouseStartY = null;
+      }
+    });
+    el.addEventListener('mouseup', () => { _mouseStartY = null; });
+  });
+})();
 
 let _audioCtx = null;
 function getAudioCtx() {
