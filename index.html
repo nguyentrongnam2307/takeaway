@@ -277,6 +277,23 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .section-block-header { padding:.75rem 1rem;  display:flex; align-items:center; gap:.6rem; text-transform: uppercase; }
 .section-block-body { padding:1rem; background:#fff; }
 
+/* ══════════ COLLAPSIBLE FORM BLOCKS ══════════ */
+.section-block.collapsible > .section-block-header { cursor:pointer; user-select:none; transition:background .15s; }
+.section-block.collapsible > .section-block-header:hover { background:#EBF3FF; }
+.section-block.collapsible.collapsed > .section-block-header { background:var(--bg); }
+.section-block.collapsible.collapsed > .section-block-body { display:none; }
+.collapse-arrow {
+  margin-left:auto; font-size:13px; color:var(--muted);
+  transition:transform .2s; flex-shrink:0;
+}
+.section-block.collapsible.collapsed .collapse-arrow { transform:rotate(-90deg); }
+.collapse-hint {
+  font-size:11px; font-weight:400; color:var(--muted);
+  margin-left:.5rem; text-transform:none; letter-spacing:0;
+  transition:opacity .15s;
+}
+.section-block.collapsible:not(.collapsed) .collapse-hint { opacity:0; }
+
 .ingr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
 .ingr-card {
   padding:.7rem .9rem; border-radius:var(--radius-sm); border:1px solid var(--rule);
@@ -506,9 +523,8 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   color:#0E5BC7;
 }
 
-/* ══════════ INGREDIENT TABLE ZEBRA ══════════ */
-#ingrTable tbody tr:nth-child(odd)  { background: #F5F8FF; }
-#ingrTable tbody tr:nth-child(even) { background: #FFFFFF; }
+/* ══════════ INGREDIENT TABLE ══════════ */
+#ingrTable tbody tr                 { background: #FFFFFF; }
 #ingrTable tbody tr:hover           { background: #EBF3FF !important; }
 
 /* ══════════ SEMI-FINISHED CARDS ══════════ */
@@ -756,12 +772,45 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
 @media (max-width: 480px) {
   /* Ẩn hẳn sidebar, full width */
-  .app { grid-template-columns: 0 1fr 0; overflow:hidden; }
-  .sidenav { display:none; }
-  .main-content { padding:.6rem .6rem; }
+  .app { grid-template-columns: 0 1fr 0 !important; overflow:hidden; }
+  .sidenav { display:none !important; }
+  .cart-panel { display:none !important; }
+  .cart-panel.mobile-open { display:flex !important; }
+  .main-content { padding:.6rem .6rem; padding-bottom:calc(62px + env(safe-area-inset-bottom, 0px)); grid-column: 1 / -1 !important; }
   .stats-grid { grid-template-columns:1fr 1fr; }
   .topbar-time { display:none; }
   #fbStatus { display:none; }
+  .mobile-nav { display:flex !important; }
+}
+
+/* ══════════ MOBILE BOTTOM NAV ══════════ */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #1C2938;
+  border-top: 2px solid #FFCB3D;
+  z-index: 200;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -4px 18px rgba(12,45,104,.25);
+}
+.mob-nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; cursor: pointer; padding: .4rem .2rem;
+  color: rgba(255,255,255,.55); border: none; background: none;
+  font-family: inherit; transition: color .15s; position: relative;
+}
+.mob-nav-btn.active { color: #FFCB3D; }
+.mob-nav-icon { font-size: 20px; line-height: 1; }
+.mob-nav-label { font-size: 10px; font-weight: 600; letter-spacing: .02em; }
+.mob-nav-badge {
+  position: absolute; top: 4px; right: calc(50% - 18px);
+  background: #EF4350; color: #fff; font-size: 9px; font-weight: 700;
+  padding: 1px 5px; border-radius: 10px; min-width: 16px; text-align: center;
+  display: none;
 }
 
 /* Bảng kho nguyên liệu: mọi ô nằm 1 dòng, màn hẹp thì cuộn ngang */
@@ -942,10 +991,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
       <!-- Tab: Thêm món -->
       <div id="stab-content-menu">
-        <div class="section-block" id="prodFormBlock">
-          <div class="section-block-header" style="justify-content:space-between">
+        <div class="section-block collapsible collapsed" id="prodFormBlock">
+          <div class="section-block-header" style="justify-content:space-between" onclick="toggleFormBlock('prodFormBlock')">
             <div class="panel-title" style="margin:0" id="prodFormTitle">Thêm món vào menu</div>
-            <button id="prodCancelEditBtn" onclick="cancelEditProduct()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="collapse-hint">Nhấn để mở</span>
+              <button id="prodCancelEditBtn" onclick="event.stopPropagation();cancelEditProduct()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+              <span class="collapse-arrow">▾</span>
+            </div>
           </div>
           <div class="section-block-body">
             <input type="hidden" id="prodEditId" value="">
@@ -1003,10 +1056,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
       <!-- Tab: Nguyên liệu -->
       <div id="stab-content-ingr" style="display:none">
-        <div class="section-block" style="margin-bottom:1rem" id="ingrFormBlock">
-          <div class="section-block-header" style="justify-content:space-between">
+        <div class="section-block collapsible collapsed" style="margin-bottom:1rem" id="ingrFormBlock">
+          <div class="section-block-header" style="justify-content:space-between" onclick="toggleFormBlock('ingrFormBlock')">
             <div class="panel-title" style="margin:0" id="ingrFormTitle">Thêm nguyên liệu</div>
-            <button id="ingrCancelEditBtn" onclick="cancelEditIngredient()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="collapse-hint">Nhấn để mở</span>
+              <button id="ingrCancelEditBtn" onclick="event.stopPropagation();cancelEditIngredient()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+              <span class="collapse-arrow">▾</span>
+            </div>
           </div>
           <div class="section-block-body">
             <input type="hidden" id="ingrEditId" value="">
@@ -1105,10 +1162,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <div id="stab-content-semi" style="display:none">
 
         <!-- Form nhập kho thành phẩm -->
-        <div class="section-block" style="margin-bottom:1rem" id="semiFormBlock">
-          <div class="section-block-header" style="justify-content:space-between">
+        <div class="section-block collapsible collapsed" style="margin-bottom:1rem" id="semiFormBlock">
+          <div class="section-block-header" style="justify-content:space-between" onclick="toggleFormBlock('semiFormBlock')">
             <div class="panel-title" style="margin:0" id="semiFormTitle">📦 Nhập kho thành phẩm</div>
-            <button id="semiCancelEditBtn" onclick="cancelEditSemi()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="collapse-hint">Nhấn để mở</span>
+              <button id="semiCancelEditBtn" onclick="event.stopPropagation();cancelEditSemi()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
+              <span class="collapse-arrow">▾</span>
+            </div>
           </div>
           <div class="section-block-body">
             <input type="hidden" id="semiEditId" value="">
@@ -1295,8 +1356,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
       <!-- Tab: Khuyến mãi -->
       <div id="stab-content-promo" style="display:none">
-        <div class="section-block" style="margin-bottom:1rem">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">Tạo chương trình khuyến mãi</div></div>
+        <div class="section-block collapsible collapsed" style="margin-bottom:1rem" id="promoFormBlock">
+          <div class="section-block-header" style="justify-content:space-between" onclick="toggleFormBlock('promoFormBlock')">
+            <div class="panel-title" style="margin:0">Tạo chương trình khuyến mãi</div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="collapse-hint">Nhấn để mở</span>
+              <span class="collapse-arrow">▾</span>
+            </div>
+          </div>
           <div class="section-block-body">
             <div class="form-row">
               <div class="form-group">
@@ -1366,8 +1433,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <!-- Tab: Công thức -->
       <div id="stab-content-recipe" style="display:none">
         <!-- Form nhập công thức -->
-        <div class="section-block" style="margin-bottom:1rem">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">Nhập công thức cho món</div></div>
+        <div class="section-block collapsible collapsed" style="margin-bottom:1rem" id="recipeFormBlock">
+          <div class="section-block-header" style="justify-content:space-between" onclick="toggleFormBlock('recipeFormBlock')">
+            <div class="panel-title" style="margin:0">Nhập công thức cho món</div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="collapse-hint">Nhấn để mở</span>
+              <span class="collapse-arrow">▾</span>
+            </div>
+          </div>
           <div class="section-block-body">
             <div class="form-row" style="margin-bottom:.6rem">
               <div class="form-group">
@@ -1628,6 +1701,28 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     </div>
   </div>
 </div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav">
+  <button class="mob-nav-btn active" id="mobnav-pos" onclick="switchView('pos')">
+    <span class="mob-nav-icon">🛒</span>
+    <span class="mob-nav-label">Bán hàng</span>
+  </button>
+  <button class="mob-nav-btn" id="mobnav-orders" onclick="switchView('orders')">
+    <span class="mob-nav-icon">📋</span>
+    <span class="mob-nav-label">Đơn hàng</span>
+    <span class="mob-nav-badge" id="mobPendingBadge"></span>
+  </button>
+  <button class="mob-nav-btn" id="mobnav-stats" onclick="switchView('stats')">
+    <span class="mob-nav-icon">📊</span>
+    <span class="mob-nav-label">Doanh thu</span>
+  </button>
+  <button class="mob-nav-btn" id="mobnav-settings" onclick="switchView('settings')">
+    <span class="mob-nav-icon">⚙️</span>
+    <span class="mob-nav-label">Cài đặt</span>
+    <span class="mob-nav-badge" id="mobLowBadge"></span>
+  </button>
+</nav>
 
 <!-- Hidden print iframe -->
 <iframe id="printFrame" style="display:none;position:fixed;inset:0;border:none;width:100%;height:100%"></iframe>
@@ -2004,9 +2099,9 @@ let _seenPendingIds = new Set(JSON.parse(localStorage.getItem('seenPendingIds')|
 function updatePendingBadge() {
   const unseen = orders.filter(o => o.status === 'pending' && !_seenPendingIds.has(String(o.id))).length;
   const el = document.getElementById('pendingBadge');
-  if (!el) return;
-  el.textContent = unseen;
-  el.style.display = unseen > 0 ? 'inline' : 'none';
+  if (el) { el.textContent = unseen; el.style.display = unseen > 0 ? 'inline' : 'none'; }
+  const mobEl = document.getElementById('mobPendingBadge');
+  if (mobEl) { mobEl.textContent = unseen; mobEl.style.display = unseen > 0 ? 'inline-block' : 'none'; }
 }
 
 function markPendingSeen(orderId) {
@@ -2228,7 +2323,7 @@ function switchView(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.topbar-pill').forEach(p => p.classList.remove('active'));
 
-  // sync nav
+  // sync sidebar nav
   const navMap = {pos:0,orders:1,stats:2,settings:3};
   const navItems = document.querySelectorAll('.nav-item');
   if(navMap[name] !== undefined) navItems[navMap[name]]?.classList.add('active');
@@ -2237,13 +2332,23 @@ function switchView(name) {
   const pills = document.querySelectorAll('.topbar-pill');
   if(pillMap[name] !== undefined) pills[pillMap[name]]?.classList.add('active');
 
-  // cart panel khi vào Settings / Orders / Stats
+  // sync mobile bottom nav
+  document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+  const mobBtn = document.getElementById('mobnav-' + name);
+  if(mobBtn) mobBtn.classList.add('active');
+
+  // cart panel khi vào Settings / Orders / Stats — chỉ trên desktop
   const cartPanel = document.getElementById('cartPanel');
   const hideCart = (name === 'settings' || name === 'orders' || name === 'stats');
-  if(cartPanel) cartPanel.style.display = hideCart ? 'none' : '';
-  // Mở rộng main content khi không có cart
-  const appEl = document.querySelector('.app');
-  if(appEl) appEl.style.gridTemplateColumns = hideCart ? '180px 1fr' : '180px 1fr 320px';
+  const isMobile = window.innerWidth <= 480;
+  if(!isMobile) {
+    if(cartPanel) cartPanel.style.display = hideCart ? 'none' : '';
+    const appEl = document.querySelector('.app');
+    if(appEl) {
+      const sideW = window.innerWidth <= 800 ? '140px' : '180px';
+      appEl.style.gridTemplateColumns = hideCart ? `${sideW} 1fr` : `${sideW} 1fr 320px`;
+    }
+  }
 
   if(name==='stats') renderStats();
   if(name==='orders') { renderOrders(); clearOrdersBadge(); }
@@ -3058,8 +3163,9 @@ function updateLowBadge() {
     return i.qty < i.min;
   });
   const el = document.getElementById('lowBadge');
-  el.textContent = lowList.length;
-  el.style.display = lowList.length ? 'inline' : 'none';
+  if(el) { el.textContent = lowList.length; el.style.display = lowList.length ? 'inline' : 'none'; }
+  const mobEl = document.getElementById('mobLowBadge');
+  if(mobEl) { mobEl.textContent = lowList.length; mobEl.style.display = lowList.length ? 'inline-block' : 'none'; }
   // populate popup
   const body = document.getElementById('lowStockPopupBody');
   if(body) {
@@ -3498,6 +3604,7 @@ function editProduct(id) {
   document.getElementById('prodCancelEditBtn').style.display = 'inline-block';
   // Highlight form + scroll lên
   const block = document.getElementById('prodFormBlock');
+  block.classList.remove('collapsed');
   block.style.border = '2px solid #0E5BC7';
   block.scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -3531,6 +3638,7 @@ function cancelEditProduct() {
   document.getElementById('prodSubmitBtn').onclick = addProduct;
   document.getElementById('prodCancelEditBtn').style.display = 'none';
   document.getElementById('prodFormBlock').style.border = '';
+  document.getElementById('prodFormBlock').classList.add('collapsed');
 }
 
 // ─── EDIT / DELETE INGREDIENT (điền vào form, đổi nút thành Cập nhật) ─
@@ -3559,6 +3667,7 @@ function editIngredient(id) {
   if(qtyHint) { qtyHint.style.display = 'flex'; qtyHint.dataset.editId = i.id; }
   // Highlight form + scroll lên
   const block = document.getElementById('ingrFormBlock');
+  block.classList.remove('collapsed');
   block.style.border = '2px solid #0E5BC7';
   block.scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -3594,6 +3703,7 @@ function cancelEditIngredient() {
   document.getElementById('ingrSubmitBtn').onclick = addIngredient;
   document.getElementById('ingrCancelEditBtn').style.display = 'none';
   document.getElementById('ingrFormBlock').style.border = '';
+  document.getElementById('ingrFormBlock').classList.add('collapsed');
   // Hiện lại trường số lượng
   const qtyRow = document.getElementById('ingrQtyRow');
   if(qtyRow) qtyRow.style.display = '';
@@ -3856,8 +3966,17 @@ function renderRecipeList() {
     const linesHtml = lines.map(line=>{
       const {name, unit} = getIngrNameUnit(line.ingrId);
       const displayQty = (line.qtyInput != null && line.inUnit) ? `${line.qtyInput} ${line.inUnit}` : `${line.qty} ${unit}`;
+      // Kiểm tra nếu là thành phẩm có isTopping
+      let toppingTag = '';
+      if(typeof line.ingrId === 'string' && line.ingrId.startsWith('s')) {
+        const semi = semiFinished.find(i=>i.id===parseInt(line.ingrId.slice(1)));
+        if(semi && semi.isTopping) {
+          const price = semi.toppingPrice ? `${Math.round(semi.toppingPrice/1000)}k` : '';
+          toppingTag = `<span style="display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;background:#FFF3CD;color:#7A5800;border:1px solid #F5C518;border-radius:5px;padding:1px 6px;margin-left:4px;flex-shrink:0">🍡 Topping${price?` · ${price}`:''}</span>`;
+        }
+      }
       return `<div class="recipe-line">
-        <span class="recipe-line-name">${name}</span>
+        <span class="recipe-line-name">${name}${toppingTag}</span>
         <span class="recipe-line-qty">${displayQty}/ly</span>
       </div>`;
     }).join('');
@@ -4473,6 +4592,7 @@ function editSemi(id) {
   document.getElementById('semiFormTitle').textContent = '✏️ Sửa thành phẩm';
   document.getElementById('semiSubmitBtn').textContent = '💾 Cập nhật';
   document.getElementById('semiCancelEditBtn').style.display = 'inline-block';
+  document.getElementById('semiFormBlock').classList.remove('collapsed');
   document.getElementById('semiFormBlock').style.border = '2px solid #0E5BC7';
   document.getElementById('semiFormBlock').scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -4482,6 +4602,7 @@ function cancelEditSemi() {
   document.getElementById('semiFormTitle').textContent = '📦 Nhập kho thành phẩm';
   document.getElementById('semiCancelEditBtn').style.display = 'none';
   document.getElementById('semiFormBlock').style.border = '';
+  document.getElementById('semiFormBlock').classList.add('collapsed');
   // Reset nút về self mode (mặc định)
   const srcSel = document.getElementById('semiSource');
   if(srcSel) { srcSel.value = 'self'; }
@@ -4521,6 +4642,7 @@ function loadRecipeToForm(id) {
   if(editCTEl) editCTEl.value = id;
   document.getElementById('semiFormTitle').textContent = `✏️ Sửa công thức: ${s.name}`;
   document.getElementById('semiCancelEditBtn').style.display = 'inline-block';
+  document.getElementById('semiFormBlock').classList.remove('collapsed');
   document.getElementById('semiFormBlock').style.border = '2px solid #0E5BC7';
   document.getElementById('semiFormBlock').scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -4974,6 +5096,13 @@ function calcPromoDiscount(subtotal) {
     if(p.type === 'fixed') totalDiscount += p.value;
   });
   return Math.min(totalDiscount, subtotal);
+}
+
+// ─── COLLAPSIBLE FORM BLOCKS ──────────────────────────────────────────
+function toggleFormBlock(id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('collapsed');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────
