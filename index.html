@@ -447,16 +447,32 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 }
 
 
+/* ══════════ SETTINGS VIEW — constrained width ══════════ */
+#view-settings { max-width:860px; width:100%; margin-left:auto; margin-right:auto; }
+
 /* ══════════ SETTINGS TABS ══════════ */
-.settings-tabs { display:flex; gap:0; margin-bottom:1rem; border-radius:var(--radius); overflow:hidden; border:1px solid var(--rule); background:#fff; }
-.settings-tab {
-  flex:1; padding:.55rem .3rem; text-align:center; font-size:12px; font-weight:700;
-  color:var(--muted); background:#fff; cursor:pointer; transition:all .15s;
-  border:none; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.3; white-space:nowrap;
+.settings-tabs {
+  display:flex; gap:0; margin-bottom:.75rem;
+  background:#fff; border-radius:var(--radius-sm);
+  border:1px solid var(--rule);
+  overflow:hidden;
 }
-.settings-tab:not(:last-child) { border-right:2px solid var(--rule); }
-.settings-tab:hover { background:#EBF3FF; color:#0E5BC7; }
-.settings-tab.active { background:#0E5BC7; color:#fff; box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
+.settings-tab {
+  flex:1; padding:.45rem .5rem; text-align:center;
+  font-size:11.5px; font-weight:600;
+  color:var(--muted); background:#fff; cursor:pointer;
+  transition:color .15s, border-color .15s, background .15s;
+  border:none; border-bottom:2px solid transparent;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  line-height:1.3; white-space:nowrap;
+}
+.settings-tab:not(:last-child) { border-right:1px solid var(--rule); }
+.settings-tab:hover { color:#0E5BC7; background:#F0F6FF; }
+.settings-tab.active {
+  color:#0E5BC7; background:#EBF3FF;
+  border-bottom:2px solid #0E5BC7;
+  font-weight:700;
+}
 
 /* ══════════ FORM — tối ưu màu ══════════ */
 .form-label {
@@ -511,18 +527,32 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .semi-card-name { font-size:13.5px; font-weight:400; color:var(--ink); flex:1; }
 .semi-card-qty { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:1rem; font-weight:400; }
 .semi-card-body {
-  display:none; padding:.8rem .9rem; border-top:2px solid var(--rule);
-  background:#fff;
+  display:none; padding:.65rem .9rem .7rem; border-top:1px solid var(--rule);
+  background:#fafcff;
 }
 .semi-card.expanded .semi-card-body { display:block; }
+
+/* 2-col grid inside card body */
+.semi-body-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:.6rem;
+}
+.semi-col { display:flex; flex-direction:column; gap:.35rem; }
+.semi-col-label {
+  font-size:11px; font-weight:700; color:var(--soft);
+  text-transform:uppercase; letter-spacing:.04em; margin-bottom:.1rem;
+}
+.semi-actions {
+  display:flex; gap:.35rem; padding-top:.55rem;
+  border-top:1px dashed var(--rule);
+}
 .semi-warning {
-  font-size:12px; font-weight:400; color:#EF4350;
-  padding:.4rem .7rem; background:#FFE0E2; border-radius:8px; margin-bottom:.7rem;
+  font-size:11.5px; font-weight:400; color:#EF4350;
+  padding:.3rem .65rem; background:#FFE0E2; border-radius:6px; margin-bottom:.5rem;
   display:flex; align-items:flex-start; gap:.4rem;
 }
 .semi-ok-note {
-  font-size:12px; font-weight:400; color:#0E5BC7;
-  padding:.4rem .7rem; background:#D6E6FF; border-radius:8px; margin-bottom:.7rem;
+  font-size:11.5px; font-weight:400; color:#0E5BC7;
+  padding:.3rem .65rem; background:#D6E6FF; border-radius:6px; margin-bottom:.5rem;
 }
 
 /* Recipe list */
@@ -545,6 +575,54 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .recipe-line-qty { color:#0E5BC7; font-weight:400; white-space:nowrap; }
 .recipe-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:0 2px; transition:color .15s; }
 .recipe-del:hover { color:#EF4350; }
+
+/* ══════════ SEMI-CARD COMPACT ROWS ══════════ */
+/* Công thức chế biến */
+.sct-wrap { display:flex; flex-direction:column; gap:4px; }
+.sct-header {
+  display:grid; grid-template-columns:1fr auto auto;
+  gap:.5rem; align-items:center;
+  padding:.25rem .55rem;
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--muted); background:#F5F8FF;
+  border-radius:6px 6px 0 0; border:1px solid var(--rule);
+}
+.sct-row {
+  display:grid; grid-template-columns:1fr auto auto;
+  gap:.5rem; align-items:center;
+  padding:.38rem .55rem;
+  font-size:12.5px; border:1px solid transparent;
+  border-radius:6px;
+}
+.sct-row.row-ok  { background:#F0F6FF; border-color:#D6E6FF; }
+.sct-row.row-bad { background:#FFF4F4; border-color:#FFD0D0; }
+.sct-name { color:var(--ink); font-weight:500; }
+.sct-qty  { font-weight:700; white-space:nowrap; text-align:right; }
+.sct-qty.ok  { color:#0E5BC7; }
+.sct-qty.bad { color:#EF4350; }
+.sct-del  { display:flex; justify-content:flex-end; }
+
+/* Sản xuất preview */
+.spv-wrap { display:flex; flex-direction:column; gap:4px; margin-top:.5rem; }
+.spv-header {
+  display:grid; grid-template-columns:1fr 90px 100px;
+  gap:.5rem; padding:.25rem .55rem;
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--muted); background:#F5F8FF;
+  border-radius:6px 6px 0 0; border:1px solid var(--rule);
+}
+.spv-row {
+  display:grid; grid-template-columns:1fr 90px 100px;
+  gap:.5rem; align-items:center;
+  padding:.38rem .55rem;
+  font-size:12px; border:1px solid transparent; border-radius:6px;
+}
+.spv-row.row-ok  { background:#F0F6FF; border-color:#D6E6FF; }
+.spv-row.row-bad { background:#FFF4F4; border-color:#FFD0D0; }
+.spv-cell { white-space:nowrap; text-align:right; font-weight:600; }
+.spv-cell.ok  { color:#0E5BC7; }
+.spv-cell.bad { color:#EF4350; }
+.spv-name { color:var(--ink); font-weight:500; }
 
 /* Stock badge on product card */
 .prod-stock-bar { height:4px; border-radius:2px; margin-top:3px; overflow:hidden; background:var(--rule); }
@@ -856,7 +934,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <!-- Settings tab bar -->
       <div class="settings-tabs" style="grid-template-columns:repeat(5,1fr);display:grid">
         <button class="settings-tab active" id="stab-menu" onclick="switchSettingsTab('menu')">Món</button>
-        <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">NL Thô</button>
+        <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">Nguyên liệu</button>
         <button class="settings-tab" id="stab-semi" onclick="switchSettingsTab('semi')">Thành phẩm</button>
         <button class="settings-tab" id="stab-recipe" onclick="switchSettingsTab('recipe')">Công thức</button>
         <button class="settings-tab" id="stab-promo" onclick="switchSettingsTab('promo')">Khuyến mãi</button>
@@ -927,7 +1005,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <div id="stab-content-ingr" style="display:none">
         <div class="section-block" style="margin-bottom:1rem" id="ingrFormBlock">
           <div class="section-block-header" style="justify-content:space-between">
-            <div class="panel-title" style="margin:0" id="ingrFormTitle">Nhập nguyên liệu</div>
+            <div class="panel-title" style="margin:0" id="ingrFormTitle">Thêm nguyên liệu</div>
             <button id="ingrCancelEditBtn" onclick="cancelEditIngredient()" style="display:none;padding:.25rem .7rem;border-radius:8px;border:1px solid var(--rule);background:#fff;color:var(--soft);font-size:11.5px;font-weight:400;cursor:pointer">✕ Huỷ sửa</button>
           </div>
           <div class="section-block-body">
@@ -942,17 +1020,22 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
                 <input class="form-input" id="ingrSupplier" placeholder="Tên NCC">
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Số lượng</label>
-                <input class="form-input" type="number" id="ingrQty" placeholder="0" step="0.1" oninput="calcIngrConvert()">
+            <div id="ingrQtyRow">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Số lượng ban đầu</label>
+                  <input class="form-input" type="number" id="ingrQty" placeholder="0" step="0.1" oninput="calcIngrConvert()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Đơn vị</label>
+                  <select class="form-input" id="ingrUnit" onchange="calcIngrConvert()">
+                    <option>kg</option><option>g</option><option>lít</option><option>ml</option><option>gói</option><option>hộp</option><option>cái</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Đơn vị</label>
-                <select class="form-input" id="ingrUnit" onchange="calcIngrConvert()">
-                  <option>kg</option><option>g</option><option>lít</option><option>ml</option><option>gói</option><option>hộp</option><option>cái</option>
-                </select>
-              </div>
+            </div>
+            <div id="ingrQtyHint" style="display:none;align-items:center;gap:.6rem;padding:.5rem .7rem;background:#D6E6FF;border-radius:8px;margin-bottom:.7rem;font-size:12.5px;color:#0E5BC7">
+              📦 Để nhập thêm số lượng vào kho, dùng nút <b style="background:#dcfce7;color:#16a34a;border:1px solid #22c55e;border-radius:4px;padding:.05rem .35rem">＋</b> trong bảng danh sách bên dưới.
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -985,7 +1068,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
               </div>
             </div>
             <div style="display:flex;gap:.6rem">
-              <button class="btn btn-green" id="ingrSubmitBtn" onclick="addIngredient()">➕ Nhập kho</button>
+              <button class="btn btn-green" id="ingrSubmitBtn" onclick="addIngredient()">➕ Thêm nguyên liệu</button>
               <button class="btn btn-outline" onclick="clearIngrForm()">✕ Xóa</button>
             </div>
           </div>
@@ -1160,6 +1243,27 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
                 <div class="form-group" style="flex:1;min-width:100px;max-width:200px">
                   <label class="form-label">Ngưỡng cảnh báo</label>
                   <input class="form-input" type="number" id="semiSelfMin" placeholder="vd: 1">
+                </div>
+              </div>
+
+              <!-- ── Đánh dấu là Topping (self mode) ── -->
+              <div style="background:#FFF6CC;border:1px solid #FFCB3D;border-radius:10px;padding:.7rem .9rem;margin-top:.7rem">
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin-bottom:.4rem">
+                  <input type="checkbox" id="semiIsToppingSelf" onchange="toggleToppingFieldsSelf()" style="width:16px;height:16px;accent-color:#B8900A">
+                  <span style="font-size:13px;font-weight:400;color:#7A5800">🧋 Sản phẩm này là <strong>Topping</strong> (hiện như món độc lập trong tab Bán hàng & có thể chọn khi order)</span>
+                </label>
+                <div id="toppingExtraFieldsSelf" style="display:none;margin-top:.5rem">
+                  <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
+                    <div class="form-group" style="flex:0 0 80px">
+                      <label class="form-label">Emoji</label>
+                      <input class="form-input" type="text" id="semiToppingEmojiSelf" placeholder="🧋" maxlength="4" style="font-size:20px;text-align:center;padding:.3rem">
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:140px">
+                      <label class="form-label">Giá bán topping (đ)</label>
+                      <input class="form-input" type="number" id="semiToppingPriceSelf" placeholder="vd: 5000" step="500" min="0">
+                    </div>
+                  </div>
+                  <div style="font-size:11px;font-weight:400;color:#7A5800;margin-top:.35rem">💡 Giá này sẽ được cộng vào ly khi khách chọn topping này</div>
                 </div>
               </div>
             </div>
@@ -1530,6 +1634,32 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
 <div class="toast" id="toast"></div>
 <div class="toast-neworder" id="toastNewOrder"></div>
+
+<!-- RESTOCK MODAL -->
+<div class="modal-overlay" id="restockModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">📦 Nhập thêm hàng vào kho</div>
+    <input type="hidden" id="restockIngrId">
+    <div style="padding:0 1.2rem 1rem">
+      <div style="font-size:13px;font-weight:400;color:var(--ink);margin-bottom:.9rem" id="restockIngrName"></div>
+      <div class="form-group" style="margin-bottom:.8rem">
+        <label class="form-label">Số lượng nhập thêm</label>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input class="form-input" type="number" id="restockQty" placeholder="0" step="0.1" min="0" style="flex:1">
+          <span id="restockUnit" style="font-size:13px;font-weight:700;color:#0E5BC7;min-width:32px"></span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Ghi chú (tuỳ chọn)</label>
+        <input class="form-input" type="text" id="restockNote" placeholder="VD: Nhập thêm từ NCC ABC">
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-green" style="flex:1" onclick="confirmRestock()">✅ Xác nhận nhập</button>
+        <button class="btn btn-outline" onclick="closeRestockModal()">Huỷ</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ════════════════════════════════════════════════════════
@@ -2911,6 +3041,7 @@ function renderIngredients() {
         <td style="padding:.45rem .7rem;text-align:right">${i.cost ? (i.cost/1000).toFixed(0)+'k' : '—'}</td>
         <td style="padding:.45rem .7rem;text-align:center"><span style="font-size:11px;font-weight:400;padding:.15rem .45rem;border-radius:10px;background:${status==='ok'?'#D6E6FF':status==='low'?'#FFF6CC':'#FFE0E2'};color:${colors[status]}">${label}</span></td>
         <td style="padding:.45rem .7rem;text-align:center;white-space:nowrap">
+          <button onclick="openRestockIngredient(${i.id})" title="Nhập thêm hàng vào kho" style="padding:.2rem .5rem;border-radius:6px;border:1px solid #22c55e;background:#dcfce7;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px">＋</button>
           <button onclick="editIngredient(${i.id})" style="padding:.2rem .5rem;border-radius:6px;border:1px solid #0E5BC7;background:#D6E6FF;color:#0E5BC7;font-size:11px;font-weight:400;cursor:pointer;margin-right:3px">✏️</button>
           <button onclick="deleteIngredient(${i.id})" style="padding:.2rem .5rem;border-radius:6px;border:1px solid #EF4350;background:#FFE0E2;color:#EF4350;font-size:11px;font-weight:400;cursor:pointer">🗑️</button>
         </td>
@@ -3418,9 +3549,14 @@ function editIngredient(id) {
   if(document.getElementById('ingrMinUnit'))  document.getElementById('ingrMinUnit').value  = i.minUnit||'g';
   calcIngrConvert();
   document.getElementById('ingrFormTitle').textContent = '✏️ Sửa nguyên liệu';
-  document.getElementById('ingrSubmitBtn').textContent = '💾 Cập nhật kho';
+  document.getElementById('ingrSubmitBtn').textContent = '💾 Cập nhật';
   document.getElementById('ingrSubmitBtn').onclick = saveEditIngredient;
   document.getElementById('ingrCancelEditBtn').style.display = 'inline-block';
+  // Ẩn trường số lượng khi sửa (dùng button + để nhập thêm)
+  const qtyRow = document.getElementById('ingrQtyRow');
+  if(qtyRow) qtyRow.style.display = 'none';
+  const qtyHint = document.getElementById('ingrQtyHint');
+  if(qtyHint) { qtyHint.style.display = 'flex'; qtyHint.dataset.editId = i.id; }
   // Highlight form + scroll lên
   const block = document.getElementById('ingrFormBlock');
   block.style.border = '2px solid #0E5BC7';
@@ -3430,7 +3566,6 @@ function editIngredient(id) {
 function saveEditIngredient() {
   const id       = parseInt(document.getElementById('ingrEditId').value);
   const name     = document.getElementById('ingrName').value.trim();
-  const qty      = parseFloat(document.getElementById('ingrQty').value);
   const unit     = document.getElementById('ingrUnit').value;
   const cost     = parseInt(document.getElementById('ingrCost').value)||0;
   const min      = parseFloat(document.getElementById('ingrMin').value)||0;
@@ -3438,10 +3573,11 @@ function saveEditIngredient() {
   const spec     = parseFloat(document.getElementById('ingrSpec')?.value)||0;
   const specUnit = document.getElementById('ingrSpecUnit')?.value||'g';
   const minUnit  = document.getElementById('ingrMinUnit')?.value||'g';
-  if(!name || isNaN(qty)) { showToast('⚠️ Vui lòng nhập tên và số lượng'); return; }
+  if(!name) { showToast('⚠️ Vui lòng nhập tên nguyên liệu'); return; }
   const ing = ingredients.find(x=>x.id===id);
   if(!ing) return;
-  ing.name = name; ing.qty = qty; ing.unit = unit;
+  // Giữ nguyên qty — số lượng chỉ thay đổi qua nút "＋ Nhập thêm hàng"
+  ing.name = name; ing.unit = unit;
   ing.cost = cost; ing.min = min; ing.minUnit = minUnit; ing.supplier = sup;
   ing.spec = spec; ing.specUnit = specUnit;
   showToast(`✓ Đã cập nhật "${ing.name}"`, 'success');
@@ -3453,11 +3589,16 @@ function saveEditIngredient() {
 function cancelEditIngredient() {
   document.getElementById('ingrEditId').value = '';
   clearIngrForm();
-  document.getElementById('ingrFormTitle').textContent = 'Nhập nguyên liệu';
-  document.getElementById('ingrSubmitBtn').textContent = '➕ Nhập kho';
+  document.getElementById('ingrFormTitle').textContent = 'Thêm nguyên liệu';
+  document.getElementById('ingrSubmitBtn').textContent = '➕ Thêm nguyên liệu';
   document.getElementById('ingrSubmitBtn').onclick = addIngredient;
   document.getElementById('ingrCancelEditBtn').style.display = 'none';
   document.getElementById('ingrFormBlock').style.border = '';
+  // Hiện lại trường số lượng
+  const qtyRow = document.getElementById('ingrQtyRow');
+  if(qtyRow) qtyRow.style.display = '';
+  const qtyHint = document.getElementById('ingrQtyHint');
+  if(qtyHint) qtyHint.style.display = 'none';
 }
 
 function deleteIngredient(id) {
@@ -3468,6 +3609,37 @@ function deleteIngredient(id) {
   showToast(`🗑️ Đã xóa ${i.name}`, '');
   renderIngredients(); updateLowBadge();
   if(window.fbSaveIngredients) fbSaveIngredients();
+}
+
+// ─── RESTOCK (Nhập thêm hàng vào kho) ───────────────────────────────
+function openRestockIngredient(id) {
+  const i = ingredients.find(x=>x.id===id);
+  if(!i) return;
+  document.getElementById('restockIngrId').value = id;
+  document.getElementById('restockIngrName').innerHTML =
+    `<b>${i.name}</b> &nbsp;·&nbsp; <span style="color:var(--muted)">Tồn hiện tại:</span> <b style="color:#0E5BC7">${i.qty} ${i.unit}</b>`;
+  document.getElementById('restockUnit').textContent = i.unit;
+  document.getElementById('restockQty').value = '';
+  document.getElementById('restockNote').value = '';
+  document.getElementById('restockModal').classList.add('open');
+  setTimeout(()=>document.getElementById('restockQty').focus(), 80);
+}
+
+function confirmRestock() {
+  const id  = parseInt(document.getElementById('restockIngrId').value);
+  const qty = parseFloat(document.getElementById('restockQty').value);
+  if(!id || isNaN(qty) || qty <= 0) { showToast('⚠️ Nhập số lượng hợp lệ'); return; }
+  const i = ingredients.find(x=>x.id===id);
+  if(!i) return;
+  i.qty = +(i.qty + qty).toFixed(3);
+  showToast(`✓ Đã nhập thêm ${qty} ${i.unit} ${i.name}`, 'success');
+  closeRestockModal();
+  renderIngredients(); updateLowBadge();
+  if(window.fbSaveIngredients) fbSaveIngredients();
+}
+
+function closeRestockModal() {
+  document.getElementById('restockModal').classList.remove('open');
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────
@@ -3821,9 +3993,13 @@ function toggleSemiSource() {
   const editId    = document.getElementById('semiEditId')?.value;
   const submitBtn = document.getElementById('semiSubmitBtn');
   const saveCTBtn = document.getElementById('semiSaveCTBtn');
-  if(editId) {
-    // Chế độ edit thông tin: chỉ nút Cập nhật
-    if(submitBtn) submitBtn.style.display = 'inline-flex';
+  if(editId && src === 'self') {
+    // Edit self: nút Lưu công thức
+    if(submitBtn) submitBtn.style.display = 'none';
+    if(saveCTBtn) { saveCTBtn.style.display = 'inline-flex'; saveCTBtn.textContent = '💾 Lưu công thức'; }
+  } else if(editId && src === 'ncc') {
+    // Edit NCC: nút Cập nhật
+    if(submitBtn) { submitBtn.style.display = 'inline-flex'; submitBtn.textContent = '💾 Cập nhật'; }
     if(saveCTBtn) saveCTBtn.style.display = 'none';
   } else if(src === 'self') {
     // Tự pha chế: chỉ nút Lưu công thức
@@ -3855,6 +4031,35 @@ function toggleSemiSource() {
     const ssuEl = document.getElementById('semiSelfUnit'); if(ssuEl) ssuEl.textContent = '—';
     // Reset searchable selects
     if(typeof ssReset === 'function') { ssReset('nccRef'); ssReset('selfIngr'); }
+  } else {
+    // Đang edit — luôn đọc lại dữ liệu gốc từ semiFinished + sfRecipes theo src mới
+    const sv  = semiFinished.find(x => String(x.id) === String(editId));
+    const rv  = sv ? sfRecipes[sv.id] : null;
+    if(!sv) return;
+    if(src === 'self') {
+      const nameEl = document.getElementById('semiNameSelf'); if(nameEl) nameEl.value = sv.name;
+      const minEl  = document.getElementById('semiSelfMin');  if(minEl)  minEl.value  = sv.min || '';
+      const yldEl  = document.getElementById('semiSelfYield'); if(yldEl) yldEl.value  = rv?.yield || '';
+      const unitSel = document.getElementById('semiUnitSelfYield');
+      if(unitSel) { for(let o of unitSel.options) { if(o.value===sv.unit){ unitSel.value=sv.unit; break; } } }
+      semiSelfLines = rv?.lines ? rv.lines.map(l=>({...l})) : [];
+      renderSemiSelfLines();
+      const isTEl = document.getElementById('semiIsToppingSelf'); if(isTEl) { isTEl.checked = !!sv.isTopping; toggleToppingFieldsSelf(); }
+      const tEEl = document.getElementById('semiToppingEmojiSelf'); if(tEEl) tEEl.value = sv.toppingEmoji || '';
+      const tPEl = document.getElementById('semiToppingPriceSelf'); if(tPEl) tPEl.value = sv.toppingPrice || '';
+      const ctEl = document.getElementById('semiEditCTId'); if(ctEl) ctEl.value = sv.id;
+    } else {
+      // Đổi sang NCC: chỉ giữ tên, xóa hết phần còn lại
+      const nameEl = document.getElementById('semiName'); if(nameEl) nameEl.value = sv.name;
+      ['semiSupplier','semiQty','semiCost','semiMin'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      const unitSel = document.getElementById('semiUnit'); if(unitSel) unitSel.value = 'lít';
+      const isTEl = document.getElementById('semiIsTopping'); if(isTEl) { isTEl.checked = false; toggleToppingFields(); }
+      const tEEl = document.getElementById('semiToppingEmoji'); if(tEEl) tEEl.value = '';
+      const tPEl = document.getElementById('semiToppingPrice'); if(tPEl) tPEl.value = '';
+      const ctEl = document.getElementById('semiEditCTId'); if(ctEl) ctEl.value = '';
+      if(typeof ssReset === 'function') ssReset('nccRef');
+    }
+    if(submitBtn) submitBtn.textContent = '💾 Cập nhật';
   }
 
   if(src === 'ncc') {
@@ -4007,6 +4212,12 @@ function toggleToppingFields() {
   if(fields) fields.style.display = checked ? 'block' : 'none';
 }
 
+function toggleToppingFieldsSelf() {
+  const checked = document.getElementById('semiIsToppingSelf')?.checked;
+  const fields  = document.getElementById('toppingExtraFieldsSelf');
+  if(fields) fields.style.display = checked ? 'block' : 'none';
+}
+
 // ── Tự pha: populate (không còn cần thiết nhưng giữ để tương thích) ─
 function populateSemiSelfIngrDropdown() { /* handled by ssOpen/ssRender */ }
 
@@ -4092,6 +4303,11 @@ function clearSemiForm() {
   ['semiNameSelf','semiSelfYield','semiSelfMin'].forEach(id=>{
     const el = document.getElementById(id); if(el) el.value = '';
   });
+  // Reset self topping fields
+  const isToppingSelfEl = document.getElementById('semiIsToppingSelf');
+  if(isToppingSelfEl) { isToppingSelfEl.checked = false; toggleToppingFieldsSelf(); }
+  const tEmojiSelf = document.getElementById('semiToppingEmojiSelf'); if(tEmojiSelf) tEmojiSelf.value = '';
+  const tPriceSelf = document.getElementById('semiToppingPriceSelf'); if(tPriceSelf) tPriceSelf.value = '';
   semiSelfLines = [];
   renderSemiSelfLines();
   document.getElementById('semiEditId').value = '';
@@ -4108,8 +4324,8 @@ function addSemi(produceMode) {
   const editId = document.getElementById('semiEditId').value;
   const src    = document.getElementById('semiSource')?.value || 'self';
 
-  if(editId) {
-    // Sửa thông tin — NCC layout (không liên quan produceMode)
+  if(editId && src === 'ncc') {
+    // Sửa thông tin — đang ở NCC block
     const name = document.getElementById('semiName').value.trim();
     const qty  = parseFloat(document.getElementById('semiQty').value)||0;
     const unit = document.getElementById('semiUnit').value;
@@ -4121,11 +4337,34 @@ function addSemi(produceMode) {
     const toppingEmoji = document.getElementById('semiToppingEmoji')?.value.trim() || '🧋';
     const toppingPrice = isTopping ? (parseInt(document.getElementById('semiToppingPrice')?.value)||0) : 0;
     const s = semiFinished.find(x=>x.id===parseInt(editId));
-    if(s) { s.name=name; s.qty=qty; s.unit=unit; s.cost=cost; s.min=min; s.supplier=sup; s.isTopping=isTopping; s.toppingEmoji=isTopping?toppingEmoji:undefined; s.toppingPrice=isTopping?toppingPrice:undefined; }
+    if(s) { s.name=name; s.qty=qty; s.unit=unit; s.cost=cost; s.min=min; s.supplier=sup||'NCC';
+            s.isTopping=isTopping; s.toppingEmoji=isTopping?toppingEmoji:undefined; s.toppingPrice=isTopping?toppingPrice:undefined;
+            // Xóa công thức nếu đổi từ self → ncc
+            delete sfRecipes[s.id]; if(window.fbSaveSfRecipes) fbSaveSfRecipes(); }
     showToast(`✓ Đã cập nhật "${name}"${isTopping?' 🧋 (Topping)':''}`, 'success');
-    cancelEditSemi();
-    renderSemiList();
-    if(window.fbSaveSemi) fbSaveSemi();
+    cancelEditSemi(); renderSemiList(); if(window.fbSaveSemi) fbSaveSemi();
+    return;
+  }
+
+  if(editId && src === 'self') {
+    // Sửa thông tin — đang ở Self block (chuyển từ NCC sang self hoặc sửa self TT+CT cùng lúc)
+    const name    = document.getElementById('semiNameSelf').value.trim();
+    const unit    = document.getElementById('semiUnitSelfYield').value;
+    const yld     = parseFloat(document.getElementById('semiSelfYield').value);
+    const min     = parseFloat(document.getElementById('semiSelfMin').value)||0;
+    if(!name) { showToast('⚠️ Nhập tên thành phẩm'); return; }
+    if(!yld||yld<=0) { showToast('⚠️ Nhập sản lượng tạo ra'); return; }
+    if(!semiSelfLines.length) { showToast('⚠️ Thêm ít nhất 1 nguyên liệu'); return; }
+    const isToppingSelf    = document.getElementById('semiIsToppingSelf')?.checked || false;
+    const toppingEmojiSelf = document.getElementById('semiToppingEmojiSelf')?.value.trim() || '🧋';
+    const toppingPriceSelf = isToppingSelf ? (parseInt(document.getElementById('semiToppingPriceSelf')?.value)||0) : 0;
+    const s = semiFinished.find(x=>x.id===parseInt(editId));
+    if(s) { s.name=name; s.unit=unit; s.min=min; s.supplier='Tự pha chế'; s.cost=0;
+            s.isTopping=isToppingSelf; s.toppingEmoji=isToppingSelf?toppingEmojiSelf:undefined; s.toppingPrice=isToppingSelf?toppingPriceSelf:undefined; }
+    sfRecipes[parseInt(editId)] = { yield: yld, lines: semiSelfLines.map(l=>({...l})) };
+    if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+    showToast(`✓ Đã cập nhật "${name}" 🧪 (Tự pha chế)`, 'success');
+    cancelEditSemi(); renderSemiList(); if(window.fbSaveSemi) fbSaveSemi();
     return;
   }
 
@@ -4164,6 +4403,10 @@ function addSemi(produceMode) {
     if(!yld||yld<=0) { showToast('⚠️ Nhập sản lượng tạo ra'); return; }
     if(!semiSelfLines.length) { showToast('⚠️ Thêm ít nhất 1 nguyên liệu'); return; }
 
+    const isToppingSelf    = document.getElementById('semiIsToppingSelf')?.checked || false;
+    const toppingEmojiSelf = document.getElementById('semiToppingEmojiSelf')?.value.trim() || '🧋';
+    const toppingPriceSelf = isToppingSelf ? (parseInt(document.getElementById('semiToppingPriceSelf')?.value)||0) : 0;
+
     // Tìm thành phẩm: ưu tiên editCTId (sửa từ card), sau đó tìm theo tên, rồi tạo mới
     let existing = editCTId
       ? semiFinished.find(x=>x.id===editCTId)
@@ -4171,22 +4414,32 @@ function addSemi(produceMode) {
     let sid;
     if(!existing) {
       sid = Date.now();
-      semiFinished.push({ id: sid, name, qty: 0, unit, min, cost: 0, supplier:'Tự pha chế' });
+      semiFinished.push({ id: sid, name, qty: 0, unit, min, cost: 0, supplier:'Tự pha chế',
+        isTopping: isToppingSelf,
+        toppingEmoji: isToppingSelf ? toppingEmojiSelf : undefined,
+        toppingPrice: isToppingSelf ? toppingPriceSelf : undefined });
       existing = semiFinished.find(x=>x.id===sid);
     } else {
       sid = existing.id;
-      // Cập nhật tên/unit/min nếu có thay đổi
-      existing.name = name;
-      existing.unit = unit;
-      existing.min  = min;
+      // Cập nhật tên/unit/min/topping nếu có thay đổi
+      existing.name        = name;
+      existing.unit        = unit;
+      existing.min         = min;
+      existing.isTopping   = isToppingSelf;
+      existing.toppingEmoji = isToppingSelf ? toppingEmojiSelf : undefined;
+      existing.toppingPrice = isToppingSelf ? toppingPriceSelf : undefined;
     }
 
-    // Lưu công thức
+    // Lưu công thức — giữ nguyên form, không reset
     sfRecipes[sid] = { yield: yld, lines: semiSelfLines.map(l=>({...l})) };
     if(window.fbSaveSfRecipes) fbSaveSfRecipes();
+    if(window.fbSaveSemi) fbSaveSemi();
+    renderSemiList();
     showToast(`💾 Đã lưu công thức "${name}"`, 'success');
+    return; // ← không clear form
   }
 
+  // NCC hoặc edit thông tin → clear form như bình thường
   clearSemiForm();
   renderSemiList();
   if(window.fbSaveSemi) fbSaveSemi();
@@ -4195,8 +4448,14 @@ function addSemi(produceMode) {
 function editSemi(id) {
   const s = semiFinished.find(x=>x.id===id);
   if(!s) return;
+  const isSelf = !s.supplier || s.supplier === 'Tự pha chế';
+  if(isSelf) {
+    // Tự pha chế → dùng loadRecipeToForm để mở đúng form self
+    loadRecipeToForm(id);
+    return;
+  }
+  // NCC → giữ nguyên luồng cũ
   document.getElementById('semiEditId').value = id;
-  // Force NCC layout cho sửa
   const srcSel = document.getElementById('semiSource');
   if(srcSel) { srcSel.value = 'ncc'; toggleSemiSource(); }
   const nameEl = document.getElementById('semiName');     if(nameEl) nameEl.value     = s.name;
@@ -4251,7 +4510,13 @@ function loadRecipeToForm(id) {
   // Load lines
   semiSelfLines = rec && rec.lines ? rec.lines.map(l=>({...l})) : [];
   renderSemiSelfLines();
-  // Đánh dấu đang edit công thức của id này (dùng hidden field riêng)
+  // Load topping fields
+  const isToppingSelfEl = document.getElementById('semiIsToppingSelf');
+  if(isToppingSelfEl) { isToppingSelfEl.checked = !!s.isTopping; toggleToppingFieldsSelf(); }
+  const tEmojiSelf = document.getElementById('semiToppingEmojiSelf'); if(tEmojiSelf) tEmojiSelf.value = s.toppingEmoji || '';
+  const tPriceSelf = document.getElementById('semiToppingPriceSelf'); if(tPriceSelf) tPriceSelf.value = s.toppingPrice || '';
+  // Đánh dấu đang edit — cả 2 field để toggleSemiSource + save đều nhận đúng
+  document.getElementById('semiEditId').value = id;
   const editCTEl = document.getElementById('semiEditCTId');
   if(editCTEl) editCTEl.value = id;
   document.getElementById('semiFormTitle').textContent = `✏️ Sửa công thức: ${s.name}`;
@@ -4310,6 +4575,15 @@ function getSemiWarnings(s) {
   return missing.length ? missing : null;
 }
 
+// Tra ngược: thành phẩm này đang được dùng trong món nào
+function getProductsUsingSemi(semiId) {
+  const key = 's' + semiId;
+  return products.filter(p => {
+    const lines = recipes[p.id];
+    return lines && lines.some(l => l.ingrId === key);
+  });
+}
+
 function renderSemiList() {
   const q = (document.getElementById('semiSearch')?.value || '').toLowerCase();
   const filtered = semiFinished.filter(i => i.name.toLowerCase().includes(q));
@@ -4341,33 +4615,16 @@ function renderSemiList() {
         warnHtml = `<div class="semi-ok-note">✓ Đủ nguyên liệu cho 1 mẻ sản xuất</div>`;
       }
 
-      // Hiện công thức hiện tại
-      const linesHtml = hasRecipe
-        ? rec.lines.map((line,idx) => {
-            const ingr = ingredients.find(i=>i.id===line.ingrId);
-            const ok = semiLineOk(line, ingr);
-            const unit = semiLineUnit(line, ingr);
-            return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
-              <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-              <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit}/mẻ</span>
-              <button class="recipe-del" onclick="event.stopPropagation();removeSfRecipeLine(${s.id},${idx})">✕</button>
-            </div>`;
-          }).join('')
-        : '<div style="font-size:12px;color:var(--muted);font-weight:400;padding:.3rem 0">Chưa có công thức — thêm nguyên liệu bên dưới</div>';
-
       // Sản lượng mỗi mẻ
       const yieldVal = rec && rec.yield ? rec.yield : '';
       const yieldUnit = s.unit;
-
-      // Form thêm NL vào công thức
-      const ingrOpts = ingredients.map(i=>`<option value="${i.id}">${i.name} (${i.qty} ${i.unit})</option>`).join('');
 
       // Panel sản xuất
       let produceHtml = '';
       if(hasRecipe) {
         produceHtml = `
         <div style="margin-top:.8rem;padding:.7rem;background:var(--bg);border-radius:8px;border:1px solid var(--rule)">
-          <div style="font-size:11.5px;font-weight:400;color:var(--soft);margin-bottom:.5rem">⚗️ Sản xuất</div>
+          <div style="font-size:11px;font-weight:700;color:var(--soft);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">⚗️ Sản xuất</div>
           <div style="display:flex;gap:.5rem;align-items:flex-end">
             <div class="form-group" style="flex:1">
               <label class="form-label">Số mẻ</label>
@@ -4379,34 +4636,80 @@ function renderSemiList() {
         </div>`;
       }
 
-      // Hiển thị công thức read-only (không có form thêm NL)
+      // Build compact grid rows for recipe lines
+      const canEdit = (s.supplier||'Tự pha chế') === 'Tự pha chế';
+      const recipeRows = hasRecipe
+        ? rec.lines.map((line, idx) => {
+            const ingr = ingredients.find(i=>i.id===line.ingrId);
+            const ok   = semiLineOk(line, ingr);
+            const unit = semiLineUnit(line, ingr);
+            const delBtn = canEdit
+              ? `<button class="recipe-del" onclick="event.stopPropagation();removeSfRecipeLine(${s.id},${idx})" title="Xóa">✕</button>`
+              : '<span></span>';
+            return `<div class="sct-row ${ok?'row-ok':'row-bad'}">
+              <span class="sct-name">${ingr ? ingr.name : '?'}</span>
+              <span class="sct-qty ${ok?'ok':'bad'}">${line.qty} ${unit}<span style="font-weight:400;color:var(--muted);font-size:11px">/mẻ</span></span>
+              <span class="sct-del">${delBtn}</span>
+            </div>`;
+          }).join('')
+        : `<div style="font-size:12px;color:var(--muted);padding:.4rem .55rem;background:#F5F8FF;border-radius:6px;border:1px solid var(--rule)">Chưa có công thức — bấm "✏️ Sửa công thức" để thêm.</div>`;
+
       const readonlyLines = hasRecipe
-        ? `<div style="margin-bottom:.5rem">
-            <div style="font-size:11px;font-weight:400;color:var(--muted);margin-bottom:.3rem">Sản lượng mỗi mẻ: <b style="color:#0E5BC7">${yieldVal} ${yieldUnit}</b></div>
-            ${rec.lines.map(line => {
-              const ingr = ingredients.find(i=>i.id===line.ingrId);
-              const ok = semiLineOk(line, ingr);
-              const unit = semiLineUnit(line, ingr);
-              return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
-                <span class="recipe-line-name">${ingr?ingr.name:'?'}</span>
-                <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit}/mẻ</span>
-              </div>`;
-            }).join('')}
+        ? `<div style="margin-bottom:.6rem">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:.4rem">Sản lượng mỗi mẻ: <b style="color:#0E5BC7">${yieldVal} ${yieldUnit}</b></div>
+            <div class="sct-wrap">
+              <div class="sct-header"><span>Nguyên liệu</span><span style="text-align:right">Lượng/mẻ</span><span></span></div>
+              ${recipeRows}
+            </div>
           </div>`
         : `<div style="font-size:12px;color:var(--muted);padding:.4rem 0">Chưa có công thức — bấm "✏️ Sửa công thức" để thêm.</div>`;
 
       bodyHtml = `<div class="semi-card-body">
         ${warnHtml}
-        <div style="font-size:11.5px;font-weight:400;color:var(--soft);margin-bottom:.4rem">📋 Công thức chế biến</div>
-        ${readonlyLines}
-        ${produceHtml}
-        <div style="display:flex;gap:.4rem;margin-top:.8rem">
-          ${(s.supplier||'Tự pha chế') === 'Tự pha chế' ? `<button onclick="event.stopPropagation();loadRecipeToForm(${s.id})" class="btn btn-outline" style="font-size:11px;padding:.25rem .7rem">✏️ Sửa công thức</button>` : ''}
-          <button onclick="event.stopPropagation();editSemi(${s.id})" class="btn btn-outline" style="font-size:11px;padding:.25rem .7rem">⚙️ Sửa thông tin</button>
-          <button onclick="event.stopPropagation();deleteSemi(${s.id})" class="btn" style="font-size:11px;padding:.25rem .7rem;background:#FFE0E2;border-color:#EF4350;color:#EF4350">🗑️ Xóa</button>
+        <div class="semi-body-grid">
+
+          <!-- CỘT TRÁI: Công thức -->
+          <div class="semi-col">
+            <div class="semi-col-label">📋 Công thức · <span style="color:#0E5BC7;font-weight:700">${yieldVal ? yieldVal+' '+yieldUnit+'/mẻ' : '—'}</span></div>
+            <div class="sct-wrap">
+              <div class="sct-header"><span>Nguyên liệu</span><span>Lượng/mẻ</span><span></span></div>
+              ${recipeRows}
+            </div>
+          </div>
+
+          <!-- CỘT PHẢI: Sản xuất -->
+          ${hasRecipe ? `<div class="semi-col">
+            <div class="semi-col-label">⚗️ Sản xuất</div>
+            <div style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem">
+              <input class="form-input" type="number" id="produceBatches_${s.id}" min="0.1" step="0.1" value="1"
+                oninput="renderInlineProducePreview(${s.id})"
+                style="width:70px;font-size:13px;padding:.35rem .5rem;text-align:center">
+              <span style="font-size:12px;color:var(--muted)">mẻ</span>
+              <button class="btn btn-green" onclick="event.stopPropagation();executeProduceInline(${s.id})"
+                style="flex:1;height:32px;font-size:12px;font-weight:700;padding:0 .8rem">🏭 Sản xuất ngay</button>
+            </div>
+            <div id="producePreview_${s.id}"></div>
+          </div>` : `<div class="semi-col" style="display:flex;align-items:center;justify-content:center">
+            <span style="font-size:12px;color:var(--muted)">Chưa có công thức</span>
+          </div>`}
+
+        </div>
+
+        <!-- Actions -->
+        <div class="semi-actions">
+          <button onclick="event.stopPropagation();editSemi(${s.id})" class="btn btn-outline" style="font-size:11px;padding:.2rem .65rem">⚙️ Sửa TT</button>
+          <button onclick="event.stopPropagation();deleteSemi(${s.id})" class="btn" style="font-size:11px;padding:.2rem .65rem;background:#FFE0E2;border-color:#EF4350;color:#EF4350">🗑️ Xóa</button>
         </div>
       </div>`;
     }
+
+    const usedInProds = getProductsUsingSemi(s.id);
+    const usedInHtml = usedInProds.length
+      ? `<div style="display:flex;align-items:center;gap:.35rem;margin-top:3px;flex-wrap:wrap">
+          <span style="font-size:10px;font-weight:400;color:var(--muted);white-space:nowrap">Dùng trong:</span>
+          ${usedInProds.map(p=>`<span style="font-size:10px;font-weight:400;background:#F0F4FA;color:#3A4E7A;border:1px solid #c9a7a7;padding:.1rem .45rem;border-radius:6px;white-space:nowrap">${p.emoji} ${p.name}</span>`).join('')}
+        </div>`
+      : `<div style="margin-top:3px;font-size:10px;font-weight:400;color:var(--muted)">Chưa dùng trong món nào</div>`;
 
     return `<div class="semi-card ${isOpen?'expanded':''}" id="semi-card-${s.id}">
       <div class="semi-card-header" onclick="toggleSemiCard(${s.id})">
@@ -4417,6 +4720,7 @@ function renderSemiList() {
             ${(s.supplier||'Tự pha chế') !== 'Tự pha chế' ? '' : hasRecipe ? `<span style="font-size:10px;font-weight:400;background:#D6E6FF;color:#0E5BC7;padding:.1rem .4rem;border-radius:6px">📋 Có công thức</span>` : `<span style="font-size:10px;font-weight:400;background:#FFF6CC;color:#B8900A;padding:.1rem .4rem;border-radius:6px">⚠️ Chưa có CT</span>`}
             ${warnings ? `<span style="font-size:10px;font-weight:400;background:#FFE0E2;color:#EF4350;padding:.1rem .4rem;border-radius:6px">⚠️ Thiếu NL</span>` : ''}
           </div>
+          ${usedInHtml}
           <div style="margin-top:4px;height:4px;background:var(--rule);border-radius:2px;overflow:hidden;max-width:180px">
             <div style="height:100%;width:${pct}%;background:${statusClr};border-radius:2px;transition:width .4s"></div>
           </div>
@@ -4474,6 +4778,10 @@ function addSfLine(sid) {
 }
 
 function removeSfRecipeLine(sid, idx) {
+  const line = sfRecipes[sid]?.lines?.[idx];
+  const ingr = line ? ingredients.find(i=>i.id===line.ingrId) : null;
+  const name = ingr ? ingr.name : 'nguyên liệu này';
+  if(!confirm(`Xóa "${name}" khỏi công thức?\n\nThao tác này không thể hoàn tác.`)) return;
   if(sfRecipes[sid]) sfRecipes[sid].lines.splice(idx,1);
   renderSemiList();
   if(window.fbSaveSfRecipes) fbSaveSfRecipes();
@@ -4506,14 +4814,19 @@ function renderInlineProducePreview(sid) {
       }
     }
     if(!ok) canProduce = false;
-    return `<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:400;padding:.25rem .4rem;background:${ok?'var(--bg)':'#FFE0E2'};border-radius:5px;margin-bottom:3px">
-      <span>${ingr?ingr.name:'?'}</span>
-      <span style="color:${ok?'#0E5BC7':'#EF4350'}">Cần ${need} ${unit} / Còn ${stockDisplay}</span>
+    return `<div class="spv-row ${ok?'row-ok':'row-bad'}">
+      <span class="spv-name">${ingr?ingr.name:'?'}</span>
+      <span class="spv-cell ${ok?'ok':'bad'}">Cần ${need} ${unit}</span>
+      <span class="spv-cell ${ok?'ok':'bad'}">Còn ${stockDisplay}</span>
     </div>`;
   }).join('');
   const willProduce = +(rec.yield * batches).toFixed(3);
-  el.innerHTML = `<div style="font-size:11.5px">${rows}</div>
-    <div style="margin-top:.4rem;padding:.3rem .5rem;background:${canProduce?'#D6E6FF':'#FFE0E2'};border-radius:6px;font-size:12.5px;font-weight:400;color:${canProduce?'#0E5BC7':'#EF4350'}">
+  el.innerHTML = `
+    <div class="spv-wrap">
+      <div class="spv-header"><span>Nguyên liệu</span><span style="text-align:right">Cần</span><span style="text-align:right">Tồn kho</span></div>
+      ${rows}
+    </div>
+    <div style="margin-top:.45rem;padding:.35rem .6rem;background:${canProduce?'#D6E6FF':'#FFE0E2'};border-radius:6px;font-size:12.5px;font-weight:600;color:${canProduce?'#0E5BC7':'#EF4350'}">
       ${canProduce ? `✓ Sẽ được <b>${willProduce} ${s?.unit}</b> ${s?.name}` : '⚠️ Không đủ nguyên liệu thô'}
     </div>`;
 }
@@ -4685,6 +4998,9 @@ document.getElementById('orderDetailModal').addEventListener('click', function(e
 });
 document.getElementById('confirmModal').addEventListener('click', function(e){
   if(e.target===this) this.classList.remove('open');
+});
+document.getElementById('restockModal').addEventListener('click', function(e){
+  if(e.target===this) closeRestockModal();
 });
 
 // Show/hide cash panel based on payment method
