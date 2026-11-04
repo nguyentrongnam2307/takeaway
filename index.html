@@ -456,6 +456,8 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .topping-card:hover { border-color:#FFCB3D; background:#FFF6CC; color:var(--ink); }
 .topping-card.selected { border-color:#FFCB3D; background:#FFF6CC; color:var(--ink); }
 .topping-card.selected::after { content:'✓'; margin-left:auto; color:#B8900A; font-weight:400; }
+.topping-card.out { opacity:.45; cursor:default; background:#f9f9f9; border-color:var(--rule); }
+.topping-card.out:hover { border-color:var(--rule); background:#f9f9f9; color:var(--soft); }
 .topping-price { font-size:11px; font-weight:400; color:var(--muted); margin-left:auto; }
 .topping-card.selected .topping-price { color:#B8900A; }
 .size-grid { display:flex; gap:8px; margin:.5rem 0 .8rem; }
@@ -2652,13 +2654,18 @@ function openToppingModal(prod) {
   const grid = document.getElementById('toppingGrid');
   const emptyNote = document.getElementById('toppingEmptyNote');
   if(toppings.length) {
-    grid.innerHTML = toppings.map(t=>`
-      <div class="topping-card" id="tc-${t.id}" onclick="toggleTopping('${t.id}')">
+    grid.innerHTML = toppings.map(t=>{
+      const semi = semiFinished.find(s => 'semi_' + s.id === t.id);
+      const tOut = semi && semi.qty <= 0;
+      return `
+      <div class="topping-card${tOut?' out':''}" id="tc-${t.id}" onclick="${tOut ? '' : `toggleTopping('${t.id}')`}">
         <span>${t.emoji}</span>
         <span>${t.name}</span>
-        <span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>
-      </div>
-    `).join('');
+        ${tOut
+          ? `<span class="topping-price" style="color:var(--red)">Hết</span>`
+          : `<span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>`}
+      </div>`;
+    }).join('');
     if(emptyNote) emptyNote.style.display = 'none';
   } else {
     grid.innerHTML = '';
