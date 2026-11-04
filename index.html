@@ -328,9 +328,42 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .orders-list { display:flex; flex-direction:column; gap:8px; }
 .order-card {
   background:#fff; border-radius:var(--radius); border:1.5px solid var(--rule);
-  padding:.75rem 1rem; display:flex; align-items:center; gap:1rem;
+  padding:.75rem 1rem; display:flex; align-items:center; gap:.75rem;
   box-shadow:0 2px 0 var(--rule);
   transition:background .2s, border-color .2s;
+}
+/* Mobile: stack thành 2 dòng */
+@media (max-width: 480px) {
+  .order-card {
+    flex-wrap: wrap;
+    padding: .65rem .85rem;
+    gap: .4rem .6rem;
+    align-items: flex-start;
+  }
+  .order-num {
+    font-size: 1rem !important;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .order-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .order-items-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .order-card-right {
+    width: 100%;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start;
+    gap: .5rem !important;
+    padding-left: 2.6rem; /* indent under order-info */
+  }
+  .order-card-right .order-amount { font-size: .9rem !important; margin-right: auto; }
 }
 /* pending chưa click: nổi bật */
 .order-card.pending    { background:#FFFBEA; border-color:#F5C518; border-left:5px solid #F5C518; box-shadow:0 2px 0 #e6b800; }
@@ -366,6 +399,9 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 .order-items-text { font-size:12.5px; font-weight:400; color:var(--ink); }
 .order-meta { font-size:11px; font-weight:400; color:var(--muted); }
 .order-amount { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:1rem; font-weight:400; color:var(--ink); flex-shrink:0; }
+.order-card-right {
+  display:flex; flex-direction:column; align-items:flex-end; gap:.3rem; flex-shrink:0;
+}
 .order-status {
   font-size:11px; font-weight:800; padding:.25rem .75rem; border-radius:20px;
 }
@@ -688,6 +724,10 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   border:1px solid rgba(255,255,255,.12); max-width:90vw; text-align:center;
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
+/* Trên mobile: đẩy toast lên trên để không bị bottom sheet/nav đè */
+@media (max-width: 480px) {
+  .toast { bottom: calc(64px + env(safe-area-inset-bottom,0px) + 8px); }
+}
 .toast.success { background:var(--green); }
 /* New order alert toast */
 .toast-neworder {
@@ -781,6 +821,80 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
   .topbar-time { display:none; }
   #fbStatus { display:none; }
   .mobile-nav { display:flex !important; }
+}
+
+/* ══════════ MOBILE CART BOTTOM SHEET ══════════ */
+.cart-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 300;
+}
+.cart-overlay.open { display: block; }
+
+@media (max-width: 480px) {
+  .cart-panel {
+    /* override default: bottom sheet */
+    position: fixed !important;
+    left: 0 !important; right: 0 !important;
+    bottom: 0 !important; top: auto !important;
+    width: 100% !important;
+    max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+    border-top: 3px solid #FFCB3D !important;
+    border-left: none !important;
+    z-index: 350 !important;
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.32,1,.42,1);
+    display: flex !important; /* always mounted, moved off-screen */
+  }
+  .cart-panel.mobile-open {
+    transform: translateY(0) !important;
+  }
+  /* drag handle */
+  #cartPanel::before {
+    content: '';
+    display: block;
+    width: 40px; height: 4px;
+    background: #ccc; border-radius: 4px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+}
+
+/* ══════════ FLOATING CART BUTTON (mobile) ══════════ */
+.fab-cart {
+  display: none;
+  position: fixed;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #0E5BC7, #0C2D68);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: .65rem 1.4rem;
+  font-size: 14px; font-weight: 700;
+  box-shadow: 0 6px 20px rgba(14,91,199,.45);
+  cursor: pointer;
+  z-index: 250;
+  gap: .5rem;
+  align-items: center;
+  white-space: nowrap;
+  transition: transform .15s, box-shadow .15s;
+}
+.fab-cart:active { transform: translateX(-50%) scale(.96); }
+.fab-cart .fab-count {
+  background: #EF4350;
+  color: #fff;
+  font-size: 11px; font-weight: 800;
+  padding: .1rem .45rem;
+  border-radius: 12px;
+  margin-left: .2rem;
+}
+@media (max-width: 480px) {
+  .fab-cart { display: flex; }
 }
 
 /* ══════════ MOBILE BOTTOM NAV ══════════ */
@@ -1609,6 +1723,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <div id="receiptContent"></div>
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="printReceipt()">🖨️ In bill</button>
+        <button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels(currentReceiptOrder)">🏷️ In tem</button>
         <button class="btn btn-green" onclick="closeModal()">✓ Xong</button>
       </div>
     </div>
@@ -1701,6 +1816,14 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     </div>
   </div>
 </div>
+
+<!-- MOBILE CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeMobileCart()"></div>
+
+<!-- FLOATING CART BUTTON (mobile) -->
+<button class="fab-cart" id="fabCartBtn" onclick="toggleMobileCart()" style="display:none">
+  🛒 Xem giỏ hàng <span class="fab-count" id="fabCount">0</span>
+</button>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav" id="mobileNav">
@@ -2115,7 +2238,7 @@ function showUnreadOnLoadAlert(unreadList) {
   if (!el) return;
   const n = unreadList.length;
   const preview = unreadList.slice(0,2).map(o=>{
-    const items = o.items.map(i=>`${i.emoji}${i.name}`).join(', ');
+    const items = o.items.map((i,idx)=>`${idx+1}.${i.name}`).join(', ');
     return `${o.custName||'Khách'}: ${items}`;
   }).join(' · ');
   const more = n > 2 ? ` (+${n-2} đơn nữa)` : '';
@@ -2168,7 +2291,7 @@ function clearOrdersBadge() {
 }
 
 function showNewOrderToast(o) {
-  const items = o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ');
+  const items = o.items.map((i,idx)=>`${idx+1}.${i.name}×${i.qty}`).join(', ');
   const name = o.custName ? ` · ${o.custName}` : '';
   const msg = `🛎️ ĐƠN MỚI${name}\n${items}`;
 
@@ -2632,8 +2755,10 @@ function updateQty(key, delta) {
 }
 
 function clearCart() {
-  cart = {};
+  orderSlots[activeSlot] = {};
+  cart = orderSlots[activeSlot];
   document.getElementById('orderNote').value = '';
+  closeMobileCart();
   renderCart();
 }
 
@@ -2683,6 +2808,37 @@ function renderCart() {
   document.getElementById('grandTotal').textContent = fmt(grand);
   checkBtn.disabled = false;
   calcChange();
+  updateFabCart(totalQty);
+}
+
+function updateFabCart(qty) {
+  const fab = document.getElementById('fabCartBtn');
+  const fabCount = document.getElementById('fabCount');
+  if (!fab) return;
+  if (window.innerWidth <= 480) {
+    fab.style.display = qty > 0 ? 'flex' : 'none';
+  } else {
+    fab.style.display = 'none';
+  }
+  if (fabCount) fabCount.textContent = qty;
+}
+
+function toggleMobileCart() {
+  const panel = document.getElementById('cartPanel');
+  const overlay = document.getElementById('cartOverlay');
+  const isOpen = panel.classList.contains('mobile-open');
+  if (isOpen) {
+    panel.classList.remove('mobile-open');
+    overlay.classList.remove('open');
+  } else {
+    panel.classList.add('mobile-open');
+    overlay.classList.add('open');
+  }
+}
+
+function closeMobileCart() {
+  document.getElementById('cartPanel').classList.remove('mobile-open');
+  document.getElementById('cartOverlay').classList.remove('open');
 }
 
 // ─── PAYMENT ─────────────────────────────────────────────────────────
@@ -2702,7 +2858,8 @@ function checkout() {
   const summaryEl = document.getElementById('confirmOrderSummary');
   const cashEl = document.getElementById('cashReceived');
   const cashVal = parseInt(cashEl ? cashEl.value : 0) || 0;
-  let summaryHtml = `<strong>${items.length} món · ${fmtFull(grand)}</strong>`;
+  const totalCups = items.reduce((a,i)=>a+i.qty,0);
+  let summaryHtml = `<strong>${totalCups} cốc (${items.length} món) · ${fmtFull(grand)}</strong>`;
   if(discount > 0) summaryHtml += `<br><span style="color:#0E5BC7">🎁 Giảm giá: -${fmtFull(discount)}</span>`;
   if(selectedPay === 'Tiền mặt' && cashVal > 0) {
     const change = cashVal - grand;
@@ -2768,7 +2925,25 @@ function doCheckout() {
   updateLowBadge();
   renderProducts();
   showReceipt(order);
-  clearCart();
+  // Sau thanh toán: nếu còn slot khác thì đóng slot này, không thì chỉ clear
+  const slotIds = Object.keys(orderSlots).map(Number);
+  if (slotIds.length > 1) {
+    // Xóa slot hiện tại và renumber
+    delete orderSlots[activeSlot];
+    const remaining = Object.keys(orderSlots).map(Number);
+    const renumbered = {};
+    remaining.forEach((oldId, i) => { renumbered[i + 1] = orderSlots[oldId]; });
+    orderSlots = renumbered;
+    slotCounter = remaining.length;
+    const newActive = 1;
+    activeSlot = newActive;
+    cart = orderSlots[newActive];
+    renderOrderTabs();
+    renderCart();
+    document.getElementById('orderNote').value = '';
+  } else {
+    clearCart();
+  }
   if(cashEl) cashEl.value = '';
   calcChange();
 }
@@ -2783,20 +2958,57 @@ let bankSettings = {
 
 let currentReceiptOrder = null;
 
+// Render Size / Topping / Note (note đã lưu dạng "Size X · 🏷️Topping1, 🏷️Topping2 · ghi chú")
+// thành các chip bo tròn, xuống dòng tự động (flex-wrap) khi không đủ chỗ.
+// Render note thành 3 dòng riêng:
+//   - Size   → chip xanh
+//   - Topping → chip vàng (gom lại 1 dòng)
+//   - Note   → text muted thường (không chip)
+function renderNoteChips(note, opts) {
+  opts = opts || {};
+  const fs      = opts.fontSize || '11px';
+  const pad     = opts.padding  || '.15rem .5rem';
+  const mutedFs = opts.mutedFontSize || opts.fontSize || '11px';
+  const parts = (note || '').split(' · ').filter(Boolean);
+  const sizeParts    = parts.filter(p => /^Size /.test(p));
+  const toppingParts = parts.filter(p => !/^Size /.test(p) && /[\u{1F300}-\u{1FAFF}]/u.test(p));
+  const noteParts    = parts.filter(p => !/^Size /.test(p) && !/[\u{1F300}-\u{1FAFF}]/u.test(p));
+  const chip = (txt, isSize) =>
+    `<span style="display:inline-flex;align-items:center;gap:2px;background:${isSize?'#EEF4FF':'#FFF8E0'};color:${isSize?'#0E5BC7':'#8a6500'};font-size:${fs};font-weight:${isSize?'700':'400'};padding:${pad};border-radius:20px;border:1px solid ${isSize?'#bcd4ff':'#f0d060'}">${txt}</span>`;
+  const lines = [];
+  sizeParts.forEach(p => lines.push(`<div style="padding-left:1.2em">${chip(p, true)}</div>`));
+  if (toppingParts.length) {
+    // Tách từng topping riêng → mỗi cái 1 chip, flex-wrap xuống dòng
+    const toppingChips = toppingParts
+      .join(', ')
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean)
+      .map(t => chip(t, false))
+      .join('');
+    lines.push(`<div style="padding-left:1.2em;display:flex;flex-wrap:wrap;gap:4px;align-items:center"><span style="font-size:${fs};color:var(--muted);margin-right:2px">Topping:</span>${toppingChips}</div>`);
+  }
+  if (noteParts.length)
+    lines.push(`<div style="padding-left:1.2em;font-size:${mutedFs};color:var(--muted)">Note: ${noteParts.join(', ')}</div>`);
+  return lines.join('');
+}
+
 function showReceipt(order) {
   currentReceiptOrder = order;
-  const itemRows = order.items.map(i=>`
-    <div class="receipt-row">
-      <span style="display:flex;flex-direction:column;gap:1px">
-        <span>${i.emoji} ${i.name} × ${i.qty}</span>
-        ${i.note ? `<span style="font-size:11px;color:var(--muted)">${i.note}</span>` : ''}
+  const itemRows = order.items.map((i,idx)=>{
+    const chips = renderNoteChips(i.note, {fontSize:'10.5px', padding:'.1rem .45rem', mutedFontSize:'11.5px'});
+    return `<div class="receipt-row" style="align-items:flex-start">
+      <span style="display:flex;flex-direction:column;gap:2px">
+        <span><b style="color:var(--muted);margin-right:3px">${idx+1}.</b>${i.name} × ${i.qty}</span>
+        ${chips}
       </span>
-      <span>${fmt(i.price*i.qty)}</span>
-    </div>
-  `).join('');
+      <span style="flex-shrink:0">${fmt(i.price*i.qty)}</span>
+    </div>`;
+  }).join('');
 
   document.getElementById('receiptContent').innerHTML = `
     <div class="receipt-row"><span>Đơn #${String(order.id).padStart(3,'0')}</span><span>${order.time}</span></div>
+    <div class="receipt-row" style="font-size:12px;color:var(--ink);font-weight:600"><span>${order.items.reduce((a,i)=>a+i.qty,0)} cốc · ${order.items.length} món</span></div>
     <hr class="modal-divider">
     ${itemRows}
     <div class="receipt-row total"><span>TỔNG</span><span>${fmt(order.total)}</span></div>
@@ -2888,15 +3100,17 @@ function updateQR() {
   if(order && order.items && order.items.length) {
     detailBox.style.display = 'block';
     numEl.textContent = 'Đơn #' + String(order.id).padStart(3,'0') + ' · ' + order.time;
-    itemsEl.innerHTML = order.items.map(i => `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;font-size:12.5px">
-        <div style="flex:1;min-width:0">
-          <span style="font-weight:400;color:var(--ink)">${i.emoji} ${i.name}</span>
-          <span style="color:var(--muted);font-weight:400"> × ${i.qty}</span>
-          ${i.note ? `<div style="font-size:10.5px;color:var(--muted);font-weight:400;margin-top:1px">${i.note}</div>` : ''}
+    itemsEl.innerHTML = order.items.map((i,idx) => {
+      const chips = renderNoteChips(i.note, {fontSize:'10px', padding:'.1rem .45rem', mutedFontSize:'10.5px'});
+      return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;font-size:12.5px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div><span style="color:var(--muted);font-size:11px">${idx+1}.</span> <span style="font-weight:400;color:var(--ink)">${i.name}</span>
+          <span style="color:var(--muted);font-weight:400"> × ${i.qty}</span></div>
+          ${chips}
         </div>
         <span style="font-weight:400;color:#0E5BC7;white-space:nowrap">${fmtFull(i.price*i.qty)}</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     totalEl.textContent = fmtFull(order.total);
     if(order.note) {
       totalEl.closest('div').insertAdjacentHTML('beforebegin',
@@ -2925,15 +3139,17 @@ function printReceipt() {
   const order = currentReceiptOrder;
   if(!order) return;
 
-  const itemRows = order.items.map(i => `
-    <tr>
+  const itemRows = order.items.map((i,idx) => {
+    const chips = renderNoteChips(i.note, {fontSize:'9.5px', padding:'.5px 5px', mutedFontSize:'10px'});
+    return `<tr>
       <td style="padding:3px 2px 3px 0;vertical-align:top">
-        ${i.emoji} <b>${i.name}</b>
-        ${i.note ? '<br><span style="font-size:10px;color:#555">' + i.note + '</span>' : ''}
+        <b>${idx+1}. ${i.name}</b>
+        ${chips ? `<div style="margin-top:2px">${chips}</div>` : ''}
       </td>
       <td style="text-align:center;padding:3px 4px;vertical-align:top;white-space:nowrap">×${i.qty}</td>
       <td style="text-align:right;padding:3px 0 3px 4px;vertical-align:top;font-weight:bold;white-space:nowrap">${fmtFull(i.price*i.qty)}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   const bank    = bankSettings.bank || 'TCB';
   const acct    = bankSettings.acct || '19033779329018';
@@ -3236,18 +3452,17 @@ function renderOrders() {
       : isPending && isSeen
         ? `<span style="font-size:10px;color:var(--muted);font-weight:400">👁️ Đã xem</span>`
         : `<span style="font-size:10px;color:var(--muted);font-weight:400">🔍 Chi tiết</span>`;
+    const itemsText = o.items.map((i,idx)=>`${idx+1}.${i.name}×${i.qty}`).join(' · ');
     return `
     <div class="order-card ${o.status}${seenClass}" onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Nhấn để xem chi tiết">
-      ${dotHtml ? `<div style="display:flex;align-items:center">${dotHtml}</div>` : ''}
+      ${dotHtml ? `<div style="display:flex;align-items:center;flex-shrink:0">${dotHtml}</div>` : ''}
       <div class="order-num">#${String(o.id).padStart(3,'0')}</div>
       <div class="order-info">
-        <div class="order-items-text">
-          ${o.source==='customer'?`<span style="background:#FFE0E2;color:#EF4350;font-size:10px;font-weight:800;padding:.1rem .4rem;border-radius:6px;margin-right:.3rem">🛎️ Khách đặt · ${o.custName||''}</span>`:''}
-          ${o.items.map(i=>`${i.emoji} ${i.name}×${i.qty}`).join(' · ')}
-        </div>
-        <div class="order-meta">${o.time} · ${o.pay}${o.note?` · ${o.note}`:''}</div>
+        ${o.source==='customer'?`<div style="margin-bottom:.2rem"><span style="background:#FFE0E2;color:#EF4350;font-size:10px;font-weight:800;padding:.1rem .4rem;border-radius:6px">🛎️ Khách đặt · ${o.custName||''}</span></div>`:''}
+        <div class="order-items-text" title="${itemsText}">${itemsText}</div>
+        <div class="order-meta">${o.time} · ${o.pay}${o.note?` · 📝 ${o.note}`:''}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem">
+      <div class="order-card-right">
         <div class="order-amount">${fmt(o.total)}</div>
         <span class="order-status ${o.status}">${statusLabel[o.status]||o.status}</span>
         ${hintText}
@@ -3262,20 +3477,16 @@ function viewOrderDetail(id) {
   const el = document.getElementById('orderDetailContent');
   el.innerHTML = `
     <div class="receipt-row"><span>Đơn #${String(o.id).padStart(3,'0')}</span><span>${o.time}</span></div>
+    <div class="receipt-row" style="font-size:12px;color:var(--ink);font-weight:600"><span>${o.items.reduce((a,i)=>a+i.qty,0)} cốc · ${o.items.length} món</span></div>
     ${o.source==='customer'?`<div class="receipt-row" style="background:#FFF0F0;border-radius:6px;padding:.3rem .5rem;margin:.2rem 0"><span>🛎️ Khách đặt online</span><span style="font-weight:700;color:#EF4350">${o.custName||''}${o.custPhone?' · '+o.custPhone:''}</span></div>`:''}
     <hr class="modal-divider">
-    ${o.items.map(i=>{
-      // Tách note thành các phần để hiển thị riêng
-      const noteParts = i.note ? i.note.split(' · ').filter(Boolean) : [];
-      const tags = noteParts.map(p => {
-        const isSize = p.startsWith('Size ');
-        return `<span style="display:inline-flex;align-items:center;gap:2px;background:${isSize?'#EEF4FF':'#FFF8E0'};color:${isSize?'#0E5BC7':'#8a6500'};font-size:11px;font-weight:700;padding:.15rem .5rem;border-radius:20px;border:1px solid ${isSize?'#bcd4ff':'#f0d060'}">${p}</span>`;
-      }).join('');
+    ${o.items.map((i,idx)=>{
+      const chips = renderNoteChips(i.note, {fontSize:'11px', padding:'.15rem .5rem', mutedFontSize:'12px'});
       return `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:.5rem 0;border-bottom:1px dashed var(--rule);gap:.5rem">
-        <div style="display:flex;flex-direction:column;gap:.35rem;flex:1">
-          <div style="font-size:13.5px;font-weight:600;color:var(--ink)">${i.emoji} ${i.name} <span style="font-weight:400;color:var(--muted)">× ${i.qty}</span></div>
-          ${tags ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${tags}</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:.3rem;flex:1">
+          <div style="font-size:13.5px;font-weight:600;color:var(--ink)"><span style="color:var(--muted);font-weight:400">${idx+1}.</span> ${i.name} <span style="font-weight:400;color:var(--muted)">× ${i.qty}</span></div>
+          ${chips}
         </div>
         <div style="font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap">${fmt(i.price*i.qty)}</div>
       </div>`;
@@ -3297,7 +3508,7 @@ function viewOrderDetail(id) {
 function renderOrderDetailActions(o) {
   const acts = document.getElementById('orderDetailActions');
   const close = `<button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')">✕ Đóng</button>`;
-  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button>`;
+  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button><button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels()">🏷️ In tem</button>`;
 
   let extra = '';
   if (o.status === 'pending') {
@@ -3363,6 +3574,147 @@ async function updateOrderStatus(id, newStatus) {
   }
 }
 
+
+// ─── IN TEM (50×30mm) ────────────────────────────────────────────────
+const LABEL_SYMBOLS = `<svg width="0" height="0" style="position:absolute">
+  <symbol id="pattern-song" viewBox="0 0 591 100">
+<path d="M598.139 56.598C614.321 54.8859 629.518 63.1067 640.094 74.9482C641.921 76.9934 643.609 79.1466 645.141 81.3753C640.588 87.6761 639.113 92.0286 636.971 99.2134L631.492 99.2153C628.155 87.3348 620.372 79.4023 609.344 76.2346C608.744 76.0622 608.135 75.9041 607.516 75.76C606.556 75.537 605.575 75.3479 604.572 75.1938C603.472 75.0562 602.384 74.9622 601.31 74.9113C593.259 74.9382 586.279 76.6888 580.719 80.4064C577.997 82.2887 575.577 84.6359 573.529 87.4259C571.221 90.6781 569.425 94.6029 568.204 99.2444L567.904 99.2425L562.317 99.2073C560.398 91.916 558.183 87.7596 554.055 81.6007C555.831 78.7962 557.785 76.2036 559.906 73.8349C568.523 64.2119 579.906 58.2801 593.398 56.8264C594.858 56.6656 596.472 56.5926 598.139 56.598ZM637.731 108.703L716.719 108.617L949.427 109L1034.41 108.86C1035.02 108.861 1035.62 108.858 1036.23 108.852L1036.63 108.847L1037.03 108.841C1037.35 108.836 1037.66 108.831 1037.98 108.825C1039.18 108.802 1040.39 108.771 1041.6 108.74C1044.41 108.666 1047.24 108.593 1050.12 108.625L1147.7 108.775L1185.25 108.651C1186.18 108.649 1187.11 108.65 1188.03 108.654C1188.8 108.657 1189.57 108.662 1190.34 108.668L1191.67 108.677H1191.69C1194.46 108.698 1197.23 108.718 1200 108.69V99.2124L1191.4 99.2153C1187.4 84.9766 1177.01 76.4086 1162.31 74.918C1145.13 74.6489 1132.65 81.9962 1128.11 99.2444L1122.22 99.2073C1120.3 91.916 1118.09 87.7596 1113.96 81.6007C1122.95 67.4038 1136.49 58.6381 1153.3 56.8264C1157.99 56.3103 1164.26 56.7011 1168.77 57.666C1181.53 60.4422 1192.72 68.0416 1200 78.856V65.8789C1194.4 60.5909 1190.29 57.2641 1182.91 53.9502C1167.2 46.9052 1150.8 47.0059 1134.9 53.1583C1123 58.369 1115.63 64.408 1108.51 75.2466C1103.13 69.9015 1099.35 67.7558 1092.65 64.6213C1093.99 62.0522 1096.86 58.7219 1098.86 56.536C1114.14 39.8537 1132.86 31.5696 1155.28 30.4898C1170.74 29.4681 1187.2 35.1052 1200 43.639V30.8828C1188.3 24.287 1175.21 20.5238 1161.78 19.9014C1136.47 18.7345 1113.48 27.3391 1095.15 44.6208C1092.24 47.3612 1091.34 48.4532 1088.97 51.6421C1075.02 30.2708 1051.3 14.8727 1026.42 9.65664C998.812 3.59799 969.923 9.02796 946.391 24.6997C941.344 28.0025 936.622 31.7302 932.562 36.2112C900.461 14.1913 859.884 13.7711 828.345 37.2506C807.139 17.5186 782.219 6.69452 752.801 7.10798C752.664 7.11014 752.512 7.14057 752.379 7.16993C722.71 9.00587 698.796 18.8826 678.22 41.2775C675.771 43.9441 672.147 48.6608 670.346 51.7415C666.942 47.2753 663.827 44.5817 659.795 41.0978L659.098 40.4942C642.589 26.2073 620.68 19.1512 599.064 19.8117C574.865 19.3861 552.897 27.9815 535.245 44.6208C532.336 47.3612 531.438 48.4532 529.067 51.6421C515.114 30.2708 491.396 14.8727 466.519 9.65664C438.906 3.59799 410.017 9.02796 386.485 24.6997C381.438 28.0025 376.716 31.7302 372.656 36.2112C340.555 14.1913 299.978 13.7711 268.439 37.2506C247.233 17.5186 222.313 6.69452 192.895 7.10798C192.758 7.11014 192.606 7.14057 192.473 7.16993C162.804 9.00587 138.89 18.8826 118.314 41.2775C115.865 43.9441 112.241 48.6608 110.44 51.7415C107.036 47.2753 103.921 44.5817 99.8893 41.0978L99.1917 40.4942C72.2603 17.1868 30.9537 13.1233 0 30.4141V43.0243C13.1241 34.7227 24.3959 31.2736 40.1226 30.4895C46.4713 30.0631 57.2712 31.579 63.238 33.3969C77.8352 37.8437 90.854 45.3184 100.887 56.9487L101.144 57.2452L101.221 57.3341L101.45 57.597L101.592 57.76L101.705 57.8895L101.722 57.9081L101.738 57.9275L101.745 57.9348L101.751 57.9421L101.758 57.9491C103.503 59.9464 105.371 62.0834 106.589 64.3509C100.197 67.0698 95.7682 69.8016 90.8298 74.8334C83.6768 65.0709 78.4335 60.3038 67.7158 54.6675C43.8911 43.7599 19.0125 47.5274 0 65.2357V77.691C9.51314 65.3852 20.428 58.5621 36.4553 56.8259C56.1038 53.8675 74.5084 65.7709 85.2353 81.375C80.6764 87.6839 79.2033 92.0397 77.0568 99.2407L71.2338 99.2223C67.0362 86.3584 60.7276 79.1981 47.2145 75.5879C28.7129 72.1897 13.1293 80.9101 7.99451 99.2539L0 99.2145V108.568C12.994 108.881 26.1139 108.826 39.1502 108.771H39.1833C42.713 108.756 46.2372 108.742 49.7505 108.734L156.813 108.617L389.521 109L474.507 108.86C476.906 108.864 479.294 108.802 481.693 108.74C484.508 108.666 487.339 108.593 490.217 108.625L570.45 108.749L587.791 108.775L625.348 108.651C627.486 108.645 629.627 108.661 631.766 108.677H631.784C633.675 108.691 635.566 108.705 637.457 108.704L637.731 108.703ZM598.241 48.6021C607.893 48.187 617.846 50.1919 627.622 54.6675C638.339 60.3038 643.583 65.0709 650.736 74.8334C655.674 69.8016 660.103 67.0698 666.495 64.3509C665.277 62.0834 663.409 59.9464 661.664 57.9491L661.657 57.9421L661.651 57.9348L661.644 57.9272L661.498 57.7597L661.15 57.36L660.974 57.1574L660.793 56.9484C654.845 50.0534 647.848 44.6191 640.094 40.4104C634.769 37.52 629.087 35.2076 623.144 33.3969C617.631 31.7172 607.992 30.2953 601.55 30.4251C599.481 30.336 597.419 30.3545 595.374 30.4898C582.313 31.119 570.508 34.1934 559.906 39.9498C552.311 44.0734 545.335 49.5734 538.957 56.536C536.957 58.7219 534.086 62.0522 532.749 64.6213C539.44 67.7558 543.223 69.9015 548.604 75.2466C555.727 64.408 563.097 58.369 574.997 53.1583C582.672 50.1876 590.465 48.6277 598.241 48.6021ZM305.304 99.284L305.251 99.2846L304.839 99.2889L304.761 99.2897C302.369 99.3139 299.531 99.3269 297.727 99.0898C296.083 97.1265 298.159 94.3912 299.571 92.531L299.755 92.2869L299.925 92.0607C303.966 86.6331 310.223 83.706 316.826 82.8158C329.162 81.8569 338.004 88.0685 342.612 99.2447L322.889 99.2253L307.001 99.27C306.588 99.2708 306.13 99.2751 305.643 99.2803L305.304 99.284ZM565.614 108.683C564.88 108.671 564.146 108.658 563.412 108.644L564.568 108.665L565.614 108.683ZM561.028 108.595L561.971 108.615L562.664 108.63C562.118 108.619 561.573 108.607 561.028 108.595ZM561.028 108.595C560.98 108.594 560.931 108.592 560.883 108.591L560.965 108.593L561.028 108.595ZM62.6244 99.2409C58.5126 88.3357 49.6468 81.8731 37.7533 82.8242C26.151 84.2593 21.4623 89.2308 16.4114 99.1997L42.504 99.2382L62.6244 99.2409ZM123.059 68.3031C142.012 65.9403 162.473 78.4835 168.353 96.6373L168.42 96.8461C168.679 97.6436 168.936 98.4364 169.176 99.2409L154.612 99.1922C150.796 89.4716 141.86 82.9475 131.668 81.3968C117.413 79.6253 105.803 86.2164 99.8842 99.2738C98.8698 99.2498 97.843 99.2345 96.8095 99.2248L96.6544 99.2231C94.8443 99.2073 93.0132 99.2089 91.1889 99.2134L90.0403 99.2164H89.9393L89.9258 99.2169C88.4964 99.2213 87.0742 99.225 85.6738 99.2223C90.0473 81.3198 105.48 70.6837 123.059 68.3031ZM144.347 99.2094C138.707 92.5073 133.603 89.5783 124.655 90.246C118.278 91.1982 114.088 94.1442 110.217 99.2339L130.409 99.2361L144.347 99.2094ZM194.957 78.7957C209.042 78.543 221.984 85.8744 227.229 99.2393L206.131 99.2374L177.842 99.2444L177.77 98.9858C176.554 94.5916 175.646 91.3102 173.275 87.3063C180.049 81.7376 186.321 79.4828 194.957 78.7957ZM227.779 59.0828C217.039 52.4704 204.524 49.3272 191.936 50.0814C176.345 51.2658 164.575 56.3477 153.214 67.0304C159.995 70.9999 163.818 73.8395 168.73 80.0913C185.815 66.2051 209.202 67.598 225.637 81.7457C231.632 87.6432 233.584 91.4571 236.51 99.1709C242.801 99.2301 249.093 99.2493 255.384 99.228C251.528 82.7412 242.35 68.1429 227.779 59.0828ZM190.121 19.3314C192.486 19.0214 198.488 19.1455 200.908 19.3023C218.286 20.4894 234.974 26.5669 249.048 36.8337C270.621 52.3429 281.509 73.5023 285.708 99.2331L264.038 99.2008C259.636 79.4429 252.725 67.3545 236.479 54.8191C223.868 45.6624 208.56 40.9818 192.987 41.5207C174.87 42.05 157.695 49.72 145.206 62.8597C135.964 59.7012 128.047 58.9535 118.479 60.7137C134.352 36.3095 161.341 21.4959 190.121 19.3314ZM330.736 31.0845C327.74 30.6608 323.281 30.3357 320.309 30.4938C300.922 31.2973 291.417 35.2011 275.059 45.2939C279.057 49.5688 282.449 54.8151 285.092 60.0312C298.07 50.4049 313.848 46.9442 329.739 49.3097C345.581 51.6712 359.828 60.2542 369.323 73.1567C374.568 80.8886 378.756 89.8369 379.746 99.238L398.887 99.2062C393.932 62.3062 367.708 36.3176 330.736 31.0845ZM315.857 56.8264C327.51 55.6679 339.204 58.6214 348.908 65.1756C361.415 73.6246 368.475 84.4966 371.322 99.2099L351.289 99.2038C350.114 95.2054 348.445 91.3356 346.026 87.9358C332.999 71.3937 309.469 70.2183 294.771 85.1891C293.314 79.2035 291.311 73.3641 288.788 67.7445C297.268 60.9941 305.087 57.9421 315.857 56.8264ZM440.528 50.0809C440.69 50.0561 440.852 50.0397 441.014 50.0319C458.798 49.1939 473.413 55.1165 486.363 67.0539C480.097 70.4833 475.291 74.5638 470.947 80.2332C461.064 72.6172 451.309 69.6464 438.842 70.6689C438.423 70.7045 438.008 70.7524 437.592 70.8117C424.095 72.7486 415.448 78.6456 407.511 89.2656C406.355 82.1063 403.572 74.988 400.381 68.5111C412.672 56.9931 423.389 51.3579 440.528 50.0809ZM457.176 20.095C452.826 19.4364 442.723 18.7183 438.406 19.3309C416.441 21.0461 398.398 29.293 381.945 43.7949C386.711 48.2956 392.74 55.0279 396.077 60.6219C414.188 42.3439 441.085 37.9515 465.198 44.7307C476.466 48.7395 486.275 53.9742 494.496 62.8829C503.359 59.7438 512.111 58.9023 521.329 60.9182L520.508 59.8031L520.495 59.7855C517.763 56.069 515.268 52.6745 512.067 49.1996C497.638 33.5006 478.263 23.2276 457.176 20.095ZM442.183 78.7978C452.319 78.6866 458.426 81.2738 466.249 87.4027C463.959 91.7003 463.104 94.6398 461.804 99.2353L436.721 99.249L412.23 99.2172C417.678 86.2843 428.375 79.7785 442.183 78.7978ZM529.128 99.2038C524.196 93.4021 518.295 89.3423 510.314 90.2635C503.873 91.0541 499.526 93.6321 495.476 98.7951L495.41 98.88L495.37 98.9317L495.339 98.9716C495.282 99.0464 495.227 99.1221 495.172 99.1986L514.452 99.2264L529.128 99.2038ZM531.634 72.9601C525.294 69.7307 518.252 68.1399 511.142 68.3328C491.176 69.2489 476.693 80.2203 470.525 99.1835C471.014 99.1854 471.507 99.1862 472.003 99.1865C473.016 99.1868 474.039 99.1846 475.066 99.1822C478.416 99.1749 481.816 99.1677 485.059 99.2525C490.703 87.3203 499.799 80.6936 513.351 81.159C525.017 82.217 534.934 88.0734 539.544 99.2374C540.292 99.2358 541.046 99.232 541.804 99.2275L543.425 99.2167L543.777 99.2143C544.41 99.2099 545.044 99.2056 545.679 99.2021C546.132 99.1997 546.586 99.1978 547.039 99.1965L547.805 99.1946L548.275 99.1943C550.089 99.1941 551.892 99.2078 553.656 99.2512C549.512 86.8599 543.615 78.9554 531.634 72.9601ZM865.21 99.2838L865.157 99.2843L864.272 99.2932C861.968 99.3145 859.338 99.3139 857.633 99.0898C855.989 97.1265 858.065 94.3912 859.477 92.531L859.661 92.2869L859.831 92.0607C863.872 86.6331 870.129 83.706 876.732 82.8158C889.068 81.8569 897.91 88.0685 902.518 99.2447L882.795 99.2253L866.907 99.27C866.73 99.2703 866.545 99.2714 866.353 99.2727L865.549 99.28L865.21 99.2838ZM682.965 68.3031C701.918 65.9403 722.379 78.4835 728.259 96.6373L728.326 96.8461C728.454 97.2393 728.581 97.6312 728.706 98.024C728.834 98.428 728.96 98.8328 729.082 99.2409L714.518 99.1922C710.702 89.4716 701.766 82.9475 691.573 81.3968C677.319 79.6253 665.709 86.2164 659.79 99.2738C658.814 99.2506 657.826 99.2353 656.832 99.2256L656.716 99.2245C654.855 99.207 652.971 99.2083 651.095 99.2132L649.946 99.2164H649.845H649.832H649.818H649.804L647.943 99.2215C647.15 99.2231 646.362 99.224 645.58 99.2223C649.953 81.3198 665.386 70.6837 682.965 68.3031ZM704.253 99.2094C698.613 92.5073 693.509 89.5783 684.561 90.246C678.184 91.1982 673.994 94.1442 670.123 99.2339L690.315 99.2361L704.253 99.2094ZM754.863 78.7957C768.948 78.543 781.89 85.8744 787.135 99.2393L766.037 99.2374L737.748 99.2444L737.676 98.9858C736.46 94.5916 735.552 91.3102 733.181 87.3063C739.955 81.7376 746.227 79.4828 754.863 78.7957ZM787.685 59.0828C776.945 52.4704 764.43 49.3272 751.842 50.0814C736.251 51.2658 724.481 56.3477 713.12 67.0304C719.901 70.9999 723.724 73.8395 728.636 80.0913C745.721 66.2051 769.108 67.598 785.543 81.7457C791.538 87.6432 793.49 91.4571 796.416 99.1709C802.707 99.2301 808.999 99.2493 815.29 99.228C811.434 82.7412 802.256 68.1429 787.685 59.0828ZM750.027 19.3314C752.392 19.0214 758.394 19.1455 760.814 19.3023C778.192 20.4894 794.88 26.5669 808.954 36.8337C830.527 52.3429 841.415 73.5023 845.614 99.2331L823.944 99.2008C819.542 79.4429 812.631 67.3545 796.385 54.8191C783.774 45.6624 768.466 40.9818 752.893 41.5207C734.776 42.05 717.601 49.72 705.112 62.8597C695.87 59.7012 687.953 58.9535 678.385 60.7137C694.258 36.3095 721.247 21.4959 750.027 19.3314ZM890.642 31.0845C887.646 30.6608 883.187 30.3357 880.215 30.4938C860.828 31.2973 851.323 35.2011 834.965 45.2939C838.963 49.5688 842.355 54.8151 844.998 60.0312C857.976 50.4049 873.753 46.9442 889.645 49.3097C905.487 51.6712 919.734 60.2542 929.229 73.1567C934.474 80.8886 938.662 89.8369 939.652 99.238L958.793 99.2062C953.838 62.3062 927.614 36.3176 890.642 31.0845ZM875.763 56.8264C887.416 55.6679 899.11 58.6214 908.814 65.1756C921.321 73.6246 928.381 84.4966 931.228 99.2099L911.195 99.2038C910.02 95.2054 908.351 91.3356 905.932 87.9358C892.905 71.3937 869.375 70.2183 854.677 85.1891C853.22 79.2035 851.217 73.3641 848.694 67.7445C857.174 60.9941 864.993 57.9421 875.763 56.8264ZM1000.43 50.0809C1000.6 50.0561 1000.76 50.0397 1000.92 50.0319C1018.7 49.1939 1033.32 55.1165 1046.27 67.0539C1040 70.4833 1035.2 74.5638 1030.85 80.2332C1020.97 72.6172 1011.22 69.6464 998.748 70.6689C998.329 70.7045 997.914 70.7524 997.498 70.8117C984.001 72.7486 975.354 78.6456 967.417 89.2656C966.261 82.1063 963.478 74.988 960.286 68.5111C972.578 56.9931 983.295 51.3579 1000.43 50.0809ZM1017.08 20.095C1012.73 19.4364 1002.63 18.7183 998.312 19.3309C976.347 21.0461 958.303 29.293 941.851 43.7949C946.617 48.2956 952.646 55.0279 955.983 60.6219C974.094 42.3439 1000.99 37.9515 1025.1 44.7307C1036.37 48.7395 1046.18 53.9742 1054.4 62.8829C1063.27 59.7438 1072.02 58.9023 1081.23 60.9182L1080.41 59.8031L1080.4 59.7855C1077.67 56.069 1075.17 52.6745 1071.97 49.1996C1057.54 33.5006 1038.17 23.2276 1017.08 20.095ZM1002.09 78.7978C1012.23 78.6866 1018.33 81.2738 1026.15 87.4027C1023.86 91.7003 1023.01 94.6398 1021.71 99.2353L996.627 99.249L972.135 99.2172C977.583 86.2843 988.281 79.7785 1002.09 78.7978ZM1089.03 99.2038C1084.1 93.4021 1078.2 89.3423 1070.22 90.2635C1063.78 91.0541 1059.43 93.6321 1055.38 98.7951C1055.34 98.8536 1055.29 98.9123 1055.25 98.9716C1055.19 99.0464 1055.13 99.1221 1055.08 99.1986L1074.36 99.2264L1089.03 99.2038ZM1157.21 82.826C1169.34 81.5757 1177.97 88.517 1182.49 99.2226L1162.18 99.2275L1136.49 99.2361C1140.48 89.1635 1146.48 84.4452 1157.21 82.826ZM1091.54 72.9601C1085.2 69.7307 1078.16 68.1399 1071.05 68.3328C1051.08 69.2489 1036.6 80.2203 1030.43 99.1835C1030.92 99.1854 1031.41 99.1862 1031.91 99.1865C1032.92 99.1868 1033.94 99.1846 1034.97 99.1822C1038.32 99.1749 1041.72 99.1677 1044.96 99.2525C1050.61 87.3203 1059.71 80.6936 1073.26 81.159C1084.92 82.217 1094.84 88.0734 1099.45 99.2374C1100.2 99.2358 1100.95 99.232 1101.71 99.2275L1103.33 99.2167L1103.41 99.2159C1104.99 99.2051 1106.59 99.1943 1108.18 99.1943C1109.99 99.1941 1111.8 99.2078 1113.56 99.2512C1109.42 86.8599 1103.52 78.9554 1091.54 72.9601ZM608.534 84.255C614.541 86.5443 619.156 91.3102 621.966 97.8405C622.179 98.2939 622.384 98.7545 622.582 99.2226H622.523L622.53 99.2409L602.41 99.2382L596.438 99.2293L576.588 99.2361L576.602 99.2002L576.317 99.1997C576.893 98.0636 577.464 96.9923 578.041 95.9839C580.028 92.0515 582.471 89.1193 585.606 86.9914C588.114 85.2101 591.11 83.9862 594.947 83.2481C595.706 83.0889 596.491 82.9486 597.303 82.826C601.468 82.397 605.22 82.933 608.534 84.255Z" fill-rule="evenodd" clip-rule="evenodd" fill="#F9F9F9"/>
+  </symbol>
+  <symbol id="cupful-text" viewBox="0 0 115 32">
+<path d="M47.8069 8.65492C48.5914 8.65492 49.1989 8.80667 49.6291 9.11035C50.0593 9.41402 50.3882 9.76834 50.6159 10.1732C51.198 9.74302 51.9193 9.40142 52.7797 9.14835C53.6401 8.86999 54.5638 8.73077 55.5508 8.73077C57.1957 8.73078 58.6888 9.13572 60.03 9.94551C61.3965 10.7553 62.4847 11.8435 63.2945 13.21C64.1043 14.5513 64.5092 16.0443 64.5092 17.6893C64.5092 19.3342 64.1043 20.84 63.2945 22.2065C62.4847 23.573 61.3965 24.6612 60.03 25.471C58.6888 26.2808 57.1957 26.6857 55.5508 26.6857C54.5385 26.6857 53.6021 26.5592 52.7417 26.3062C51.8813 26.0278 51.16 25.6608 50.5779 25.2053C50.5779 26.4706 50.5273 27.6221 50.4261 28.6596C50.3502 29.6972 50.0971 30.5069 49.6669 31.089C49.2367 31.6963 48.5155 32 47.5033 32C46.5164 32 45.7444 31.6078 45.1877 30.8233C44.6563 30.0641 44.2767 29.0645 44.049 27.8245C43.8465 26.5845 43.72 25.2558 43.6694 23.8387C43.6441 22.4215 43.6314 21.0803 43.6314 19.815C43.6314 18.7015 43.6566 17.5121 43.7072 16.2468C43.7831 14.9562 43.9351 13.7415 44.1628 12.6027C44.4159 11.4386 44.8334 10.4895 45.4154 9.75565C45.9974 9.02177 46.7947 8.65493 47.8069 8.65492ZM38.5229 8.73077C39.7629 8.73079 40.7118 9.33813 41.3698 10.5528C42.0278 11.7675 42.3568 13.4378 42.3568 15.5635C42.3568 17.7398 42.0151 19.6631 41.3318 21.3333C40.6485 22.9782 39.6237 24.2689 38.2572 25.2053C36.9159 26.1163 35.2203 26.5719 33.1705 26.5719C31.2978 26.5719 29.6655 26.1163 28.2737 25.2053C26.9071 24.2689 25.8443 22.9782 25.0852 21.3333C24.3513 19.6631 23.9843 17.7398 23.9843 15.5635C23.9843 13.4378 24.3133 11.7675 24.9713 10.5528C25.6546 9.33813 26.6162 8.73077 27.8562 8.73077C28.7419 8.73078 29.4125 8.89526 29.868 9.22421C30.3488 9.55319 30.6652 9.97083 30.817 10.477C30.9941 10.9578 31.0827 11.4765 31.0827 12.0333C31.0827 12.7419 31.0321 13.4632 30.9309 14.197C30.8549 14.9309 30.817 15.7154 30.817 16.5505C30.817 17.7399 31.0575 18.613 31.5383 19.1697C32.0444 19.7011 32.5885 19.9669 33.1705 19.9669C33.8031 19.9669 34.3473 19.7011 34.8028 19.1697C35.2836 18.613 35.5239 17.7399 35.5239 16.5505C35.5239 15.7154 35.486 14.9689 35.4101 14.3109C35.3342 13.6529 35.2962 12.9064 35.2962 12.0713C35.2962 11.1856 35.5113 10.4136 35.9415 9.75565C36.3717 9.07238 37.2323 8.73077 38.5229 8.73077ZM99.7254 8.73077C100.965 8.73079 101.914 9.33813 102.572 10.5528C103.23 11.7675 103.559 13.4378 103.559 15.5635C103.559 17.7398 103.218 19.6631 102.534 21.3333C101.851 22.9782 100.826 24.2689 99.4597 25.2053C98.1185 26.1163 96.4228 26.5719 94.373 26.5719C92.5004 26.5719 90.868 26.1163 89.4762 25.2053C88.1097 24.2689 87.0469 22.9782 86.2877 21.3333C85.5538 19.6631 85.1868 17.7398 85.1868 15.5635C85.1868 13.4378 85.5159 11.7675 86.1739 10.5528C86.8571 9.33813 87.8188 8.73077 89.0588 8.73077C89.9444 8.73078 90.615 8.89526 91.0705 9.22421C91.5513 9.55319 91.8677 9.97083 92.0195 10.477C92.1967 10.9578 92.2853 11.4765 92.2853 12.0333C92.2853 12.7419 92.2346 13.4632 92.1334 14.197C92.0575 14.9309 92.0195 15.7154 92.0195 16.5505C92.0195 17.7399 92.26 18.613 92.7408 19.1697C93.2469 19.7011 93.791 19.9669 94.373 19.9669C95.0057 19.9669 95.5498 19.7011 96.0053 19.1697C96.4862 18.613 96.7265 17.7399 96.7265 16.5505C96.7265 15.7154 96.6886 14.9689 96.6126 14.3109C96.5367 13.6529 96.4988 12.9064 96.4988 12.0713C96.4988 11.1856 96.7139 10.4136 97.1441 9.75565C97.5743 9.07238 98.4348 8.73077 99.7254 8.73077ZM12.299 0C14.5512 5.86547e-06 16.5252 0.417641 18.2207 1.25275C19.9162 2.06255 21.2321 3.17596 22.1685 4.5931C23.1301 6.01026 23.6109 7.59193 23.6109 9.33806C23.6109 10.0213 23.4717 10.6793 23.1933 11.312C22.9403 11.9193 22.5353 12.4255 21.9786 12.8304C21.4472 13.2353 20.7512 13.4377 19.8909 13.4377C19.0811 13.4377 18.4358 13.3112 17.955 13.0582C17.4995 12.8051 17.1072 12.5014 16.7782 12.1471C16.4745 11.7675 16.1582 11.3878 15.8292 11.0082C15.5002 10.6287 15.0953 10.3124 14.6145 10.0594C14.1336 9.80631 13.4757 9.67979 12.6406 9.67979C11.8561 9.6798 11.1349 9.88221 10.4769 10.2871C9.81899 10.692 9.28752 11.2487 8.88262 11.9573C8.50304 12.6405 8.31319 13.425 8.31318 14.3107C8.31318 15.6267 8.6548 16.7782 9.33805 17.7651C10.0466 18.752 11.0462 19.2456 12.3368 19.2456C13.3491 19.2456 14.1463 19.0937 14.7283 18.79C15.3357 18.4863 15.8419 18.1447 16.2468 17.7651C16.677 17.3602 17.1324 17.0059 17.6132 16.7022C18.1194 16.3986 18.7648 16.2468 19.5493 16.2468C20.6627 16.2468 21.4979 16.6137 22.0546 17.3475C22.6367 18.0814 22.877 18.9799 22.7758 20.0427C22.6745 21.1309 22.1937 22.1684 21.3333 23.1554C20.4982 24.1423 19.3594 24.9522 17.917 25.5849C16.4998 26.1922 14.8675 26.4959 13.0201 26.4959C10.616 26.4959 8.42703 26.0151 6.45314 25.0534C4.47925 24.0665 2.91028 22.5861 1.74618 20.6122C0.582091 18.6383 4.306e-06 16.1709 0 13.21C0 11.4639 0.303682 9.80631 0.911018 8.23733C1.51837 6.64303 2.36619 5.22582 3.45436 3.98581C4.56784 2.74579 5.87108 1.77146 7.36415 1.06288C8.85723 0.354301 10.5022 0 12.299 0ZM78.9935 0C80.2841 3.81749e-06 81.4102 0.303682 82.3718 0.911019C83.3588 1.51836 83.8523 2.46734 83.8523 3.75793C83.8523 5.09917 83.4221 6.0862 82.5617 6.71886C81.7266 7.32622 80.7143 7.74385 79.5249 7.97161C78.5886 8.14876 77.9306 8.56625 77.551 9.22421C77.1714 9.85687 76.9309 10.6034 76.8297 11.4638C79.1073 11.5144 80.8409 11.7549 82.0303 12.1851C83.2449 12.6154 83.8523 13.5643 83.8523 15.0321C83.8523 15.9937 83.5739 16.7275 83.0171 17.2337C82.4604 17.7145 81.6507 18.0436 80.5878 18.2207C79.5503 18.3978 78.3229 18.499 76.9057 18.5243C76.9057 19.5365 76.9183 20.4602 76.9436 21.2953C76.9689 22.1051 76.9816 22.8517 76.9816 23.535C76.9816 24.3447 76.8171 24.9648 76.4882 25.395C76.1592 25.8252 75.7542 26.1163 75.2734 26.2682C74.8179 26.42 74.375 26.4959 73.9448 26.4959C72.9832 26.4959 72.2114 26.1542 71.6293 25.471C71.0473 24.7877 70.6044 23.8513 70.3007 22.6619C70.0224 21.4472 69.8325 20.0427 69.7313 18.4484C68.1876 18.3219 66.9855 18.0182 66.1251 17.5374C65.29 17.0566 64.8725 16.2214 64.8725 15.0321C64.8725 13.8427 65.29 13.0075 66.1251 12.5267C66.9855 12.0206 68.1876 11.6915 69.7313 11.5397C69.8578 9.28744 70.1994 7.28825 70.7562 5.54212C71.3382 3.79599 72.2746 2.44211 73.5652 1.48046C74.8559 0.493511 76.6653 0 78.9935 0ZM109.684 0C110.772 0 111.62 0.32906 112.227 0.987028C112.835 1.61969 113.277 2.53072 113.556 3.72009C113.834 4.88417 113.999 6.27602 114.049 7.8956C114.125 9.5152 114.163 11.2993 114.163 13.2479C114.163 17.7018 113.847 21.0297 113.214 23.2314C112.607 25.4077 111.417 26.4959 109.646 26.4959C108.355 26.4959 107.394 26.0151 106.761 25.0534C106.128 24.0665 105.711 22.5986 105.508 20.65C105.306 18.6761 105.205 16.2087 105.205 13.2479C105.205 11.2993 105.23 9.5152 105.28 7.8956C105.356 6.27602 105.534 4.88417 105.812 3.72009C106.09 2.53072 106.533 1.61969 107.141 0.987028C107.748 0.32906 108.596 0 109.684 0ZM55.3609 15.4496C54.7029 15.4496 54.1209 15.7027 53.6147 16.2088C53.1339 16.6896 52.8936 17.259 52.8936 17.917C52.8936 18.5749 53.1339 19.157 53.6147 19.6632C54.1209 20.144 54.7029 20.3845 55.3609 20.3845C56.0189 20.3845 56.5883 20.144 57.0691 19.6632C57.5752 19.157 57.8282 18.5749 57.8282 17.917C57.8282 17.259 57.5752 16.6896 57.0691 16.2088C56.5883 15.7027 56.0189 15.4496 55.3609 15.4496Z" fill="#333333"/>
+  </symbol>
+  <symbol id="cupful-logo" viewBox="0 0 454 496">
+<path d="M86.5641 431.64C85.7456 428.614 84.9602 425.439 84.1769 422.107L83.8615 422.356C83.706 422.479 83.5509 422.603 83.3962 422.727C84.1648 425.95 84.97 429.132 85.8563 432.256C86.0911 432.049 86.3271 431.844 86.5641 431.64Z" fill-rule="evenodd" clip-rule="evenodd" fill="#1c1c1c"/>
+<path d="M86.5641 431.64C85.7456 428.614 84.9602 425.439 84.1769 422.107C83.9156 422.312 83.6554 422.519 83.3962 422.727C84.1648 425.95 84.97 429.132 85.8563 432.256C86.0911 432.049 86.3271 431.844 86.5641 431.64Z" fill-rule="evenodd" clip-rule="evenodd" fill="#1c1c1c"/>
+<path d="M4.45365 252.66C4.43437 252.58 4.41488 252.5 4.39759 252.42ZM8.26592 258.952C8.22188 258.916 8.17776 258.879 8.13553 258.841ZM5.49633 255.44C5.51592 255.478 5.53584 255.516 5.55597 255.554C5.54144 255.526 5.5106 255.467 5.49633 255.44ZM5.02702 254.435C5.0446 254.478 5.07904 254.559 5.09964 254.607L5.07009 254.538L5.02702 254.435ZM382.684 189.464C382.834 189.466 382.984 189.468 383.133 189.471Z" fill-rule="evenodd" clip-rule="evenodd" fill="#1c1c1c"/>
+<path d="M444.503 155.653C447.93 154.381 451.737 156.125 453.011 159.551C454.284 162.979 452.54 166.791 449.113 168.065L411.866 181.896C408.437 183.169 404.625 181.421 403.352 177.993C402.08 174.564 403.828 170.752 407.256 169.479L444.503 155.653Z" fill="#1c1c1c"/>
+<path d="M0.604438 142.733C2.1294 139.411 6.05973 137.952 9.38335 139.476L45.4983 156.034C48.8224 157.558 50.2848 161.489 48.7614 164.813C47.2373 168.137 43.3014 169.595 39.977 168.071L3.86202 151.518C0.53756 149.994 -0.919656 146.058 0.604438 142.733Z" fill="#1c1c1c"/>
+<path d="M393.69 77.8854C396.392 75.421 400.584 75.6146 403.048 78.316C405.513 81.0179 405.32 85.21 402.618 87.6747L373.266 114.448C370.564 116.912 366.372 116.719 363.908 114.017C361.445 111.315 361.637 107.128 364.338 104.664L393.69 77.8854Z" fill="#1c1c1c"/>
+<path d="M56.8005 65.1201C59.5023 62.6555 63.6889 62.849 66.1536 65.5507L92.932 94.9021C95.3967 97.604 95.2033 101.796 92.5014 104.261C89.7999 106.723 85.6124 106.53 83.1483 103.83L56.3698 74.4732C53.9068 71.7714 54.0996 67.5844 56.8005 65.1201Z" fill="#1c1c1c"/>
+<path d="M138.036 15.1521C141.464 13.8791 145.276 15.6277 146.55 19.0557L160.381 56.3025C161.654 59.731 159.905 63.5433 156.477 64.8164C153.049 66.0893 149.236 64.3412 147.963 60.9128L134.132 23.666C132.86 20.2378 134.608 16.425 138.036 15.1521Z" fill="#1c1c1c"/>
+<path d="M232.66 0.00709468C236.311 0.176378 239.132 3.27388 238.966 6.92531L237.144 46.6181C236.975 50.271 233.878 53.0966 230.225 52.929C226.573 52.7602 223.747 49.663 223.914 46.0108L225.736 6.31797C225.905 2.6656 229.008 -0.16062 232.66 0.00709468Z" fill="#1c1c1c"/>
+<path d="M413.671 261.928C405.691 300.084 397.535 338.206 389.201 376.285C386.134 391.243 382.941 406.176 379.616 421.08C373.881 446.41 367.712 470.158 344.29 485.519C331.24 494.078 319.305 495.559 304.123 495.921L223.064 495.745L142.011 495.921C126.829 495.559 114.894 494.078 101.843 485.519C78.4217 470.158 72.2583 446.41 66.5236 421.08C63.1984 406.176 59.9994 391.243 56.933 376.285C48.5984 338.206 40.4424 300.084 32.4625 261.928H15.893C15.6977 261.923 15.5006 261.909 15.3077 261.895L15.1034 261.878L14.982 261.867C14.8087 261.85 14.634 261.831 14.463 261.806L14.3581 261.79C14.0107 261.736 13.6184 261.651 13.2814 261.569L13.2207 261.558C13.1596 261.542 13.0979 261.524 13.0368 261.506L12.9501 261.48L12.8839 261.464L12.8066 261.442L12.7237 261.42L12.6354 261.392C12.5511 261.366 12.4647 261.338 12.3814 261.309L12.2655 261.271C12.2072 261.251 12.1465 261.231 12.0888 261.21C11.9912 261.175 11.8537 261.121 11.7575 261.083L11.6857 261.055C11.6374 261.037 11.59 261.015 11.5422 260.995C11.4584 260.96 11.3331 260.905 11.2496 260.868L11.1778 260.834C11.1324 260.814 11.0505 260.778 11.0066 260.757C10.9592 260.735 10.9126 260.71 10.8661 260.686L10.7913 260.647L10.7305 260.619L10.6588 260.586L10.3165 260.398L10.2392 260.354L10.1674 260.31L10.0984 260.272C10.0584 260.25 10.0183 260.228 9.97965 260.205C9.94993 260.187 9.92073 260.168 9.89158 260.149L9.84162 260.117L9.74223 260.056C9.65467 260.001 9.56854 259.942 9.48273 259.885L9.30053 259.763C9.20771 259.699 9.10973 259.626 9.01894 259.559C8.97123 259.524 8.92221 259.485 8.87538 259.449L8.78152 259.382C8.73433 259.346 8.68859 259.308 8.64286 259.269L8.56619 259.206L8.49441 259.145L8.43269 259.094L8.35086 259.023L8.26592 258.952C8.22188 258.916 8.17776 258.879 8.13553 258.841C8.07202 258.784 7.98977 258.707 7.92309 258.644C7.85956 258.584 7.77242 258.5 7.71038 258.438L7.51787 258.245C7.44558 258.171 7.37182 258.095 7.30181 258.019C7.2704 257.984 7.23097 257.939 7.19441 257.897L7.14169 257.836C7.07098 257.756 7.00047 257.675 6.93188 257.593C6.8946 257.549 6.8583 257.502 6.82213 257.456L6.76072 257.378L6.71769 257.324C6.6689 257.264 6.62012 257.203 6.57299 257.141C6.5464 257.106 6.52052 257.069 6.49475 257.033L6.45704 256.981L6.40183 256.909C6.34358 256.829 6.28669 256.748 6.23067 256.666C6.18818 256.604 6.12267 256.503 6.08159 256.44L6.0317 256.364C5.99627 256.31 5.96084 256.257 5.927 256.202C5.87543 256.119 5.82195 256.027 5.7724 255.943C5.72562 255.863 5.67936 255.781 5.63437 255.7C5.5933 255.626 5.53601 255.516 5.49633 255.44L5.45421 255.36C5.42162 255.299 5.38902 255.238 5.3583 255.175C5.3366 255.131 5.3129 255.079 5.29012 255.029L5.25339 254.949C5.20267 254.84 5.14718 254.717 5.09964 254.607L5.07009 254.538L5.02702 254.435L4.99724 254.363C4.96028 254.274 4.92266 254.183 4.88899 254.093C4.86609 254.032 4.84426 253.97 4.82256 253.908L4.78424 253.799C4.75391 253.713 4.72355 253.628 4.69574 253.541C4.68185 253.497 4.6661 253.441 4.65108 253.388L4.62396 253.292L4.60476 253.228C4.58104 253.149 4.55687 253.068 4.53562 252.989C4.51168 252.899 4.48994 252.809 4.46815 252.719L4.45365 252.66C4.43437 252.58 4.41488 252.5 4.39759 252.42C4.21861 251.593 4.1217 250.733 4.12152 249.853C4.12152 223.107 21.5073 200.423 45.5922 192.48C68.8278 116.517 139.493 61.2668 223.064 61.2662C241.683 61.2662 259.665 64.0095 276.621 69.112L291.451 17.3827C294.897 5.36702 307.434 -1.58313 319.45 1.86226L326.07 3.7616L326.628 3.93276C338.054 7.56243 344.671 19.5008 341.69 31.1142L341.541 31.6774L324.419 91.3685C360.388 114.867 387.705 150.513 400.542 192.48C424.625 200.423 442.007 223.109 442.007 249.853V250.14C441.989 250.881 441.904 251.607 441.758 252.31C440.621 257.8 435.754 261.928 429.926 261.928H413.671ZM248.902 478.828L223.103 478.772H223.031L213.021 478.794C210.099 467.107 208.549 454.875 208.549 442.282C208.549 440.03 208.6 437.789 208.698 435.562C208.864 431.8 209.165 428.072 209.603 424.387C211.554 407.978 216.151 392.38 222.959 378.036C224.077 375.681 225.258 373.359 226.493 371.073L227.023 370.096C234.401 356.679 243.775 344.509 254.74 333.992C256.393 332.407 258.085 330.863 259.809 329.354C260.383 328.851 260.96 328.352 261.542 327.858C287.702 305.653 321.573 292.256 358.574 292.256C369.095 292.256 379.363 293.338 389.273 295.398C386.887 306.636 384.483 317.874 382.067 329.106C374.481 327.539 366.624 326.715 358.574 326.715C332.457 326.715 308.364 335.378 289.011 349.987C286.627 351.787 284.311 353.677 282.076 355.652C270.618 365.778 261.184 378.142 254.458 392.06C253.068 394.937 251.796 397.885 250.643 400.888C245.711 413.74 243.007 427.695 243.007 442.282C243.007 455.053 245.077 467.342 248.902 478.828ZM258.316 478.848C254.155 467.442 251.886 455.126 251.885 442.282C251.886 430.474 253.804 419.113 257.346 408.497C257.419 408.279 257.493 408.061 257.567 407.843L257.755 407.299C258.447 405.303 259.196 403.331 260.002 401.391C260.324 400.615 260.656 399.843 260.996 399.077C267.348 384.754 276.764 372.088 288.409 361.913C288.689 361.669 288.972 361.426 289.254 361.185C289.818 360.702 290.385 360.22 290.96 359.749C292.396 358.571 293.868 357.429 295.366 356.326C313.057 343.295 334.917 335.593 358.574 335.593C365.983 335.593 373.218 336.353 380.201 337.791C378.011 347.935 375.807 358.075 373.592 368.213C368.739 367.235 363.716 366.722 358.574 366.722C342.448 366.722 327.502 371.775 315.232 380.382C312.799 382.089 310.469 383.935 308.258 385.909C294.93 397.814 285.849 414.377 283.572 433.039C283.203 436.068 283.015 439.153 283.015 442.282C283.015 442.821 283.02 443.363 283.031 443.9C283.043 444.435 283.059 444.968 283.081 445.501C283.182 447.903 283.396 450.279 283.716 452.618C283.787 453.136 283.861 453.654 283.942 454.169C285.342 463.024 288.279 471.371 292.473 478.921L258.316 478.848ZM84.1769 422.107C84.9602 425.439 85.7456 428.614 86.5641 431.64C86.3271 431.844 86.0911 432.049 85.8563 432.256C84.97 429.132 84.1648 425.95 83.3962 422.727C83.5509 422.603 83.706 422.479 83.8615 422.356L84.1769 422.107ZM84.1769 422.107C83.9925 421.323 83.8077 420.529 83.6231 419.727L83.0765 417.331C79.8967 403.078 76.8361 388.799 73.8945 374.496C95.0038 362.445 119.443 355.559 145.49 355.558C156.189 355.558 166.62 356.722 176.657 358.926C172.233 373.168 169.457 388.139 168.558 403.61C161.156 401.849 153.435 400.911 145.495 400.91C122.353 400.91 101.058 408.831 84.1769 422.107ZM111.152 471.324C97.471 462.351 91.4326 449.64 86.5641 431.64C102.388 418.023 122.982 409.794 145.495 409.794L146.66 409.8C154.108 409.894 161.339 410.89 168.248 412.682C168.242 413.342 168.237 414.003 168.237 414.664L168.243 415.879C168.383 437.991 172.351 459.197 179.512 478.866L142.265 478.943C128.26 478.601 120.195 477.254 111.152 471.324ZM320.201 387.742C331.052 380.094 344.289 375.601 358.574 375.601L359.435 375.612C363.643 375.665 367.757 376.106 371.742 376.904C368.953 390.402 366.059 403.877 363.057 417.331C357.213 443.143 352.039 460.137 334.981 471.324C325.938 477.254 317.874 478.601 303.869 478.943H302.864C296.076 468.648 292.066 456.357 291.899 443.143L291.893 442.282C291.894 422.955 300.117 405.547 313.255 393.368C313.801 392.862 314.36 392.365 314.922 391.878C315.485 391.39 316.055 390.911 316.634 390.442C317.792 389.504 318.981 388.602 320.201 387.742ZM62.0292 319.637C87.4086 307.885 115.688 301.322 145.495 301.322L146.776 301.328C165.486 301.446 183.586 304.155 200.73 309.102C192.04 321.851 184.878 335.725 179.512 350.462C168.57 347.986 157.181 346.68 145.49 346.68C118.839 346.681 93.776 353.472 71.9344 365.419C68.6053 350.165 65.301 334.903 62.0292 319.637ZM60.1299 310.736C56.7904 295.099 53.4771 279.455 50.197 263.805H244.272C229.866 274.481 217.042 287.172 206.219 301.46C187.011 295.598 166.621 292.444 145.495 292.444C115.07 292.444 86.1702 298.984 60.1299 310.736ZM57.7612 205.053C59.966 204.723 62.2227 204.55 64.5193 204.55H381.609C383.907 204.55 386.167 204.722 388.373 205.053C388.753 205.109 389.133 205.174 389.51 205.24C390.265 205.373 391.015 205.523 391.757 205.693C394.724 206.372 397.58 207.34 400.293 208.57C400.972 208.877 401.643 209.202 402.303 209.541C403.293 210.051 404.261 210.597 405.207 211.176C417.416 218.641 425.812 231.726 426.807 246.832H19.3217C20.3005 231.963 28.4533 219.049 40.3525 211.529L40.9267 211.176C45.9717 208.091 51.6691 205.964 57.7612 205.053ZM62.4875 189.488C86.0355 123.554 149.039 76.3676 223.064 76.367C240.239 76.367 256.824 78.9081 272.458 83.6331L242.113 189.449H64.5193L63.7408 189.46C63.3223 189.466 62.9038 189.474 62.4875 189.488ZM381.609 189.449H296.299L320.046 106.624C349.076 126.742 371.56 155.647 383.646 189.488L383.422 189.48C383.326 189.477 383.229 189.474 383.133 189.471C382.984 189.468 382.834 189.466 382.684 189.464L382.393 189.46L381.609 189.449ZM303.377 20.8004C304.837 15.7105 309.909 12.6332 315.011 13.5509C315.266 13.5968 315.524 13.6505 315.778 13.7165L316.032 13.7883L322.614 15.6766C328.016 17.2431 331.14 22.8812 329.604 28.2928L283.39 189.449H255.022L303.377 20.8004Z" fill-rule="evenodd" clip-rule="evenodd" fill="#1c1c1c"/>
+  </symbol>
+</svg>`;
+
+const LABEL_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,700;0,800;1,400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--u:1mm}
+@page{size:50mm 30mm;margin:0}
+html,body{background:#fff;width:50mm;font-family:'Nunito Sans','Lato',Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.label{position:relative;overflow:hidden;background:#fff;color:#1c1c1c;width:50mm;height:30mm;page-break-after:always;break-after:page}
+.label:last-child{page-break-after:auto;break-after:auto}
+.wave{position:absolute;left:0;bottom:0;width:100%;height:auto;display:block}
+.brand{position:absolute;left:3.4mm;top:3.4mm;width:9.73mm;height:auto;display:block}
+.tagline{position:absolute;right:3.3mm;top:3.5mm;font-size:1.5mm;line-height:1;font-weight:400;color:#222}
+.rule{position:absolute;left:3.4mm;right:3.3mm;top:7.8mm;border-top:.1mm solid #d9d9d9}
+.pname{position:absolute;left:3.4mm;right:3.3mm;top:10.4mm;font-weight:800;text-transform:uppercase;white-space:nowrap;line-height:1.1;font-size:calc(1mm*var(--fs,3.1))}
+.list{position:absolute;left:3.4mm;top:15.1mm;width:34mm;height:8mm;overflow:hidden;list-style:none;font-size:calc(1mm*var(--bs,1.6));line-height:calc(1mm*var(--bs,1.6)*1.28)}
+.list li{position:relative;padding-left:1.1mm}
+.list li::before{content:"";position:absolute;left:.1mm;top:calc(.64em - .25mm);width:.5mm;height:.5mm;border-radius:50%;background:#1c1c1c}
+.note{position:absolute;left:3.4mm;top:23.4mm;width:34mm;height:3.4mm;overflow:hidden;font-style:italic;font-size:calc(1mm*var(--ns,1.6));line-height:1.2}
+.code{position:absolute;left:3.4mm;bottom:1.6mm;font-size:1.3mm;font-weight:700;color:#888}
+.logo{position:absolute;right:3.2mm;bottom:3.4mm;width:7mm;height:auto}
+`;
+
+function labelEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// Tách note của món thành: size / topping / ghi chú tự do
+function parseItemForLabel(i) {
+  const parts = (i.note || '').split(' · ').filter(Boolean);
+  const tops = i.toppings || [];
+  const tLabel = tops.map(t => t.emoji + t.name).join(', ');
+  let size = '', toppings = [], notes = [];
+  parts.forEach(p => {
+    if (/^Size /.test(p)) size = p;
+    else if (tLabel && p === tLabel) toppings = tops.map(t => t.name);
+    else if (/^\p{Extended_Pictographic}/u.test(p))
+      toppings = p.split(',').map(s => s.replace(/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u, '').trim()).filter(Boolean);
+    else notes.push(p);
+  });
+  return { size, toppings, notes };
+}
+
+function buildLabelsHTML(o) {
+  const orderCode = '#' + String(o.id).slice(-6).padStart(3, '0');
+  const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
+  let n = 0, html = '';
+  o.items.forEach(i => {
+    const d = parseItemForLabel(i);
+    const bullets = [];
+    if (d.size) bullets.push(d.size);
+    if (d.toppings.length) bullets.push('Topping: ' + d.toppings.join(', '));
+    const notes = d.notes.slice();
+    if (o.note) notes.push(o.note);
+    for (let k = 0; k < (i.qty || 1); k++) {
+      n++;
+      html += `
+  <div class="label">
+    <svg class="wave" viewBox="0 0 591 100"><use href="#pattern-song"/></svg>
+    <svg class="brand" viewBox="0 0 115 32"><use href="#cupful-text"/></svg>
+    <div class="tagline">Một ly đủ đầy</div>
+    <div class="rule"></div>
+    <div class="pname">${labelEsc(i.name)}</div>
+    ${bullets.length ? `<ul class="list">${bullets.map(b => `<li>${labelEsc(b)}</li>`).join('')}</ul>` : ''}
+    ${notes.length ? `<div class="note">Note: ${labelEsc(notes.join(', '))}</div>` : ''}
+    <div class="code">${orderCode} · ${n}/${total}</div>
+    <svg class="logo" viewBox="0 0 454 496"><use href="#cupful-logo"/></svg>
+  </div>`;
+    }
+  });
+  return html;
+}
+
+// Tên dài → thu nhỏ chữ cho vừa 1 dòng; phần topping/note dài → thu nhỏ cho vừa khung
+function fitLabels(doc) {
+  doc.querySelectorAll('.pname').forEach(el => {
+    const r = el.clientWidth / el.scrollWidth;
+    if (r < 1) el.style.setProperty('--fs', (3.1 * r * 0.97).toFixed(3));
+  });
+  [['.list','--bs'], ['.note','--ns']].forEach(([sel, v]) => {
+    doc.querySelectorAll(sel).forEach(el => {
+      let sz = 1.6;
+      el.style.setProperty(v, sz);
+      while (el.scrollHeight > el.clientHeight + 0.5 && sz > 1.0) {
+        sz = +(sz - 0.05).toFixed(2);
+        el.style.setProperty(v, sz);
+      }
+    });
+  });
+}
+
+function printLabels(order) {
+  const o = order || document.getElementById('orderDetailModal')._currentOrder;
+  if (!o || !o.items || !o.items.length) return;
+
+  const doc = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Tem đơn ${labelEsc(o.id)}</title>
+<style>${LABEL_CSS}</style></head><body>
+<svg width="0" height="0" style="position:absolute">${LABEL_SYMBOLS.replace(/^<svg[^>]*>|<\/svg>\s*$/g, '')}</svg>
+${buildLabelsHTML(o)}
+</body></html>`;
+
+  let frame = document.getElementById('labelFrame');
+  if (frame) frame.remove();
+  frame = document.createElement('iframe');
+  frame.id = 'labelFrame';
+  frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:50mm;height:30mm;border:none;visibility:hidden';
+  document.body.appendChild(frame);
+  frame.contentDocument.open();
+  frame.contentDocument.write(doc);
+  frame.contentDocument.close();
+
+  const go = () => {
+    fitLabels(frame.contentDocument);
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  };
+  const fontsReady = frame.contentDocument.fonts ? frame.contentDocument.fonts.ready : Promise.resolve();
+  Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(go, 150));
+  const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
+  showToast('🏷️ Đang mở cửa sổ in ' + total + ' tem...', 'success');
+}
+
 function printOrderDetail() {
   const o = document.getElementById('orderDetailModal')._currentOrder;
   if(!o) return;
@@ -3405,7 +3757,7 @@ function renderRevenueTable() {
       <tr onclick="viewOrderDetail(${o.id})" style="cursor:pointer" title="Xem chi tiết">
         <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:400;color:#0E5BC7">#${String(o.id).padStart(3,'0')}</td>
         <td style="color:var(--muted)">${o.date||''} ${o.time}</td>
-        <td style="color:var(--soft)">${o.items.map(i=>`${i.emoji}${i.name}×${i.qty}`).join(', ')}</td>
+        <td style="color:var(--soft)">${o.items.map((i,idx)=>`${idx+1}.${i.name}×${i.qty}`).join(', ')}</td>
         <td>${o.pay}</td>
         <td style="text-align:right;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:400;color:var(--ink)">${fmt(o.total)}</td>
       </tr>`).join('');
@@ -5297,11 +5649,99 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Hide FAB when cart closes via checkout or on resize
+window.addEventListener('resize', () => {
+  const totalQty = Object.values(cart).reduce((a,v)=>a+v.qty, 0);
+  updateFabCart(totalQty);
+  if (window.innerWidth > 480) closeMobileCart();
+});
+
 
 
 
 </script>
 </body>
 </html>
+
+<script>
+// ════════════════════════════════════════════════════════
+// 💾 PERSIST CART STATE — lưu giỏ hàng qua reload
+// ════════════════════════════════════════════════════════
+const CART_KEY = 'cafeCartState';
+
+function saveCartState() {
+  try {
+    const state = {
+      orderSlots,
+      activeSlot,
+      slotCounter,
+      selectedPay,
+      orderNote: document.getElementById('orderNote')?.value || '',
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(CART_KEY, JSON.stringify(state));
+  } catch(e) { console.warn('saveCartState:', e); }
+}
+
+function restoreCartState() {
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+    if (Date.now() - (state.savedAt || 0) > 86400000) {
+      localStorage.removeItem(CART_KEY);
+      return false;
+    }
+    if (state.orderSlots && Object.keys(state.orderSlots).length) {
+      orderSlots   = state.orderSlots;
+      activeSlot   = state.activeSlot || 1;
+      slotCounter  = state.slotCounter || Object.keys(orderSlots).length;
+      cart         = orderSlots[activeSlot] || {};
+      selectedPay  = state.selectedPay || 'Tiền mặt';
+      const noteEl = document.getElementById('orderNote');
+      if (noteEl && state.orderNote) noteEl.value = state.orderNote;
+      document.querySelectorAll('.pay-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent.includes(selectedPay));
+      });
+      return true;
+    }
+  } catch(e) { console.warn('restoreCartState:', e); }
+  return false;
+}
+
+function clearCartState() {
+  localStorage.removeItem(CART_KEY);
+}
+
+// Patch renderCart để auto-save sau mỗi thay đổi
+const _renderCart_persist = renderCart;
+window.renderCart = function() {
+  _renderCart_persist();
+  saveCartState();
+};
+
+// Patch doCheckout: xóa state sau khi thanh toán xong
+const _doCheckout_persist = window.doCheckout;
+window.doCheckout = async function() {
+  await _doCheckout_persist();
+  if (Object.keys(orderSlots).length <= 1 && !Object.keys(orderSlots[activeSlot] || {}).length) {
+    clearCartState();
+  } else {
+    saveCartState();
+  }
+};
+
+// Restore khi trang load
+document.addEventListener('DOMContentLoaded', () => {
+  const restored = restoreCartState();
+  if (restored) {
+    renderOrderTabs();
+    renderCart();
+    const count = Object.values(orderSlots)
+      .reduce((a, slot) => a + Object.keys(slot).length, 0);
+    if (count > 0) showToast('♻️ Khôi phục ' + count + ' món chưa thanh toán', 'success');
+  }
+});
+</script>
 
 </body></html>
