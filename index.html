@@ -2582,13 +2582,14 @@ function renderProducts() {
     const qty = semi ? semi.qty : 0;
     const unit = semi ? (semi.unit || '') : '';
     const isOut = semi && qty <= 0;
-    const stockLabel = isOut ? 'Hết hàng' : (qty > 0 ? `Còn ${qty} ${unit}` : 'Còn hàng');
+    const stockLabel = isOut ? 'Tạm hết' : (qty > 0 ? `Còn ${qty} ${unit}` : 'Còn hàng');
     return `
-    <div class="product-card ${isOut?'out-of-stock':''}" onclick="addToppingToCart('${t.id}')" style="position:relative">
-      <div style="position:absolute;top:.35rem;right:.35rem;background:#FFF6CC;border:1px solid #FFCB3D;color:#B8900A;font-size:9px;font-weight:700;padding:.1rem .4rem;border-radius:8px;line-height:1.4">Topping</div>
+    <div class="product-card ${isOut?'out-of-stock':''}" onclick="${isOut?'':(`addToppingToCart('${t.id}')`)}" style="position:relative">
+      <div style="position:absolute;top:.35rem;left:.35rem;background:#FFF6CC;border:1px solid #FFCB3D;color:#B8900A;font-size:9px;font-weight:700;padding:.1rem .4rem;border-radius:8px;line-height:1.4">Topping</div>
+      ${isOut ? `<div style="position:absolute;top:.35rem;right:.35rem;background:#EF4350;color:#fff;font-size:9px;font-weight:700;padding:.1rem .4rem;border-radius:8px;line-height:1.4">Tạm hết</div>` : ''}
       <div class="prod-emoji">${t.emoji}</div>
       <div class="prod-name">${t.name}</div>
-      <div class="prod-price">${fmt(t.price)}</div>
+      <div class="prod-price" style="${isOut?'color:var(--muted);text-decoration:line-through':''}">+${fmt(t.price)}</div>
       <div class="prod-stock">${stockLabel}</div>
     </div>`;
   }).join('');
@@ -2662,7 +2663,7 @@ function openToppingModal(prod) {
         <span>${t.emoji}</span>
         <span>${t.name}</span>
         ${tOut
-          ? `<span class="topping-price" style="color:var(--red)">Hết</span>`
+          ? `<span class="topping-price" style="color:var(--red)">Tạm hết</span>`
           : `<span class="topping-price">+${(t.price/1000).toFixed(0)}k</span>`}
       </div>`;
     }).join('');
