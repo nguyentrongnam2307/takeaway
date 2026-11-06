@@ -1726,6 +1726,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="printReceipt()">🖨️ In bill</button>
         <button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels(currentReceiptOrder)">🏷️ In tem</button>
+        <button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7" onclick="exportLabelsPDF(currentReceiptOrder)">📄 PDF tem</button>
         <button class="btn btn-green" onclick="closeModal()">✓ Xong</button>
       </div>
     </div>
@@ -3210,18 +3211,6 @@ function printReceipt() {
 </table>
 
 <hr>
-
-<div class="qr-wrap">
-  <div class="b" style="font-size:11px;margin-bottom:2px">— CHUYỂN KHOẢN —</div>
-  <img src="${qrUrl}" alt="QR">
-  <div class="b" style="font-size:12px;margin-top:3px">${bNames[bank]||bank}</div>
-  <div class="sm">STK: <b>${acct}</b></div>
-  <div class="sm">${name}</div>
-  <div class="b" style="font-size:14px;margin:3px 0">${fmtFull(order.total)}</div>
-  <div class="sm">${desc}</div>
-</div>
-
-<hr>
 <div class="c sm">Cảm ơn quý khách! 🙏 Hẹn gặp lại ☕</div>
 
 </body></html>`;
@@ -3516,7 +3505,7 @@ function viewOrderDetail(id) {
 function renderOrderDetailActions(o) {
   const acts = document.getElementById('orderDetailActions');
   const close = `<button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')">✕ Đóng</button>`;
-  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button><button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels()">🏷️ In tem</button>`;
+  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button><button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels()">🏷️ In tem</button><button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7" onclick="exportLabelsPDF()">📄 PDF tem</button>`;
 
   let extra = '';
   if (o.status === 'pending') {
@@ -3703,6 +3692,74 @@ ${buildLabelsHTML(o)}
   Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(go, 150));
   const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
   showToast('🏷️ Đang mở cửa sổ in ' + total + ' tem...', 'success');
+}
+
+// ─── XUẤT PDF TEM cho iPhone/xPrint ─────────────────────────────────
+function exportLabelsPDF(order) {
+  const o = order || document.getElementById('orderDetailModal')?._currentOrder;
+  if (!o || !o.items || !o.items.length) return;
+
+  // Thêm script tự động in ngay khi fonts load xong (tuỳ chọn — bỏ nếu chỉ muốn xem)
+  const doc = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
+<title>Tem-${labelEsc(o.id)}.pdf</title>
+<style>${LABEL_CSS}</style>
+</head><body>
+${LABEL_SYMBOLS}
+${buildLabelsHTML(o)}
+<script>
+// Fit chữ cho vừa khung rồi mới in
+function fitAll() {
+  document.querySelectorAll('.pname').forEach(function(el) {
+    var r = el.clientWidth / el.scrollWidth;
+    if (r < 1) el.style.setProperty('--fs', (3.6 * r * 0.97).toFixed(3));
+  });
+  [['.list','--bs'],['.note','--ns']].forEach(function(pair) {
+    document.querySelectorAll(pair[0]).forEach(function(el) {
+      var sz = 2;
+      el.style.setProperty(pair[1], sz);
+      while (el.scrollHeight > el.clientHeight + 0.5 && sz > 1.2) {
+        sz = +(sz - 0.05).toFixed(2);
+        el.style.setProperty(pair[1], sz);
+      }
+    });
+  });
+}
+var ready = document.fonts ? document.fonts.ready : Promise.resolve();
+Promise.race([ready, new Promise(function(r){ setTimeout(r, 2500); })]).then(function(){
+  setTimeout(function(){ fitAll(); }, 100);
+});
+<\/script>
+</body></html>`;
+
+  const blob = new Blob([doc], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+
+  // Trên iOS Safari: window.open mở tab mới → người dùng nhấn Share → xPrint / Lưu PDF
+  // Trên desktop/Android: download thẳng file HTML (mở bằng browser rồi Ctrl+P → PDF)
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+  if (isIOS) {
+    // Mở tab mới — Safari sẽ hiển thị nội dung tem, nút Share cho phép mở xPrint
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.open();
+      w.document.write(doc);
+      w.document.close();
+    } else {
+      // Pop-up bị chặn → fallback download
+      a.download = 'tem-' + String(o.id).slice(-6) + '.html';
+      a.click();
+    }
+  } else {
+    a.download = 'tem-' + String(o.id).slice(-6) + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+  URL.revokeObjectURL(url);
+  const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
+  showToast('📄 Đã mở ' + total + ' tem — nhấn Share → xPrint để in', 'success');
 }
 
 function printOrderDetail() {
