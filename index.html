@@ -1097,13 +1097,12 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     <!-- SETTINGS VIEW -->
     <div class="view" id="view-settings">
       <!-- Settings tab bar -->
-      <div class="settings-tabs" style="grid-template-columns:repeat(6,1fr);display:grid">
+      <div class="settings-tabs" style="grid-template-columns:repeat(5,1fr);display:grid">
         <button class="settings-tab active" id="stab-menu" onclick="switchSettingsTab('menu')">Món</button>
         <button class="settings-tab" id="stab-ingr" onclick="switchSettingsTab('ingr')">Nguyên liệu</button>
         <button class="settings-tab" id="stab-semi" onclick="switchSettingsTab('semi')">Thành phẩm</button>
         <button class="settings-tab" id="stab-recipe" onclick="switchSettingsTab('recipe')">Công thức</button>
         <button class="settings-tab" id="stab-promo" onclick="switchSettingsTab('promo')">Khuyến mãi</button>
-        <button class="settings-tab" id="stab-printer" onclick="switchSettingsTab('printer')">🖨️ Máy in</button>
       </div>
 
       <!-- Tab: Thêm món -->
@@ -1609,90 +1608,6 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
           <div class="section-block-body" id="recipeList"></div>
         </div>
       </div>
-
-      <!-- ══ TAB: MÁY IN ══ -->
-      <div id="stab-content-printer" style="display:none">
-
-        <!-- Hướng dẫn -->
-        <div class="section-block" style="margin-bottom:1rem;border-color:#0E5BC7;box-shadow:0 3px 0 #0E5BC7">
-          <div class="section-block-header" style="background:#EBF3FF">
-            <div class="panel-title" style="margin:0;color:#0E5BC7">📱 In tem từ iPhone / iPad qua app Xprinter</div>
-          </div>
-          <div class="section-block-body" style="font-size:12.5px;color:var(--soft);line-height:1.8">
-            <b style="color:var(--ink)">Cách hoạt động:</b> Khi bấm "In tem" trên iPhone/iPad, app sẽ chuyển nội dung tem sang app <b>Xprinter</b> (đã kết nối máy in XP-Q361U qua LAN) để in trực tiếp — không cần cửa sổ print của Safari.<br>
-            <span style="color:var(--muted);font-size:11.5px">⚠️ Trên máy tính (desktop) vẫn dùng cửa sổ in bình thường của trình duyệt.</span>
-          </div>
-        </div>
-
-        <!-- Cài đặt kết nối -->
-        <div class="section-block" style="margin-bottom:1rem">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">🔌 Kết nối máy in</div></div>
-          <div class="section-block-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">IP máy in (trong mạng LAN)</label>
-                <input class="form-input" id="printerIP" placeholder="vd: 192.168.1.100" value="">
-                <span style="font-size:11px;color:var(--muted);margin-top:.2rem">Xem IP trong app Xprinter → danh sách máy in đã kết nối</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Cổng (Port)</label>
-                <input class="form-input" id="printerPort" placeholder="9100" value="9100" type="number">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Khổ giấy tem</label>
-                <select class="form-input" id="printerPaper">
-                  <option value="50x30">50mm × 30mm</option>
-                  <option value="58x40">58mm × 40mm</option>
-                  <option value="40x25">40mm × 25mm</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">App in trên iOS</label>
-                <select class="form-input" id="printerApp">
-                  <option value="xprinter">Xprinter (khuyên dùng)</option>
-                  <option value="printhand">PrintHand</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.4rem">
-              <button class="btn btn-green" onclick="savePrinterSettings()">💾 Lưu cài đặt</button>
-              <button class="btn btn-outline" onclick="testPrinterConnection()">🔍 Kiểm tra kết nối</button>
-              <span id="printerTestStatus" style="font-size:12px;color:var(--muted)"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Thử in tem -->
-        <div class="section-block" style="margin-bottom:1rem">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">🏷️ Thử in tem mẫu</div></div>
-          <div class="section-block-body">
-            <p style="font-size:12.5px;color:var(--soft);margin-bottom:.8rem">Tạo đơn mẫu để kiểm tra máy in hoạt động đúng không.</p>
-            <button class="btn btn-green" onclick="printTestLabel()">🖨️ In tem thử</button>
-          </div>
-        </div>
-
-        <!-- Hướng dẫn cài app -->
-        <div class="section-block">
-          <div class="section-block-header"><div class="panel-title" style="margin:0">📲 Hướng dẫn cài app Xprinter</div></div>
-          <div class="section-block-body" style="font-size:12.5px;color:var(--soft);line-height:2">
-            <div style="display:flex;flex-direction:column;gap:.4rem">
-              <div>① Tải <b style="color:var(--ink)">Xprinter</b> trên App Store (tìm "Xprinter" — icon màu xanh lá)</div>
-              <div>② Mở app → <b>Add Printer</b> → chọn <b>Network</b> → nhập IP máy in (cùng WiFi)</div>
-              <div>③ Nhấn <b>Test Print</b> trong app để xác nhận kết nối</div>
-              <div>④ Quay lại trang này → nhập IP vào ô trên → nhấn <b>Lưu cài đặt</b></div>
-              <div>⑤ Từ giờ bấm <b>🏷️ In tem</b> trên bất kỳ đơn hàng nào → app Xprinter sẽ mở và in tự động</div>
-            </div>
-            <div style="margin-top:.8rem;padding:.6rem .9rem;background:#FFF6CC;border-radius:8px;border:1px solid #FFCB3D;font-size:11.5px;color:#7A5800">
-              💡 <b>Mẹo:</b> Giữ app Xprinter chạy nền trên iPhone/iPad khi đang bán hàng để chuyển sang nhanh hơn.
-            </div>
-          </div>
-        </div>
-
-      </div>
-      <!-- ══ END TAB MÁY IN ══ -->
-
     </div>
 
   </div>
@@ -3759,87 +3674,10 @@ function fitLabels(doc) {
   });
 }
 
-// ─── PRINTER SETTINGS ────────────────────────────────────────────
-const PRINTER_KEY = 'cafePrinterSettings';
-
-function loadPrinterSettings() {
-  try {
-    const s = JSON.parse(localStorage.getItem(PRINTER_KEY) || '{}');
-    if (s.ip)    document.getElementById('printerIP').value    = s.ip;
-    if (s.port)  document.getElementById('printerPort').value  = s.port;
-    if (s.paper) document.getElementById('printerPaper').value = s.paper;
-    if (s.app)   document.getElementById('printerApp').value   = s.app;
-  } catch(e) {}
-}
-
-function savePrinterSettings() {
-  const s = {
-    ip:    (document.getElementById('printerIP').value   || '').trim(),
-    port:  (document.getElementById('printerPort').value || '9100').trim(),
-    paper: document.getElementById('printerPaper').value,
-    app:   document.getElementById('printerApp').value,
-  };
-  localStorage.setItem(PRINTER_KEY, JSON.stringify(s));
-  showToast('✅ Đã lưu cài đặt máy in', 'success');
-}
-
-function getPrinterSettings() {
-  try { return JSON.parse(localStorage.getItem(PRINTER_KEY) || '{}'); } catch(e) { return {}; }
-}
-
-function testPrinterConnection() {
-  const s = getPrinterSettings();
-  const statusEl = document.getElementById('printerTestStatus');
-  if (!s.ip) {
-    if (statusEl) statusEl.textContent = '⚠️ Chưa nhập IP máy in';
-    return;
-  }
-  if (statusEl) statusEl.textContent = '⏳ Đang kiểm tra...';
-  // Thử ping qua image src (cách duy nhất không bị CORS block từ browser)
-  const img = new Image();
-  const timer = setTimeout(() => {
-    img.src = '';
-    if (statusEl) statusEl.textContent = `❌ Không thể kết nối ${s.ip} — kiểm tra lại IP và WiFi`;
-  }, 3000);
-  img.onload = img.onerror = function() {
-    clearTimeout(timer);
-    // onerror cũng có nghĩa là host tồn tại (máy in không serve image)
-    if (statusEl) statusEl.textContent = `✅ Tìm thấy thiết bị tại ${s.ip}`;
-  };
-  img.src = `http://${s.ip}/favicon.ico?t=${Date.now()}`;
-}
-
-function printTestLabel() {
-  const fakeOrder = {
-    id: 'TEST',
-    time: new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
-    date: new Date().toLocaleDateString('vi-VN'),
-    items: [
-      { name: 'Cà Phê Đen', qty: 1, price: 25000, note: 'Ít đường', size: 'M', toppings: [] },
-      { name: 'Trà Sữa', qty: 2, price: 35000, note: '', size: 'L', toppings: ['Thạch'] },
-    ],
-    total: 95000,
-    pay: 'Tiền mặt',
-  };
-  printLabels(fakeOrder);
-}
-
-// ─── PRINT LABELS — iOS/mobile: route qua Xprinter URL scheme ─────
 function printLabels(order) {
   const o = order || document.getElementById('orderDetailModal')._currentOrder;
   if (!o || !o.items || !o.items.length) return;
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  if (isMobile) {
-    _printLabelsViaMobileApp(o);
-  } else {
-    _printLabelsViaIframe(o);
-  }
-}
-
-// Desktop: in qua iframe như cũ
-function _printLabelsViaIframe(o) {
   const doc = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Tem đơn ${labelEsc(o.id)}</title>
 <style>${LABEL_CSS}</style></head><body>
 ${LABEL_SYMBOLS}
@@ -3865,150 +3703,6 @@ ${buildLabelsHTML(o)}
   Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(go, 150));
   const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
   showToast('🏷️ Đang mở cửa sổ in ' + total + ' tem...', 'success');
-}
-
-// Mobile iOS: build ZPL / ESC text rồi chuyển qua app Xprinter hoặc PrintHand
-function _printLabelsViaMobileApp(o) {
-  const s = getPrinterSettings();
-  const appTarget = s.app || 'xprinter';
-  const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
-
-  // Build danh sách tem dạng text đơn giản để truyền qua URL
-  // Mỗi tem = 1 item (nhân qty)
-  const labels = [];
-  o.items.forEach(item => {
-    const qty = item.qty || 1;
-    for (let q = 0; q < qty; q++) {
-      labels.push({
-        name:     item.name,
-        size:     item.size     || '',
-        toppings: Array.isArray(item.toppings) ? item.toppings.join(', ') : (item.toppings || ''),
-        note:     item.note     || '',
-        orderId:  String(o.id).padStart(3, '0'),
-        time:     o.time || '',
-        price:    fmt ? fmt(item.price) : (item.price + 'đ'),
-      });
-    }
-  });
-
-  // Build ESC/POS plain-text content cho từng tem
-  // Xprinter iOS nhận text qua URL scheme: xprinter://print?content=<urlencoded>
-  // Mỗi dòng cách nhau \n, dùng feed ký tự ESC đặc biệt
-  const textContent = labels.map((lb, idx) => {
-    const lines = [];
-    lines.push(`=== TEM ${idx+1}/${labels.length} ===`);
-    lines.push(`Don: #${lb.orderId}  ${lb.time}`);
-    lines.push(`Mon: ${lb.name}${lb.size ? ' ['+lb.size+']' : ''}`);
-    if (lb.toppings) lines.push(`Topping: ${lb.toppings}`);
-    if (lb.note)     lines.push(`Note: ${lb.note}`);
-    lines.push(`Gia: ${lb.price}`);
-    lines.push('');
-    return lines.join('\n');
-  }).join('\n---\n\n');
-
-  // Build HTML tem để share/in qua Share Sheet (cách mạnh hơn trên iOS Safari)
-  const htmlContent = _buildMobileLabelHTML(o, labels, s);
-
-  // Thử URL scheme của từng app
-  if (appTarget === 'xprinter') {
-    _openXprinterApp(textContent, htmlContent, o, total);
-  } else if (appTarget === 'printhand') {
-    _openPrintHandApp(htmlContent, total);
-  }
-}
-
-function _buildMobileLabelHTML(o, labels, s) {
-  // Build HTML nhẹ dùng được trong webview của Xprinter
-  const paperMap = { '50x30': [50,30], '58x40': [58,40], '40x25': [40,25] };
-  const dim = paperMap[s.paper || '50x30'] || [50,30];
-  const w = dim[0], h = dim[1];
-
-  const labelBlocks = labels.map((lb, idx) => `
-<div class="tem" style="width:${w}mm;height:${h}mm;page-break-after:always;padding:2mm;box-sizing:border-box;font-family:-apple-system,sans-serif;font-size:7pt;border:0.5mm dashed #ccc;overflow:hidden">
-  <div style="font-weight:bold;font-size:9pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lb.name}${lb.size?' ['+lb.size+']':''}</div>
-  ${lb.toppings?`<div style="font-size:7pt;color:#444">+ ${lb.toppings}</div>`:''}
-  ${lb.note?`<div style="font-size:7pt;font-style:italic;color:#555">📝 ${lb.note}</div>`:''}
-  <div style="display:flex;justify-content:space-between;margin-top:1mm">
-    <span style="font-weight:bold">#${lb.orderId}</span>
-    <span>${lb.time}</span>
-    <span style="color:#0E5BC7;font-weight:bold">${lb.price}</span>
-  </div>
-  ${labels.length>1?`<div style="font-size:6pt;color:#999;text-align:right">${idx+1}/${labels.length}</div>`:''}
-</div>`).join('');
-
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<style>@page{size:${w}mm ${h}mm;margin:0}body{margin:0;padding:0}</style>
-</head><body>${labelBlocks}</body></html>`;
-}
-
-function _openXprinterApp(textContent, htmlContent, o, total) {
-  // Xprinter iOS URL scheme
-  // Thử 2 cách: URL scheme "xprinter://" trước, nếu timeout thì dùng share sheet
-  const encoded = encodeURIComponent(textContent);
-
-  // Cách 1: URL scheme xprinter://print
-  const schemeUrl = `xprinter://print?content=${encoded}`;
-
-  let opened = false;
-  const timeout = setTimeout(() => {
-    if (!opened) {
-      // Fallback: Share Sheet với HTML
-      _fallbackShareSheet(htmlContent, o, total);
-    }
-  }, 2000);
-
-  // Lắng nghe khi tab blur = app đã mở
-  const onBlur = () => {
-    opened = true;
-    clearTimeout(timeout);
-    window.removeEventListener('blur', onBlur);
-    showToast(`🏷️ Đã chuyển sang Xprinter — in ${total} tem`, 'success');
-  };
-  window.addEventListener('blur', onBlur);
-
-  window.location.href = schemeUrl;
-  showToast('🏷️ Đang mở app Xprinter...', 'success');
-}
-
-function _openPrintHandApp(htmlContent, total) {
-  // PrintHand URL scheme
-  const schemeUrl = `printhand://print`;
-  let opened = false;
-
-  const timeout = setTimeout(() => {
-    if (!opened) _fallbackShareSheet(htmlContent, null, total);
-  }, 2000);
-
-  window.addEventListener('blur', function onB() {
-    opened = true;
-    clearTimeout(timeout);
-    window.removeEventListener('blur', onB);
-    showToast(`🏷️ Đã chuyển sang PrintHand — in ${total} tem`, 'success');
-  });
-
-  window.location.href = schemeUrl;
-}
-
-function _fallbackShareSheet(htmlContent, o, total) {
-  // Fallback: tạo Blob HTML rồi mở trong tab mới → iOS sẽ cho share/print
-  try {
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-    // Mở tab mới với HTML blob — iOS Safari sẽ show toolbar có nút share/print
-    window.open(blobUrl, '_blank');
-    showToast('🏷️ Nhấn nút Share → Print để in ' + total + ' tem', 'success');
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-  } catch(e) {
-    // Last resort: open print dialog của Safari
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.write(htmlContent);
-      w.document.close();
-      w.focus();
-      setTimeout(() => w.print(), 500);
-    }
-    showToast('🏷️ Đang mở cửa sổ in ' + total + ' tem...', 'success');
-  }
 }
 
 function printOrderDetail() {
@@ -4418,16 +4112,16 @@ function showToast(msg, type='') {
 
 // ─── SETTINGS TABS ───────────────────────────────────────────────────
 function switchSettingsTab(tab) {
-  ['menu','ingr','semi','recipe','promo','printer'].forEach(t=>{
+  ['menu','ingr','semi','recipe','promo'].forEach(t=>{
     document.getElementById('stab-content-'+t).style.display = tab===t ? 'block' : 'none';
     document.getElementById('stab-'+t).classList.toggle('active', tab===t);
   });
-  if(tab==='menu')    renderProdManageList();
-  if(tab==='recipe')  renderRecipeSelectors();
-  if(tab==='ingr')    renderIngredients();
-  if(tab==='semi')    { renderSemiList(); toggleSemiSource(); }
-  if(tab==='promo')   { renderPromoList(); populatePromoItemSelect(); }
-  if(tab==='printer') loadPrinterSettings();
+  if(tab==='menu')   renderProdManageList();
+  if(tab==='recipe') renderRecipeSelectors();
+  if(tab==='ingr')   renderIngredients();
+  if(tab==='semi')   { renderSemiList(); toggleSemiSource(); }
+  if(tab==='promo')  { renderPromoList(); populatePromoItemSelect(); }
+
 }
 
 
