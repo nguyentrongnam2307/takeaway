@@ -503,7 +503,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
 
 /* ══════════ SETTINGS VIEW — constrained width ══════════ */
-#view-settings { max-width:860px; width:100%; margin-left:auto; margin-right:auto; }
+#view-settings { max-width:1016px; width:100%; margin-left:auto; margin-right:auto; }
 
 /* ══════════ SETTINGS TABS ══════════ */
 .settings-tabs {
@@ -1269,6 +1269,7 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
                 </tr>
               </thead>
               <tbody id="ingrTableBody"></tbody>
+              <tfoot id="ingrTableFoot"></tfoot>
             </table>
           </div>
         </div>
@@ -3366,6 +3367,24 @@ function renderIngredients() {
       </tr>`;
     }).join('');
   }
+  // Tính tổng tiền giá nhập của tất cả nguyên liệu (tất cả, không chỉ filtered)
+  const tfoot = document.getElementById('ingrTableFoot');
+  if(tfoot) {
+    const totalCost = ingredients.reduce((sum, i) => sum + (i.cost || 0), 0);
+    const fmt = totalCost >= 1000000
+      ? (totalCost/1000000).toFixed(3).replace(/\.?0+$/, '') + 'tr'
+      : (totalCost/1000).toFixed(0) + 'k';
+    const fmtFull = totalCost.toLocaleString('vi-VN') + ' đ';
+    tfoot.innerHTML = `<tr style="border-top:2px solid var(--rule);background:var(--bg)">
+      <td colspan="6" style="padding:.55rem .7rem;font-weight:700;color:var(--soft);font-size:12.5px;text-align:right">
+        💰 Tổng tiền nhập kho (${ingredients.length} nguyên liệu):
+      </td>
+      <td style="padding:.55rem .7rem;text-align:right;font-weight:700;color:#0E5BC7;font-size:14px;white-space:nowrap">
+        <span title="${fmtFull}">${fmtFull}</span>
+      </td>
+      <td colspan="2"></td>
+    </tr>`;
+  }
 }
 
 
@@ -3694,72 +3713,148 @@ ${buildLabelsHTML(o)}
   showToast('🏷️ Đang mở cửa sổ in ' + total + ' tem...', 'success');
 }
 
-// ─── XUẤT PDF TEM cho iPhone/xPrint ─────────────────────────────────
-function exportLabelsPDF(order) {
+// ─── XUẤT PDF TEM thật (html2canvas + jsPDF) cho iPhone/xPrint ───────
+async function exportLabelsPDF(order) {
   const o = order || document.getElementById('orderDetailModal')?._currentOrder;
   if (!o || !o.items || !o.items.length) return;
 
-  // Thêm script tự động in ngay khi fonts load xong (tuỳ chọn — bỏ nếu chỉ muốn xem)
-  const doc = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
-<title>Tem-${labelEsc(o.id)}.pdf</title>
-<style>${LABEL_CSS}</style>
-</head><body>
-${LABEL_SYMBOLS}
-${buildLabelsHTML(o)}
-<script>
-// Fit chữ cho vừa khung rồi mới in
-function fitAll() {
-  document.querySelectorAll('.pname').forEach(function(el) {
-    var r = el.clientWidth / el.scrollWidth;
-    if (r < 1) el.style.setProperty('--fs', (3.6 * r * 0.97).toFixed(3));
-  });
-  [['.list','--bs'],['.note','--ns']].forEach(function(pair) {
-    document.querySelectorAll(pair[0]).forEach(function(el) {
-      var sz = 2;
-      el.style.setProperty(pair[1], sz);
-      while (el.scrollHeight > el.clientHeight + 0.5 && sz > 1.2) {
-        sz = +(sz - 0.05).toFixed(2);
-        el.style.setProperty(pair[1], sz);
-      }
+  showToast('⏳ Đang tạo PDF tem...', 'success');
+
+  // Load thư viện nếu chưa có
+  async function loadScript(src) {
+    if (document.querySelector(`script[src="${src}"]`)) return;
+    return new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
     });
-  });
-}
-var ready = document.fonts ? document.fonts.ready : Promise.resolve();
-Promise.race([ready, new Promise(function(r){ setTimeout(r, 2500); })]).then(function(){
-  setTimeout(function(){ fitAll(); }, 100);
-});
-<\/script>
-</body></html>`;
+  }
+  try {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  } catch(e) {
+    showToast('❌ Không tải được thư viện PDF', 'error');
+    return;
+  }
 
-  const blob = new Blob([doc], { type: 'text/html' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
+  // Kích thước tem: 50×30mm @ 10px/mm = 500×300px
+  const PX_PER_MM = 10;
+  const W_MM = 50, H_MM = 30;
+  const W_PX = W_MM * PX_PER_MM, H_PX = H_MM * PX_PER_MM;
 
-  // Trên iOS Safari: window.open mở tab mới → người dùng nhấn Share → xPrint / Lưu PDF
-  // Trên desktop/Android: download thẳng file HTML (mở bằng browser rồi Ctrl+P → PDF)
+  // Tạo container ẩn để render từng tem
+  const container = document.createElement('div');
+  container.style.cssText = `position:fixed;left:-9999px;top:0;width:${W_PX}px;background:#fff;`;
+  document.body.appendChild(container);
+
+  // Inject font + LABEL_CSS scaled lên 10px/mm
+  const scaledCSS = LABEL_CSS
+    .replace(/@page\{[^}]*\}/g, '')
+    .replace(/(\d+(?:\.\d+)?)mm/g, (_, n) => (parseFloat(n) * PX_PER_MM) + 'px');
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,700;0,800;1,400&display=swap');
+    ${scaledCSS}
+    .label { width:${W_PX}px!important; height:${H_PX}px!important; overflow:hidden; }
+  `;
+  container.appendChild(style);
+
+  // Chèn SVG symbols
+  const symDiv = document.createElement('div');
+  symDiv.innerHTML = LABEL_SYMBOLS;
+  container.appendChild(symDiv);
+
+  // Build từng tem riêng lẻ để render
+  const orderCode = '#' + String(o.id).slice(-6).padStart(3, '0');
+  const totalCups = o.items.reduce((a, i) => a + (i.qty || 1), 0);
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W_MM, H_MM] });
+
+  let globalN = 0;
+  let firstPage = true;
+
+  for (const item of o.items) {
+    const d = parseItemForLabel(item);
+    const bullets = [];
+    if (d.size) bullets.push(d.size);
+    if (d.toppings.length) bullets.push('Topping: ' + d.toppings.join(', '));
+    const notes = d.notes.slice();
+    if (o.note) notes.push(o.note);
+
+    for (let k = 0; k < (item.qty || 1); k++) {
+      globalN++;
+
+      // Render 1 tem vào container
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'label';
+      labelDiv.innerHTML = `
+        <div class="pname">${labelEsc(item.name)}</div>
+        ${bullets.length ? `<ul class="list">${bullets.map(b => `<li>${labelEsc(b)}</li>`).join('')}</ul>` : ''}
+        ${notes.length ? `<div class="note">Note: ${labelEsc(notes.join(', '))}</div>` : ''}
+        <div class="code">${orderCode} · ${globalN}/${totalCups}</div>
+        <svg class="brand" viewBox="0 0 115 32"><use href="#cupful-text"/></svg>
+        <svg class="cup-icon" viewBox="0 0 80.2 87.72"><use href="#cupful-cup-icon"/></svg>
+      `;
+      container.appendChild(labelDiv);
+
+      // Fit chữ
+      await new Promise(r => setTimeout(r, 60));
+      const pnameEl = labelDiv.querySelector('.pname');
+      if (pnameEl) {
+        const r = pnameEl.clientWidth / pnameEl.scrollWidth;
+        if (r < 1) pnameEl.style.setProperty('--fs', (3.6 * r * 0.97 * PX_PER_MM / 10).toFixed(3));
+      }
+      for (const [sel, v] of [['.list','--bs'],['.note','--ns']]) {
+        const el = labelDiv.querySelector(sel);
+        if (!el) continue;
+        let sz = 2 * PX_PER_MM / 10;
+        el.style.setProperty(v, sz);
+        while (el.scrollHeight > el.clientHeight + 0.5 && sz > 1.2) {
+          sz = +(sz - 0.05).toFixed(2);
+          el.style.setProperty(v, sz);
+        }
+      }
+
+      // Chụp canvas
+      const canvas = await html2canvas(labelDiv, {
+        scale: 4,           // 4× → ~400 DPI, nét
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: W_PX,
+        height: H_PX,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.97);
+
+      if (!firstPage) pdf.addPage([W_MM, H_MM], 'landscape');
+      firstPage = false;
+      pdf.addImage(imgData, 'JPEG', 0, 0, W_MM, H_MM);
+
+      container.removeChild(labelDiv);
+    }
+  }
+
+  document.body.removeChild(container);
+
+  const filename = 'tem-' + String(o.id).slice(-6) + '.pdf';
+  const pdfBlob = pdf.output('blob');
+  const url = URL.createObjectURL(pdfBlob);
+
   const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
   if (isIOS) {
-    // Mở tab mới — Safari sẽ hiển thị nội dung tem, nút Share cho phép mở xPrint
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.open();
-      w.document.write(doc);
-      w.document.close();
-    } else {
-      // Pop-up bị chặn → fallback download
-      a.download = 'tem-' + String(o.id).slice(-6) + '.html';
-      a.click();
-    }
+    // iOS: mở PDF trong tab mới → Safari cho phép Share → xPrint
+    window.open(url, '_blank');
   } else {
-    a.download = 'tem-' + String(o.id).slice(-6) + '.html';
-    document.body.appendChild(a);
-    a.click();
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
   }
-  URL.revokeObjectURL(url);
-  const total = o.items.reduce((a, i) => a + (i.qty || 1), 0);
-  showToast('📄 Đã mở ' + total + ' tem — nhấn Share → xPrint để in', 'success');
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  showToast(`✅ PDF ${totalCups} tem sẵn sàng — nhấn Share → xPrint`, 'success');
 }
 
 function printOrderDetail() {
@@ -4599,13 +4694,25 @@ function toggleSemiSource() {
 const _ssState = {}; // { key: { focusIdx } }
 
 function ssGetItems(key) {
-  return ingredients.map(i => {
+  const ingrItems = ingredients.map(i => {
     let sub = `còn ${i.qty} ${i.unit}`;
     if(i.spec && i.spec > 0) {
       sub += ` · ${formatBase(ingrTotalInBase(i), i.specUnit)}`;
     }
-    return { id: i.id, label: i.name, sub };
+    return { id: String(i.id), label: i.name, sub };
   });
+  if(key === 'selfIngr') {
+    // Lấy id thành phẩm đang chỉnh sửa (nếu có) để loại khỏi danh sách tránh vòng tròn
+    const editId = (document.getElementById('semiEditIdSelf') || document.getElementById('semiEditId'))?.value;
+    const semiItems = semiFinished
+      .filter(s => String(s.id) !== String(editId))
+      .map(s => {
+        const stock = s.qty != null ? s.qty : 0;
+        return { id: `s_${s.id}`, label: `🧪 ${s.name}`, sub: `thành phẩm · còn ${stock} ${s.unit||''}` };
+      });
+    return [...ingrItems, ...semiItems];
+  }
+  return ingrItems;
 }
 
 function ssRender(key, filter) {
@@ -4619,7 +4726,7 @@ function ssRender(key, filter) {
   } else {
     dd.innerHTML = items.map((it, idx) =>
       `<div class="ss-option" data-id="${it.id}" data-idx="${idx}"
-        onmousedown="ssSelect('${key}',${it.id},'${it.label.replace(/'/g,"\\'")}')">
+        onmousedown="ssSelect('${key}','${it.id}','${it.label.replace(/'/g,"\\'")}')">
         <span>${it.label}</span>
         <span class="ss-opt-sub">${it.sub}</span>
       </div>`
@@ -4740,33 +4847,58 @@ function toggleToppingFieldsSelf() {
 function populateSemiSelfIngrDropdown() { /* handled by ssOpen/ssRender */ }
 
 function updateSemiSelfUnit() {
-  const raw  = document.getElementById('semiSelfIngr').value;
-  const iid  = parseInt(raw);
-  const ingr = ingredients.find(i=>i.id===iid);
-  // Hiện specUnit nếu có quy cách, không thì dùng unit gốc
-  const unit = (ingr && raw) ? (ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit) : '—';
+  const raw = document.getElementById('semiSelfIngr').value;
+  let unit = '—';
+  if(raw) {
+    if(String(raw).startsWith('s_')) {
+      const sid = parseInt(raw.slice(2));
+      const semi = semiFinished.find(s=>s.id===sid);
+      if(semi) unit = semi.unit || '—';
+    } else {
+      const iid  = parseInt(raw);
+      const ingr = ingredients.find(i=>i.id===iid);
+      if(ingr) unit = ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit;
+    }
+  }
   const el = document.getElementById('semiSelfUnit');
   if(el) { el.textContent = unit; el.style.width = 'auto'; el.style.minWidth = '36px'; }
 }
 
 function addSemiSelfLine() {
-  const iid = parseInt(document.getElementById('semiSelfIngr').value);
+  const raw = document.getElementById('semiSelfIngr').value;
   const qty = parseFloat(document.getElementById('semiSelfQty').value);
-  if(!iid) { showToast('⚠️ Chọn nguyên liệu thô'); return; }
+  if(!raw) { showToast('⚠️ Chọn nguyên liệu thô'); return; }
   if(!qty || qty <= 0) { showToast('⚠️ Nhập lượng > 0'); return; }
-  const ingr = ingredients.find(i=>i.id===iid);
-  if(!ingr) return;
-  // qtyUnit: đơn vị của qty nhập vào (specUnit nếu có quy cách, không thì unit gốc)
-  const qtyUnit = ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit;
-  semiSelfLines = semiSelfLines.filter(l=>l.ingrId!==iid);
-  semiSelfLines.push({ ingrId: iid, qty, qtyUnit });
-  // Reset cả 2 searchable select + hidden input
-  ssReset('selfIngr');
-  document.getElementById('semiSelfIngr').value = '';
-  document.getElementById('semiSelfQty').value  = '';
-  document.getElementById('semiSelfUnit').textContent = '—';
-  renderSemiSelfLines();
-  showToast(`✓ Thêm ${ingr.name}`, 'success');
+
+  if(String(raw).startsWith('s_')) {
+    // Thành phẩm làm nguyên liệu
+    const sid  = parseInt(raw.slice(2));
+    const semi = semiFinished.find(s=>s.id===sid);
+    if(!semi) return;
+    const qtyUnit = semi.unit || '';
+    semiSelfLines = semiSelfLines.filter(l=>!(l.semiId===sid && !l.ingrId));
+    semiSelfLines.push({ semiId: sid, qty, qtyUnit });
+    ssReset('selfIngr');
+    document.getElementById('semiSelfIngr').value = '';
+    document.getElementById('semiSelfQty').value  = '';
+    document.getElementById('semiSelfUnit').textContent = '—';
+    renderSemiSelfLines();
+    showToast(`✓ Thêm ${semi.name}`, 'success');
+  } else {
+    // Nguyên liệu thô thông thường
+    const iid  = parseInt(raw);
+    const ingr = ingredients.find(i=>i.id===iid);
+    if(!ingr) return;
+    const qtyUnit = ingr.spec && ingr.specUnit ? ingr.specUnit : ingr.unit;
+    semiSelfLines = semiSelfLines.filter(l=>l.ingrId!==iid);
+    semiSelfLines.push({ ingrId: iid, qty, qtyUnit });
+    ssReset('selfIngr');
+    document.getElementById('semiSelfIngr').value = '';
+    document.getElementById('semiSelfQty').value  = '';
+    document.getElementById('semiSelfUnit').textContent = '—';
+    renderSemiSelfLines();
+    showToast(`✓ Thêm ${ingr.name}`, 'success');
+  }
 }
 
 function removeSemiSelfLine(idx) {
@@ -4782,24 +4914,40 @@ function renderSemiSelfLines() {
     return;
   }
   el.innerHTML = semiSelfLines.map((line, idx) => {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
-    // Kiểm tra đủ kho: nếu có quy cách thì so sánh tồn quy đổi vs qty nhập (cùng base)
-    let ok = false;
-    if(ingr) {
-      if(ingr.spec && ingr.spec > 0) {
-        const stockBase = ingrTotalInBase(ingr);          // tồn → base (g/ml)
-        const needBase  = toBase(line.qty, line.qtyUnit || ingr.specUnit || ingr.unit);
-        ok = stockBase >= needBase;
-      } else {
-        ok = ingr.qty >= line.qty;
+    let name = '?', ok = false, unit = line.qtyUnit || '';
+    if(line.semiId != null) {
+      // Nguồn là thành phẩm
+      const semi = semiFinished.find(s=>s.id===line.semiId);
+      if(semi) {
+        name = semi.name;
+        unit = line.qtyUnit || semi.unit || '';
+        ok   = (semi.qty || 0) >= line.qty;
       }
+      return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
+        <span class="recipe-line-name">🧪 ${name}</span>
+        <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit} ${ok?'':'⚠️thiếu'}</span>
+        <button class="recipe-del" onclick="removeSemiSelfLine(${idx})">✕</button>
+      </div>`;
+    } else {
+      // Nguồn là nguyên liệu thô
+      const ingr = ingredients.find(i=>i.id===line.ingrId);
+      if(ingr) {
+        name = ingr.name;
+        unit = line.qtyUnit || ingr.unit;
+        if(ingr.spec && ingr.spec > 0) {
+          const stockBase = ingrTotalInBase(ingr);
+          const needBase  = toBase(line.qty, line.qtyUnit || ingr.specUnit || ingr.unit);
+          ok = stockBase >= needBase;
+        } else {
+          ok = ingr.qty >= line.qty;
+        }
+      }
+      return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
+        <span class="recipe-line-name">🌾 ${name}</span>
+        <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit} ${ok?'':'⚠️thiếu'}</span>
+        <button class="recipe-del" onclick="removeSemiSelfLine(${idx})">✕</button>
+      </div>`;
     }
-    const unit = line.qtyUnit || (ingr ? ingr.unit : '');
-    return `<div class="recipe-line" style="background:${ok?'var(--bg)':'#FFE0E2'}">
-      <span class="recipe-line-name">🌾 ${ingr?ingr.name:'?'}</span>
-      <span class="recipe-line-qty" style="color:${ok?'#0E5BC7':'#EF4350'}">${line.qty} ${unit} ${ok?'':'⚠️thiếu'}</span>
-      <button class="recipe-del" onclick="removeSemiSelfLine(${idx})">✕</button>
-    </div>`;
   }).join('');
 }
 
@@ -4948,13 +5096,14 @@ function addSemi(produceMode) {
       existing.toppingPrice = isToppingSelf ? toppingPriceSelf : undefined;
     }
 
-    // Lưu công thức — giữ nguyên form, không reset
+    // Lưu công thức — reset form sau khi lưu
     sfRecipes[sid] = { yield: yld, lines: semiSelfLines.map(l=>({...l})) };
     if(window.fbSaveSfRecipes) fbSaveSfRecipes();
     if(window.fbSaveSemi) fbSaveSemi();
     renderSemiList();
     showToast(`💾 Đã lưu công thức "${name}"`, 'success');
-    return; // ← không clear form
+    clearSemiForm();
+    return;
   }
 
   // NCC hoặc edit thông tin → clear form như bình thường
@@ -5064,6 +5213,20 @@ function toggleSemiCard(id) {
   renderSemiList();
 }
 
+// Helper: resolve 1 dòng công thức thành phẩm → { name, unit, qty (tồn), isSemi }
+function resolveSfLine(line) {
+  if(line.semiId != null) {
+    const semi = semiFinished.find(s=>s.id===line.semiId);
+    return semi
+      ? { name:'🧪 '+semi.name, unit: line.qtyUnit||semi.unit||'', stock: semi.qty||0, isSemi:true, ref: semi }
+      : { name:'?', unit: line.qtyUnit||'', stock: 0, isSemi:true, ref: null };
+  }
+  const ingr = ingredients.find(i=>i.id===line.ingrId);
+  return ingr
+    ? { name:'🌾 '+ingr.name, unit: line.qtyUnit||(ingr.spec&&ingr.specUnit?ingr.specUnit:ingr.unit), stock: ingr.qty, isSemi:false, ref: ingr }
+    : { name:'?', unit: line.qtyUnit||'', stock: 0, isSemi:false, ref: null };
+}
+
 // Build cảnh báo thiếu nguyên liệu cho 1 thành phẩm
 // Trả về đơn vị hiển thị của 1 dòng công thức (qtyUnit nếu có, không thì unit gốc)
 function semiLineUnit(line, ingr) {
@@ -5077,20 +5240,38 @@ function semiLineOk(line, ingr) {
   }
   return ingr.qty >= line.qty;
 }
+// Kiểm tra đủ kho cho dòng có thể là semi hoặc ingr
+function sfLineOk(line, need) {
+  const qty = need != null ? need : line.qty;
+  if(line.semiId != null) {
+    const semi = semiFinished.find(s=>s.id===line.semiId);
+    return semi ? (semi.qty||0) >= qty : false;
+  }
+  const ingr = ingredients.find(i=>i.id===line.ingrId);
+  if(!ingr) return false;
+  if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+    return ingrTotalInBase(ingr) >= toBase(qty, line.qtyUnit);
+  }
+  return ingr.qty >= qty;
+}
 
 function getSemiWarnings(s) {
   const rec = sfRecipes[s.id];
   if(!rec || !rec.lines || rec.lines.length===0) return null;
   const missing = [];
   rec.lines.forEach(line => {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
-    if(!ingr) { missing.push(`Không tìm thấy NL (id=${line.ingrId})`); return; }
-    if(!semiLineOk(line, ingr)) {
-      const unit = semiLineUnit(line, ingr);
-      const stockDisplay = (ingr.spec && ingr.spec > 0)
-        ? formatBase(ingrTotalInBase(ingr), ingr.specUnit)
-        : `${ingr.qty} ${ingr.unit}`;
-      missing.push(`${ingr.name}: cần ${line.qty} ${unit}, còn ${stockDisplay}`);
+    const r = resolveSfLine(line);
+    if(!r.ref) { missing.push(`Không tìm thấy NL (id=${line.semiId??line.ingrId})`); return; }
+    if(!sfLineOk(line)) {
+      const unit = r.unit;
+      let stockDisplay;
+      if(!r.isSemi && r.ref.spec && r.ref.spec > 0) {
+        stockDisplay = formatBase(ingrTotalInBase(r.ref), r.ref.specUnit);
+      } else {
+        stockDisplay = `${r.ref.qty??r.stock} ${unit}`;
+      }
+      const rawName = r.ref ? r.ref.name : (line.semiId!=null?`thành phẩm #${line.semiId}`:`NL #${line.ingrId}`);
+      missing.push(`${rawName}: cần ${line.qty} ${unit}, còn ${stockDisplay}`);
     }
   });
   return missing.length ? missing : null;
@@ -5161,14 +5342,14 @@ function renderSemiList() {
       const canEdit = (s.supplier||'Tự pha chế') === 'Tự pha chế';
       const recipeRows = hasRecipe
         ? rec.lines.map((line, idx) => {
-            const ingr = ingredients.find(i=>i.id===line.ingrId);
-            const ok   = semiLineOk(line, ingr);
-            const unit = semiLineUnit(line, ingr);
+            const r    = resolveSfLine(line);
+            const ok   = sfLineOk(line);
+            const unit = r.unit;
             const delBtn = canEdit
               ? `<button class="recipe-del" onclick="event.stopPropagation();removeSfRecipeLine(${s.id},${idx})" title="Xóa">✕</button>`
               : '<span></span>';
             return `<div class="sct-row ${ok?'row-ok':'row-bad'}">
-              <span class="sct-name">${ingr ? ingr.name : '?'}</span>
+              <span class="sct-name">${r.name}</span>
               <span class="sct-qty ${ok?'ok':'bad'}">${line.qty} ${unit}<span style="font-weight:400;color:var(--muted);font-size:11px">/mẻ</span></span>
               <span class="sct-del">${delBtn}</span>
             </div>`;
@@ -5318,25 +5499,26 @@ function renderInlineProducePreview(sid) {
   const s = semiFinished.find(x=>x.id===sid);
   let canProduce = true;
   const rows = rec.lines.map(line => {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const r    = resolveSfLine(line);
     const need = +(line.qty * batches).toFixed(3);
-    const unit = semiLineUnit(line, ingr);
+    const unit = r.unit;
     let ok = false;
     let stockDisplay = '?';
-    if(ingr) {
-      if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+    if(r.ref) {
+      if(!r.isSemi && r.ref.spec && r.ref.spec > 0 && line.qtyUnit) {
         const needBase = toBase(need, line.qtyUnit);
-        const hasBase  = ingrTotalInBase(ingr);
+        const hasBase  = ingrTotalInBase(r.ref);
         ok = hasBase >= needBase;
-        stockDisplay = formatBase(hasBase, ingr.specUnit);
+        stockDisplay = formatBase(hasBase, r.ref.specUnit);
       } else {
-        ok = ingr.qty >= need;
-        stockDisplay = `${ingr.qty} ${ingr.unit}`;
+        const stock = r.isSemi ? (r.ref.qty||0) : r.ref.qty;
+        ok = stock >= need;
+        stockDisplay = `${stock} ${unit}`;
       }
     }
     if(!ok) canProduce = false;
     return `<div class="spv-row ${ok?'row-ok':'row-bad'}">
-      <span class="spv-name">${ingr?ingr.name:'?'}</span>
+      <span class="spv-name">${r.name}</span>
       <span class="spv-cell ${ok?'ok':'bad'}">Cần ${need} ${unit}</span>
       <span class="spv-cell ${ok?'ok':'bad'}">Còn ${stockDisplay}</span>
     </div>`;
@@ -5359,29 +5541,38 @@ function executeProduceInline(sid) {
   const rec = sfRecipes[sid];
   if(!rec || !rec.lines || rec.lines.length===0) { showToast('⚠️ Chưa có công thức chế biến'); return; }
   for(const line of rec.lines) {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
+    const r    = resolveSfLine(line);
     const need = line.qty * batches;
-    if(!ingr) { showToast(`⚠️ Không tìm thấy nguyên liệu`); return; }
-    if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
-      if(ingrTotalInBase(ingr) < toBase(need, line.qtyUnit)) {
-        showToast(`⚠️ Không đủ ${ingr.name}`); return;
-      }
+    if(!r.ref) { showToast(`⚠️ Không tìm thấy nguyên liệu`); return; }
+    if(r.isSemi) {
+      if((r.ref.qty||0) < need) { showToast(`⚠️ Không đủ ${r.ref.name}`); return; }
     } else {
-      if(ingr.qty < need) { showToast(`⚠️ Không đủ ${ingr.name}`); return; }
+      const ingr = r.ref;
+      if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+        if(ingrTotalInBase(ingr) < toBase(need, line.qtyUnit)) {
+          showToast(`⚠️ Không đủ ${ingr.name}`); return;
+        }
+      } else {
+        if(ingr.qty < need) { showToast(`⚠️ Không đủ ${ingr.name}`); return; }
+      }
     }
   }
   rec.lines.forEach(line => {
-    const ingr = ingredients.find(i=>i.id===line.ingrId);
-    if(!ingr) return;
+    const r    = resolveSfLine(line);
+    if(!r.ref) return;
     const need = line.qty * batches;
-    if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
-      // Quy đổi ngược: needBase / spec → số đơn vị gốc cần trừ
-      const needBase     = toBase(need, line.qtyUnit);
-      const specBase     = toBase(ingr.spec, ingr.specUnit);
-      const unitsToDeduct = needBase / specBase;
-      ingr.qty = Math.max(0, +(ingr.qty - unitsToDeduct).toFixed(4));
+    if(r.isSemi) {
+      r.ref.qty = Math.max(0, +((r.ref.qty||0) - need).toFixed(3));
     } else {
-      ingr.qty = Math.max(0, +(ingr.qty - need).toFixed(3));
+      const ingr = r.ref;
+      if(ingr.spec && ingr.spec > 0 && line.qtyUnit) {
+        const needBase      = toBase(need, line.qtyUnit);
+        const specBase      = toBase(ingr.spec, ingr.specUnit);
+        const unitsToDeduct = needBase / specBase;
+        ingr.qty = Math.max(0, +(ingr.qty - unitsToDeduct).toFixed(4));
+      } else {
+        ingr.qty = Math.max(0, +(ingr.qty - need).toFixed(3));
+      }
     }
   });
   const willProduce = +(rec.yield * batches).toFixed(3);
