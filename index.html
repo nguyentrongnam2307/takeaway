@@ -503,7 +503,8 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 
 
 /* ══════════ SETTINGS VIEW — constrained width ══════════ */
-#view-settings { max-width:1016px; width:100%; margin-left:auto; margin-right:auto; }
+//#view-settings { max-width:1016px; width:100%; margin-left:auto; margin-right:auto; }
+#view-settings { margin-left:auto; margin-right:auto; }
 
 /* ══════════ SETTINGS TABS ══════════ */
 .settings-tabs {
@@ -2169,7 +2170,13 @@ function startRealtimeSync() {
   // Sync semiFinished
   db.collection('config').doc('semiFinished').onSnapshot(snap => {
     if(snap.exists && snap.data().data) {
+      // Không override nếu đang edit/nhập kho (tránh mất form data)
+      const isEditingForm = document.getElementById('semiEditId')?.value ||
+        (document.getElementById('semiSource')?.value === 'ncc' &&
+         document.getElementById('semiName')?.value.trim());
+      if(isEditingForm) return;
       semiFinished = snap.data().data;
+      try { localStorage.setItem('cafeSemiFinished', JSON.stringify(semiFinished)); } catch(e) {}
       renderSemiList && renderSemiList();
     }
   });
@@ -3298,15 +3305,26 @@ function calcIngrConvert() {
 }
 
 // Format số base (g/ml) thành chuỗi dễ đọc
-function formatBase(valBase, specUnit) {
+function formatBase(valBase, specUnit, ingr) {
   const isWeight = specUnit === 'g' || specUnit === 'kg';
+  let display;
   if(isWeight) {
-    if(valBase >= 1000) return (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' kg';
-    return valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' g';
+    display = valBase >= 1000
+      ? (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' kg'
+      : valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' g';
   } else {
-    if(valBase >= 1000) return (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' lít';
-    return valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' ml';
+    display = valBase >= 1000
+      ? (valBase/1000).toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' lít'
+      : valBase.toLocaleString('vi-VN',{maximumFractionDigits:2}) + ' ml';
   }
+  // Thêm số đơn vị kho còn lại (hộp/gói/chai...) nếu có spec
+  if(ingr && ingr.spec && ingr.spec > 0 && ingr.unit) {
+    const specBase = toBase(ingr.spec, ingr.specUnit); // ml hoặc g của 1 đơn vị
+    const remaining = specBase > 0 ? valBase / specBase : 0;
+    const remainStr = remaining.toLocaleString('vi-VN',{maximumFractionDigits:2});
+    display += ` (còn ${remainStr} ${ingr.unit})`;
+  }
+  return display;
 }
 
 // Chuyển về đơn vị cơ sở (g hoặc ml) để so sánh
@@ -3347,7 +3365,7 @@ function renderIngredients() {
       const minDisplay = hasMinUnit ? `${i.min} ${i.minUnit}` : (i.min ? `${i.min}` : '—');
       // Tồn quy đổi
       const convertedDisplay = hasSpec
-        ? formatBase(ingrTotalInBase(i), i.specUnit)
+        ? formatBase(ingrTotalInBase(i), i.specUnit, i)
         : '—';
       const convertedColor = status === 'out' ? '#EF4350' : status === 'low' ? '#B8900A' : '#0E5BC7';
       return `<tr>
@@ -4323,11 +4341,15 @@ function renderRecipeIngredientSelector() {
 function getIngrNameUnit(ingrId) {
   if(typeof ingrId === 'string' && ingrId.startsWith('s')) {
     const s = semiFinished.find(i=>i.id===parseInt(ingrId.slice(1)));
-    return s ? { name:'🧪 '+s.name, unit:s.unit } : { name:'?', unit:'' };
+    return s ? { name:'🧪 '+s.name, unit:s.unit, spec:0, specUnit:'' } : { name:'?', unit:'', spec:0, specUnit:'' };
   }
   const rid = typeof ingrId === 'string' && ingrId.startsWith('r') ? parseInt(ingrId.slice(1)) : parseInt(ingrId);
   const ingr = ingredients.find(i=>i.id===rid);
-  return ingr ? { name:'🌾 '+ingr.name, unit:ingr.unit } : { name:'?', unit:'' };
+  if(!ingr) return { name:'?', unit:'', spec:0, specUnit:'' };
+  // Nếu có spec (quy cách), đơn vị tính toán nội bộ là specUnit (ml/g)
+  // → baseUnit cho công thức phải là specUnit để khớp với ingrTotalInBase
+  const baseUnit = (ingr.spec && ingr.spec > 0 && ingr.specUnit) ? ingr.specUnit : ingr.unit;
+  return { name:'🌾 '+ingr.name, unit: baseUnit, spec: ingr.spec||0, specUnit: ingr.specUnit||'' };
 }
 
 function renderCurrentRecipeLines(pid) {
@@ -4354,22 +4376,15 @@ const UNIT_TO_BASE = {
   // Count — no conversion
   'gói': 1, 'hộp': 1, 'bình': 1, 'chai': 1, 'hũ': 1, 'quả': 1, 'cái': 1,
 };
-// Returns factor to convert FROM inputUnit TO baseUnit of ingredient
+// Returns factor to convert FROM inputUnit TO baseUnit
+// baseUnit luôn là specUnit (ml/g) khi nguyên liệu có spec
 function getConvertFactor(inputUnit, baseUnit) {
   if(!inputUnit || !baseUnit || inputUnit === baseUnit) return 1;
-  const toBase = { 'ml':0.001,'lít':1,'l':1,'g':0.001,'kg':1,'gói':1,'hộp':1,'bình':1,'chai':1,'hũ':1,'quả':1,'cái':1 };
-  const fromFactor = toBase[inputUnit] ?? 1;
-  const toFactor   = toBase[baseUnit]  ?? 1;
-  // e.g. inputUnit=ml (0.001 lit), baseUnit=lít (1 lit) → factor = 0.001/1 = 0.001
-  if((inputUnit==='ml'||inputUnit==='lít'||inputUnit==='l') &&
-     (baseUnit==='ml'||baseUnit==='lít'||baseUnit==='l')) {
-    return fromFactor / toFactor;
-  }
-  if((inputUnit==='g'||inputUnit==='kg') && (baseUnit==='g'||baseUnit==='kg')) {
-    return fromFactor / toFactor;
-  }
-  // Same category not detected → assume same
-  return 1;
+  const toML = { 'ml':1, 'lít':1000, 'l':1000 };
+  const toG  = { 'g':1, 'kg':1000 };
+  if(toML[inputUnit] != null && toML[baseUnit] != null) return toML[inputUnit] / toML[baseUnit];
+  if(toG[inputUnit]  != null && toG[baseUnit]  != null) return toG[inputUnit]  / toG[baseUnit];
+  return 1; // cùng đơn vị đếm hoặc không convert được
 }
 
 function updateRecipeConvert() {
@@ -4417,7 +4432,7 @@ function addRecipeLine() {
 
   const {unit: baseUnit} = getIngrNameUnit(rawVal);
   const factor   = getConvertFactor(inUnit, baseUnit);
-  const qty      = +(qtyInput * factor).toFixed(4); // qty lưu theo đơn vị gốc của NL
+  const qty      = +(qtyInput * factor).toFixed(4); // qty lưu theo specUnit (ml/g) nếu có spec
 
   if(!recipes[pid]) recipes[pid] = [];
   recipes[pid] = recipes[pid].filter(l=>l.ingrId!==rawVal);
@@ -4697,7 +4712,7 @@ function ssGetItems(key) {
   const ingrItems = ingredients.map(i => {
     let sub = `còn ${i.qty} ${i.unit}`;
     if(i.spec && i.spec > 0) {
-      sub += ` · ${formatBase(ingrTotalInBase(i), i.specUnit)}`;
+      sub += ` · ${formatBase(ingrTotalInBase(i), i.specUnit, i)}`;
     }
     return { id: String(i.id), label: i.name, sub };
   });
@@ -5109,7 +5124,12 @@ function addSemi(produceMode) {
   // NCC hoặc edit thông tin → clear form như bình thường
   clearSemiForm();
   renderSemiList();
-  if(window.fbSaveSemi) fbSaveSemi();
+  if(window.fbSaveSemi) {
+    fbSaveSemi().catch(e => {
+      console.error('addSemi fbSaveSemi failed:', e);
+      showToast('❌ Không lưu được vào Firebase, kiểm tra kết nối mạng');
+    });
+  }
 }
 
 function editSemi(id) {
@@ -5266,7 +5286,7 @@ function getSemiWarnings(s) {
       const unit = r.unit;
       let stockDisplay;
       if(!r.isSemi && r.ref.spec && r.ref.spec > 0) {
-        stockDisplay = formatBase(ingrTotalInBase(r.ref), r.ref.specUnit);
+        stockDisplay = formatBase(ingrTotalInBase(r.ref), r.ref.specUnit, r.ref);
       } else {
         stockDisplay = `${r.ref.qty??r.stock} ${unit}`;
       }
@@ -5509,7 +5529,7 @@ function renderInlineProducePreview(sid) {
         const needBase = toBase(need, line.qtyUnit);
         const hasBase  = ingrTotalInBase(r.ref);
         ok = hasBase >= needBase;
-        stockDisplay = formatBase(hasBase, r.ref.specUnit);
+        stockDisplay = formatBase(hasBase, r.ref.specUnit, r.ref);
       } else {
         const stock = r.isSemi ? (r.ref.qty||0) : r.ref.qty;
         ok = stock >= need;
@@ -5777,13 +5797,19 @@ window.removeRecipeLine = function(pid, idx) {
 
 // ── Firebase helpers for semiFinished & sfRecipes ──
 window.fbSaveSemi = async function() {
-  // Luôn lưu localStorage làm fallback
+  // Luôn lưu localStorage làm fallback trước
   try { localStorage.setItem('cafeSemiFinished', JSON.stringify(semiFinished)); } catch(e) {}
   setFbStatus('saving');
   try {
-    await db.collection('config').doc('semiFinished').set({ data: semiFinished, updatedAt: new Date().toISOString() });
+    // JSON parse/stringify loại bỏ toàn bộ undefined — Firestore không chấp nhận undefined
+    const cleanData = JSON.parse(JSON.stringify(semiFinished));
+    await db.collection('config').doc('semiFinished').set({ data: cleanData, updatedAt: new Date().toISOString() });
     setFbStatus('online');
-  } catch(e) { console.warn('fbSaveSemi error',e); setFbStatus('offline'); }
+  } catch(e) {
+    console.error('fbSaveSemi error', e);
+    setFbStatus('offline');
+    showToast('⚠️ Lưu Firebase thất bại — đã lưu local tạm thời');
+  }
 };
 
 window.fbSaveSfRecipes = async function() {
@@ -5811,7 +5837,10 @@ async function fbLoadSemi() {
       // Firebase chưa có → seed từ localStorage lên
       await db.collection('config').doc('semiFinished').set({ data: semiFinished, updatedAt: new Date().toISOString() });
     }
-  } catch(e) { console.warn('fbLoadSemi error',e); }
+  } catch(e) {
+    console.error('fbLoadSemi error', e);
+    // Tiếp tục dùng data từ localStorage đã load ở trên
+  }
 }
 
 async function fbLoadSfRecipes() {
