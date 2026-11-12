@@ -1319,6 +1319,10 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
                   </div>
                 </div>
               </div>
+              <!-- Hidden fields: lưu spec gốc để tính ngược ra hộp/gói khi hiển thị -->
+              <input type="hidden" id="semiNccSpec" value="">
+              <input type="hidden" id="semiNccSpecUnit" value="">
+              <input type="hidden" id="semiNccIngrId" value="">
               <!-- Visible inputs cho NCC — tự điền từ NL thô, sửa được trực tiếp -->
               <div style="background:var(--bg);border:1px solid var(--rule);border-radius:10px;padding:.8rem .9rem;margin-bottom:.5rem" id="semiNccFields">
                 <div style="font-size:11px;font-weight:400;color:var(--muted);margin-bottom:.6rem">📋 Thông tin thành phẩm</div>
@@ -2510,25 +2514,40 @@ function filterProducts() {
 }
 
 // Calculate how many cups can be made for a product
-// recipe lines now have: { ingrId: 's123' or 'r123', qty }
+// recipe lines now have: { ingrId: 's123' or 'r123', qty, inUnit }
+// qty được lưu theo specUnit (ml/g) nếu nguyên liệu có spec
 function calcStock(productId) {
   const recipe = recipes[productId];
   if(!recipe || recipe.length === 0) return 999; // no recipe = unlimited
   let min = Infinity;
   for(const line of recipe) {
     const sid = line.ingrId;
-    let stock = null;
+    let stockBase = null; // tồn kho quy về đơn vị cơ sở (ml/g)
+    let lineQtyBase = line.qty; // lượng/ly đã lưu theo specUnit (ml/g)
+
     if(typeof sid === 'string' && sid.startsWith('s')) {
+      // Thành phẩm: so sánh trực tiếp theo qty (ml/lít/g...)
       const s = semiFinished.find(i=>i.id===parseInt(sid.slice(1)));
-      stock = s ? s.qty : null;
+      if(!s) continue;
+      stockBase   = s.qty;
+      lineQtyBase = line.qty;
     } else {
-      // legacy numeric or 'r' prefix
-      const rid = typeof sid === 'string' && sid.startsWith('r') ? parseInt(sid.slice(1)) : parseInt(sid);
+      // Nguyên liệu thô
+      const rid  = typeof sid === 'string' && sid.startsWith('r') ? parseInt(sid.slice(1)) : parseInt(sid);
       const ingr = ingredients.find(i=>i.id===rid);
-      stock = ingr ? ingr.qty : null;
+      if(!ingr) continue;
+      if(ingr.spec && ingr.spec > 0 && ingr.specUnit) {
+        // Có quy cách: quy đổi tồn kho → specUnit (ml/g)
+        stockBase = ingrTotalInBase(ingr); // qty * spec * hệ số (nếu kg/lít)
+      } else {
+        stockBase = ingr.qty;
+      }
+      // line.qty đã được lưu theo specUnit rồi (do getConvertFactor khi nhập CT)
+      lineQtyBase = line.qty;
     }
-    if(stock === null) continue;
-    const canMake = Math.floor(stock / line.qty);
+
+    if(stockBase === null || lineQtyBase <= 0) continue;
+    const canMake = Math.floor(stockBase / lineQtyBase);
     if(canMake < min) min = canMake;
   }
   return min === Infinity ? 999 : min;
@@ -2918,12 +2937,22 @@ function doCheckout() {
       recipe.forEach(line=>{
         const sid = line.ingrId;
         if(typeof sid === 'string' && sid.startsWith('s')) {
+          // Thành phẩm: trừ trực tiếp theo qty (ml/lít/g...)
           const s = semiFinished.find(x=>x.id===parseInt(sid.slice(1)));
-          if(s) s.qty = Math.max(0, s.qty - line.qty * i.qty);
+          if(s) s.qty = Math.max(0, +((s.qty - line.qty * i.qty).toFixed(4)));
         } else {
           const rid = typeof sid === 'string' && sid.startsWith('r') ? parseInt(sid.slice(1)) : parseInt(sid);
           const ingr = ingredients.find(g=>g.id===rid);
-          if(ingr) ingr.qty = Math.max(0, ingr.qty - line.qty * i.qty);
+          if(!ingr) return;
+          if(ingr.spec && ingr.spec > 0 && ingr.specUnit) {
+            // line.qty đã lưu theo specUnit (ml/g) → quy về số đơn vị (hộp/gói)
+            const needBase  = line.qty * i.qty; // tổng ml/g cần trừ
+            const specBase  = toBase(ingr.spec, ingr.specUnit); // ml/g của 1 đơn vị
+            const unitsToDeduct = needBase / specBase;
+            ingr.qty = Math.max(0, +(ingr.qty - unitsToDeduct).toFixed(4));
+          } else {
+            ingr.qty = Math.max(0, +(ingr.qty - line.qty * i.qty).toFixed(4));
+          }
         }
       });
     }
@@ -3357,6 +3386,26 @@ function ingrTotalInBase(i) {
 function ingrMinInBase(i) {
   if(!i.min) return 0;
   return toBase(i.min, i.minUnit || i.specUnit || 'g');
+}
+
+// Format tồn kho thành phẩm NCC: hiện cả số đơn vị thô lẫn ml/g
+// Ví dụ: s = { qty: 2457, unit: 'ml', nccSpec: 1284, nccSpecUnit: 'ml', nccIngrId: ... }
+// → "2457 ml (≈ 1,91 hộp)"
+// Nếu không có nccSpec thì chỉ hiện "2457 ml"
+function formatSemiQty(s) {
+  const baseStr = `${s.qty.toLocaleString('vi-VN',{maximumFractionDigits:2})} ${s.unit}`;
+  if(!s.nccSpec || s.nccSpec <= 0) return baseStr;
+  // Tìm đơn vị thô từ nguyên liệu gốc
+  const ingr = ingredients.find(i => i.id === s.nccIngrId);
+  const rawUnit = ingr ? ingr.unit : 'đơn vị';
+  const specBase = toBase(s.nccSpec, s.nccSpecUnit || s.unit);
+  if(specBase <= 0) return baseStr;
+  const rawCount = s.qty / specBase;
+  // Hiển thị: nếu rawCount là số nguyên thì bỏ thập phân
+  const rawStr = Number.isInteger(rawCount)
+    ? rawCount.toString()
+    : rawCount.toLocaleString('vi-VN', {maximumFractionDigits: 2});
+  return `${baseStr} <span style="font-size:10px;color:var(--muted);font-weight:400">(≈ ${rawStr} ${rawUnit})</span>`;
 }
 
 function renderIngredients() {
@@ -4330,7 +4379,19 @@ function renderRecipeIngrDropdown() {
   const ci = is.value;
   if(type === 'semi') {
     is.innerHTML = '<option value="">-- Chọn thành phẩm --</option>' +
-      semiFinished.map(i=>`<option value="s${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
+      semiFinished.map(i=>{
+        let label = `${i.name} (còn ${i.qty} ${i.unit}`;
+        if(i.nccSpec && i.nccSpec > 0) {
+          const ingr = ingredients.find(x=>x.id===i.nccIngrId);
+          const specBase = toBase(i.nccSpec, i.nccSpecUnit||i.unit);
+          if(specBase > 0 && ingr) {
+            const rawCount = i.qty / specBase;
+            label += ` ≈ ${rawCount.toLocaleString('vi-VN',{maximumFractionDigits:2})} ${ingr.unit}`;
+          }
+        }
+        label += ')';
+        return `<option value="s${i.id}">${label}</option>`;
+      }).join('');
   } else {
     is.innerHTML = '<option value="">-- Chọn NL thô --</option>' +
       ingredients.map(i=>`<option value="r${i.id}">${i.name} (còn ${i.qty} ${i.unit})</option>`).join('');
@@ -4736,7 +4797,16 @@ function ssGetItems(key) {
       .filter(s => String(s.id) !== String(editId))
       .map(s => {
         const stock = s.qty != null ? s.qty : 0;
-        return { id: `s_${s.id}`, label: `🧪 ${s.name}`, sub: `thành phẩm · còn ${stock} ${s.unit||''}` };
+        let sub = `thành phẩm · còn ${stock} ${s.unit||''}`;
+        if(s.nccSpec && s.nccSpec > 0) {
+          const ingr = ingredients.find(x=>x.id===s.nccIngrId);
+          const specBase = toBase(s.nccSpec, s.nccSpecUnit||s.unit);
+          if(specBase > 0 && ingr) {
+            const rawCount = stock / specBase;
+            sub += ` ≈ ${rawCount.toLocaleString('vi-VN',{maximumFractionDigits:2})} ${ingr.unit}`;
+          }
+        }
+        return { id: `s_${s.id}`, label: `🧪 ${s.name}`, sub };
       });
     return [...ingrItems, ...semiItems];
   }
@@ -4849,13 +4919,36 @@ function autoFillSemiFromIngr() {
   if(!iid) return;
   const ingr = ingredients.find(i=>i.id===iid);
   if(!ingr) return;
-  const nameEl = document.getElementById('semiName');     if(nameEl) nameEl.value     = ingr.name;
-  const supEl  = document.getElementById('semiSupplier'); if(supEl)  supEl.value      = ingr.supplier || '';
-  const qtyEl  = document.getElementById('semiQty');      if(qtyEl)  qtyEl.value      = ingr.qty;
-  const costEl = document.getElementById('semiCost');     if(costEl) costEl.value     = ingr.cost || '';
-  const minEl  = document.getElementById('semiMin');      if(minEl)  minEl.value      = ingr.min  || '';
+
+  // Nếu nguyên liệu có quy cách (spec), đơn vị thành phẩm = specUnit (ml/g)
+  // và số lượng = tổng quy đổi (qty * spec)
+  const hasSpec = ingr.spec && ingr.spec > 0 && ingr.specUnit;
+  const fillUnit = hasSpec ? ingr.specUnit : ingr.unit;
+  const fillQty  = hasSpec ? +(ingrTotalInBase(ingr).toFixed(3)) : ingr.qty;
+
+  const nameEl = document.getElementById('semiName');     if(nameEl) nameEl.value = ingr.name;
+  const supEl  = document.getElementById('semiSupplier'); if(supEl)  supEl.value  = ingr.supplier || '';
+  const qtyEl  = document.getElementById('semiQty');      if(qtyEl)  qtyEl.value  = fillQty;
+  const costEl = document.getElementById('semiCost');     if(costEl) costEl.value = ingr.cost || '';
+  const minEl  = document.getElementById('semiMin');      if(minEl)  minEl.value  = ingr.min  || '';
+  // Lưu spec gốc để tính ngược ra hộp/gói khi hiển thị
+  const specHid     = document.getElementById('semiNccSpec');     if(specHid)     specHid.value     = hasSpec ? ingr.spec : '';
+  const specUnitHid = document.getElementById('semiNccSpecUnit'); if(specUnitHid) specUnitHid.value = hasSpec ? ingr.specUnit : '';
+  const ingrIdHid   = document.getElementById('semiNccIngrId');   if(ingrIdHid)   ingrIdHid.value   = ingr.id;
   const unitSel = document.getElementById('semiUnit');
-  if(unitSel) { for(let opt of unitSel.options) { if(opt.value === ingr.unit) { unitSel.value = ingr.unit; break; } } }
+  if(unitSel) {
+    // Thử set đúng unit (ml/lít/g/kg...)
+    let matched = false;
+    for(let opt of unitSel.options) {
+      if(opt.value === fillUnit) { unitSel.value = fillUnit; matched = true; break; }
+    }
+    // Nếu không có option khớp, giữ option đang chọn
+    if(!matched) {
+      for(let opt of unitSel.options) {
+        if(opt.value === ingr.unit) { unitSel.value = ingr.unit; break; }
+      }
+    }
+  }
 }
 
 // ── Toggle hiện/ẩn topping extra fields ──────────────────────────────
@@ -4988,6 +5081,9 @@ function clearSemiForm() {
   const unitSel = document.getElementById('semiUnit'); if(unitSel) unitSel.value = 'lít';
   const nccRef = document.getElementById('semiNccIngrRef');
   if(nccRef) nccRef.value = '';
+  ['semiNccSpec','semiNccSpecUnit','semiNccIngrId'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
   // Reset topping fields
   const isToppingEl = document.getElementById('semiIsTopping');
   if(isToppingEl) { isToppingEl.checked = false; toggleToppingFields(); }
@@ -5073,17 +5169,37 @@ function addSemi(produceMode) {
     const isTopping    = document.getElementById('semiIsTopping')?.checked || false;
     const toppingEmoji = (document.getElementById('semiToppingEmoji')?.value.trim()) || '🧋';
     const toppingPrice = isTopping ? (parseInt(document.getElementById('semiToppingPrice')?.value)||0) : 0;
+    // Spec gốc từ nguyên liệu (để tính ngược ra hộp/gói khi hiển thị)
+    const nccSpec      = parseFloat(document.getElementById('semiNccSpec')?.value) || 0;
+    const nccSpecUnit  = document.getElementById('semiNccSpecUnit')?.value || '';
+    const nccIngrId    = parseInt(document.getElementById('semiNccIngrId')?.value) || 0;
     if(!name) { showToast('⚠️ Nhập tên thành phẩm'); return; }
     if(isNaN(qty)||qty<=0) { showToast('⚠️ Nhập số lượng'); return; }
     if(isTopping && toppingPrice <= 0) { showToast('⚠️ Nhập giá topping (có thể là 0 nếu miễn phí)', 'warning'); }
     const existing = semiFinished.find(i=>i.name.toLowerCase()===name.toLowerCase());
     if(existing) {
       existing.qty = +(existing.qty + qty).toFixed(3);
+      // Cập nhật spec nếu có
+      if(nccSpec > 0) { existing.nccSpec = nccSpec; existing.nccSpecUnit = nccSpecUnit; existing.nccIngrId = nccIngrId; }
       // Cập nhật thông tin topping nếu checkbox được tick
       if(isTopping) { existing.isTopping = true; existing.toppingEmoji = toppingEmoji; existing.toppingPrice = toppingPrice; }
-      showToast(`✓ Cộng thêm ${qty} ${unit} ${name}`, 'success');
+      // Toast: hiện cả đơn vị thô nếu có spec
+      let addToastMsg = `✓ Cộng thêm ${qty} ${unit} ${name}`;
+      if(nccSpec > 0) {
+        const ingr2 = ingredients.find(i=>i.id===nccIngrId);
+        const specBase2 = toBase(nccSpec, nccSpecUnit||unit);
+        if(specBase2 > 0 && ingr2) {
+          const rawCount2 = qty / specBase2;
+          addToastMsg += ` (≈ ${rawCount2.toLocaleString('vi-VN',{maximumFractionDigits:2})} ${ingr2.unit})`;
+        }
+      }
+      showToast(addToastMsg, 'success');
     } else {
-      semiFinished.push({ id: Date.now(), name, qty, unit, min, cost, supplier: sup||'NCC', isTopping, toppingEmoji: isTopping ? toppingEmoji : undefined, toppingPrice: isTopping ? toppingPrice : undefined });
+      semiFinished.push({ id: Date.now(), name, qty, unit, min, cost, supplier: sup||'NCC',
+        nccSpec: nccSpec > 0 ? nccSpec : undefined,
+        nccSpecUnit: nccSpec > 0 ? nccSpecUnit : undefined,
+        nccIngrId: nccIngrId > 0 ? nccIngrId : undefined,
+        isTopping, toppingEmoji: isTopping ? toppingEmoji : undefined, toppingPrice: isTopping ? toppingPrice : undefined });
       showToast(`✓ Đã thêm ${name}${isTopping?' 🧋 (Topping)':''}`, 'success');
     }
   } else {
@@ -5165,6 +5281,10 @@ function editSemi(id) {
   const minEl  = document.getElementById('semiMin');      if(minEl)  minEl.value      = s.min||'';
   const unitSel = document.getElementById('semiUnit');
   if(unitSel) { for(let opt of unitSel.options) { if(opt.value===s.unit){ unitSel.value=s.unit; break; } } }
+  // Restore hidden spec fields
+  const specHid2     = document.getElementById('semiNccSpec');     if(specHid2)     specHid2.value     = s.nccSpec     || '';
+  const specUnitHid2 = document.getElementById('semiNccSpecUnit'); if(specUnitHid2) specUnitHid2.value = s.nccSpecUnit || '';
+  const ingrIdHid2   = document.getElementById('semiNccIngrId');   if(ingrIdHid2)   ingrIdHid2.value   = s.nccIngrId   || '';
   // Điền topping fields
   const isToppingEl = document.getElementById('semiIsTopping');
   if(isToppingEl) { isToppingEl.checked = !!s.isTopping; toggleToppingFields(); }
@@ -5461,7 +5581,7 @@ function renderSemiList() {
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0">
-          <div class="semi-card-qty" style="color:${statusClr}">${s.qty} ${s.unit}</div>
+          <div class="semi-card-qty" style="color:${statusClr}">${formatSemiQty(s)}</div>
           <div style="font-size:11px;font-weight:400;color:${statusClr}">${statusLbl}</div>
         </div>
         <div style="font-size:16px;color:var(--muted);flex-shrink:0;transition:transform .2s;transform:rotate(${isOpen?'90':'0'}deg)">›</div>
