@@ -1725,8 +1725,9 @@ html, body { height: 100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="printReceipt()">🖨️ In bill</button>
         <button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels(currentReceiptOrder)">🏷️ In tem</button>
-        <button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7;display:none" onclick="exportLabelsPDF(currentReceiptOrder)">📄 PDF tem</button>
-        <button class="btn" style="background:#fff8e0;color:#8a6500;border:1px solid #f0d060" onclick="exportLabelsImage(currentReceiptOrder)">🖼️ Ảnh tem</button>
+		<button class="btn" style="background:#e8ffe8;color:#15803d;border:1px solid #15803d" onclick="exportBillPDF(currentReceiptOrder)">🧾 PDF bill</button>
+        <button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7" onclick="exportLabelsPDF(currentReceiptOrder)">📄 PDF tem</button>
+        <button class="btn" style="background:#fff8e0;color:#8a6500;border:1px solid #f0d060;display:none" onclick="exportLabelsImage(currentReceiptOrder)">🖼️ Ảnh tem</button>
         <button class="btn btn-green" onclick="closeModal()">✓ Xong</button>
       </div>
     </div>
@@ -3617,8 +3618,8 @@ function viewOrderDetail(id) {
 
 function renderOrderDetailActions(o) {
   const acts = document.getElementById('orderDetailActions');
-  const close = `<button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')">✕ Đóng</button>`;
-  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button><button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels()">🏷️ In tem</button><button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7;display:none" onclick="exportLabelsPDF()">📄 PDF tem</button><button class="btn" style="background:#fff8e0;color:#8a6500;border:1px solid #f0d060" onclick="exportLabelsImage()">🖼️ Ảnh tem</button><button class="btn" style="background:#e8ffe8;color:#15803d;border:1px solid #15803d;display:none" onclick="exportBillPDF()">🧾 PDF bill</button><button class="btn" style="background:#f3e8ff;color:#7c3aed;border:1px solid #7c3aed" onclick="exportBillImage()">🖼️ Ảnh bill</button>`;
+  const close = `<button class="btn btn-outline" onclick="document.getElementById('orderDetailModal').classList.remove('open')" style="display:none">✕ Đóng</button>`;
+  const print = `<button class="btn btn-green" onclick="printOrderDetail()">🖨️ In bill</button><button class="btn" style="background:#f5b800;color:#0c0c14;border:none" onclick="printLabels()">🏷️ In tem</button><button class="btn" style="background:#e8f4ff;color:#0E5BC7;border:1px solid #0E5BC7" onclick="exportLabelsPDF()">📄 PDF tem</button><button class="btn" style="background:#fff8e0;color:#8a6500;border:1px solid #f0d060;display:none" onclick="exportLabelsImage()">🖼️ Ảnh tem</button><button class="btn" style="background:#e8ffe8;color:#15803d;border:1px solid #15803d" onclick="exportBillPDF()">🧾 PDF bill</button><button class="btn" style="background:#f3e8ff;color:#7c3aed;border:1px solid #7c3aed;display:none" onclick="exportBillImage()">🖼️ Ảnh bill</button>`;
 
   let extra = '';
   if (o.status === 'pending') {
